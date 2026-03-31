@@ -1,0 +1,24 @@
+{% macro campo_nuevo(field, class="", labelClass="") %}
+  <div>
+    <label class="{{ labelClass }}">{{ field.label }}</label>
+    {{ field(class_=class) }}
+    
+    {% if field.errors %}
+      {% for error in field.errors %}
+        <p class="text-red-400 text-xs mt-1">{{ error }}</p>
+      {% endfor %}
+    {% endif %}
+  </div>
+{% endmacro %}
+
+{% macro mostrar_flashes() %}
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="mb-4 px-4 py-3 rounded {% if category == 'danger' %}bg-red-500{% elif category == 'success' %}bg-green-500{% else %}bg-blue-500{% endif %} text-white font-semibold text-center">
+          {{ message }}
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+{% endmacro %}

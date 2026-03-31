@@ -1,0 +1,14 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom styles */
+@layer components {
+  .login-input {
+    @apply w-full px-4 py-3 bg-gray-600 text-white rounded border border-gray-500 focus:outline-none focus:border-yellow-500 placeholder-gray-400 transition;
+  }
+
+  .login-btn {
+    @apply w-full py-3 bg-yellow-600 hover:bg-yellow-700 text-gray-900 font-semibold rounded transition duration-200;
+  }
+}

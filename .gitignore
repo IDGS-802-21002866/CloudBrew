@@ -1,8 +1,44 @@
-/evn
-/venv
+# Entornos virtuales
+/env
+venv/
+ENV/
+
+# Dependencias
 /node_modules
+package-lock.json
+
+# Python
 __pycache__/
 *.py[cod]
-/.vscode
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+.pytest_cache/
 
+# IDE
+/.vscode
+.idea/
+*.swp
+*.swo
+
+# Configuración
+.env
+.env.local
+
+# Logs
 *.log
+
+# Base de datos
+*.sqlite
+*.sqlite3
+*.db
+
+# Archivos compilados/generados
+app/static/dist/
+
+# Sistema
+.DS_Store
+Thumbs.db
