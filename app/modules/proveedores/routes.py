@@ -35,18 +35,18 @@ def listado():
         "start": (pag.page - 1) * pag.per_page + 1 if pag.total > 0 else 0,
         "end": min(pag.page * pag.per_page, pag.total)
     }
-    return render_template("list.html",proveedores=proveedores,pagination=pagination)
+    return render_template("lista_proveedor.html",proveedores=proveedores,pagination=pagination)
 
 @bp.route("/proveedores/agregar", methods=["GET", "POST"])
 def agregar_proveedor():
     form=app.modules.proveedores.form.ProveedorForm()
-    return render_template("insert.html",form=form)
+    return render_template("insertar_proveedor.html",form=form)
 @bp.route("/proveedores/detalles", methods=["GET", "POST"])
 def detalles_proveedor():
     id = request.args.get("id", type=int)
     prov = Proveedor.query.get(id)
     form =app.modules.proveedores.form.ProveedorForm(obj=prov)
-    return render_template("details.html", proveedor=prov,form=form)
+    return render_template("detalle_proveedor.html", proveedor=prov,form=form)
 
 @bp.route("/proveedores/eliminar", methods=["POST"])
 def eliminar_proveedor():
@@ -62,20 +62,26 @@ def eliminar_proveedor():
 def modificar_proveedor():
     data = request.form
     id = request.args.get("id", type=int)
-    proveedor = service.modificar_proveedor(id, data)
-    if proveedor:
-        flash("Proveedor actualizado correctamente", "success")
+    if form.validate():
+        proveedor = service.modificar_proveedor(id, data)
+        if proveedor:
+            flash("Proveedor actualizado correctamente", "success")
+        else:
+            flash("Proveedor no encontrado", "warning")
     else:
-        flash("Proveedor no encontrado", "warning")
+        flash("Verifique los datos ingresados", "danger")
     return redirect(url_for("proveedores.listado"))
 
 @bp.route("/proveedores/insertar", methods=["POST"])
 def insertar_proveedor():
-    print("Datos recibidos:", request.form)
-    try:
-        data = request.form
-        service.agregar_proveedor(data)
-        flash("Proveedor agregado correctamente", "success")
-    except Exception as e:
-        flash(f"Error al agregar proveedor: {str(e)}", "danger")
+    form=request.form
+    if form.validate():
+        try:
+            data = form
+            service.agregar_proveedor(data)
+            flash("Proveedor agregado correctamente", "success")
+        except Exception as e:
+            flash(f"Error al agregar proveedor: {str(e)}", "danger")
+    else:
+        flash("Verifique los datos ingresados", "danger")
     return redirect(url_for("proveedores.listado"))

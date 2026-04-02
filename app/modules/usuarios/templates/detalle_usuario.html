@@ -1,0 +1,73 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<div class="header-content">
+  <div class="rectangle"></div>
+  <div class="label-10">Detalle del Usuario</div>
+</div>
+
+<form method="POST" action="{{ url_for('usuarios.modificar', id=usuario.id) }}">
+  {{ form.hidden_tag() }}
+
+  <div class="input-field">
+    <div class="text-wrapper">Nombre:</div>
+    {{ form.nombre(class="input") }}
+    {% for error in form.nombre.errors %}
+      <span class="error">{{ error }}</span>
+    {% endfor %}
+  </div>
+
+  <div class="div">
+    <div class="text-wrapper">Email:</div>
+    {{ form.email(class="input") }}
+    {% for error in form.email.errors %}
+      <span class="error">{{ error }}</span>
+    {% endfor %}
+  </div>
+
+  <!-- Password -->
+  <div class="input-field-2">
+    <div class="text-wrapper">Password:</div>
+    {{ form.password(class="input") }}
+    {% for error in form.password.errors %}
+      <span class="error">{{ error }}</span>
+    {% endfor %}
+  </div>
+
+  <div class="input-field-3">
+    <div class="text-wrapper">Confirmar Password:</div>
+    {{ form.confirm_password(class="input") }}
+    {% for error in form.confirm_password.errors %}
+      <span class="error">{{ error }}</span>
+    {% endfor %}
+  </div>
+
+  <div class="input-field-4">
+    <div class="text-wrapper">Rol:</div>
+    {{ form.rol(class="input") }}
+    {% for error in form.rol.errors %}
+      <span class="error">{{ error }}</span>
+    {% endfor %}
+  </div>
+
+  <div style="margin-top:20px;">
+    <button type="submit" class="button">Guardar cambios</button>
+  </div>
+
+</form>
+
+<div style="margin-top:20px;">
+  <form method="POST" action="{{ url_for('usuarios.eliminar', id=usuario.id) }}">
+    {{ form.hidden_tag() }}
+    <button type="submit" class="button">
+      Eliminar
+    </button>
+  </form>
+</div>
+
+<a href="{{ url_for('usuarios.index') }}" class="button-3">
+  Regresar
+</a>
+
+{% endblock %}
