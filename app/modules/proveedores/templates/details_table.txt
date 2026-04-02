@@ -1,0 +1,10 @@
+<div class="table-body">
+        {% for item in proveedor.insumos %}
+        <div class="row">
+          <div class="fila-4"><div class="label-6">{{ item.nombre }}</div></div>
+          <div class="fila-5"><div class="label-7">{{ item.presentacion }}</div></div>
+          <div class="fila-6"><div class="label-8">{{ item.equivalencia }}</div></div>
+          <div class="fila-7"><div class="label-9">{{ item.precio }}</div></div>
+        </div>
+        {% endfor %}
+      </div>

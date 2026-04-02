@@ -1,5 +1,79 @@
 {% extends "layout.html" %}
-{% block container %}
+{% block content %}
 {% import "_macros.html" as macros %}
+
+<div class="insertar-proveedor">
+
+  <header class="header">
+    <img class="vector" src="{{ url_for('static', filename='img/vector.svg') }}" />
+    <img class="PROFILE" src="{{ url_for('static', filename='img/PROFILE.svg') }}" />
+  </header>
+
+  <div class="page-title">
+    <div class="label">Agregar Proveedor</div>
+  </div>
+
+  <div class="content">
+
+    <form method="POST" action="{{ url_for('proveedores.insertar_proveedor') }}">
+      {{ form.hidden_tag() }}
+
+      <div class="body-content">
+
+        <div class="input-field">
+          <label class="text-wrapper">Nombre:</label>
+          {{ form.nombre(class="input") }}
+          {% for error in form.nombre.errors %}
+            <span class="error">{{ error }}</span>
+          {% endfor %}
+        </div>
+        <div class="input-field-2">
+          <label class="text-wrapper">Teléfono:</label>
+          {{ form.telefono(class="input") }}
+          {% for error in form.telefono.errors %}
+            <span class="error">{{ error }}</span>
+          {% endfor %}
+        </div>
+
+        <div class="input-field-3">
+          <label class="text-wrapper">Email:</label>
+          {{ form.email(class="input") }}
+          {% for error in form.email.errors %}
+            <span class="error">{{ error }}</span>
+          {% endfor %}
+        </div>
+
+        <div class="input-field-4">
+          <label class="text-wrapper">Dirección:</label>
+          {{ form.direccion(class="input") }}
+          {% for error in form.direccion.errors %}
+            <span class="error">{{ error }}</span>
+          {% endfor %}
+        </div>
+
+        <button type="submit" class="button-5">
+          Guardar proveedor
+        </button>
+
+      </div>
+
+    </form>
+
+    <div class="header-content">
+      <div class="rectangle"></div>
+      <div class="label-6">Nuevo Proveedor</div>
+      <img class="info" src="{{ url_for('static', filename='img/info.svg') }}" />
+    </div>
+
+    <!-- Regresar -->
+    <a href="{{ url_for('proveedores.listado') }}" class="button-3">
+      Regresar
+    </a>
+
+  </div>
+
+  <img class="img" src="{{ url_for('static', filename='img/rectangle-80.svg') }}" />
+
+</div>
 
 {% endblock %}

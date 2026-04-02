@@ -1,5 +1,95 @@
 {% extends "layout.html" %}
-{% block container %}
+{% block content %}
 {% import "_macros.html" as macros %}
+
+<div class="detalle-del">
+  
+  <header class="header">
+    <img class="vector" src="{{ url_for('static', filename='img/vector.svg') }}" />
+    <img class="PROFILE" src="{{ url_for('static', filename='img/PROFILE.svg') }}" />
+  </header>
+
+  <div class="page-title">
+    <a href="{{ url_for('proveedores.listado') }}">
+      <img class="chevron-left" src="{{ url_for('static', filename='img/chevron-left.svg') }}" />
+    </a>
+    <div class="label">Detalle del Proveedor</div>
+  </div>
+
+  <div class="content">
+    <div class="body-content">
+
+      <!-- FORM -->
+      <form method="POST" action="{{ url_for('proveedores.modificar_proveedor', id=proveedor.id_proveedor) }}">
+        {{ form.hidden_tag() }}
+
+        <!-- Nombre -->
+        <div class="input-field">
+          <div class="text-wrapper">Nombre:</div>
+          {{ form.nombre(class="input") }}
+          {% for error in form.nombre.errors %}
+            <span class="error">{{ error }}</span>
+          {% endfor %}
+        </div>
+
+        <!-- Dirección -->
+        <div class="div">
+          <div class="text-wrapper">Dirección:</div>
+          {{ form.direccion(class="input") }}
+          {% for error in form.direccion.errors %}
+            <span class="error">{{ error }}</span>
+          {% endfor %}
+        </div>
+
+        <!-- Teléfono -->
+        <div class="input-field-2">
+          <div class="text-wrapper">Teléfono:</div>
+          {{ form.telefono(class="input") }}
+          {% for error in form.telefono.errors %}
+            <span class="error">{{ error }}</span>
+          {% endfor %}
+        </div>
+
+        <!-- Email -->
+        <div class="input-field-3">
+          <div class="text-wrapper">Email:</div>
+          {{ form.email(class="input") }}
+          {% for error in form.email.errors %}
+            <span class="error">{{ error }}</span>
+          {% endfor %}
+        </div>
+
+        <!-- Botón modificar -->
+        <div style="margin-top:20px;">
+          <button type="submit" class="button">Guardar cambios</button>
+        </div>
+
+      </form>
+
+      <!-- Eliminar -->
+      <div style="margin-top:20px;">
+        <form method="POST" action="{{ url_for('proveedores.eliminar_proveedor', id=proveedor.id_proveedor) }}">
+          {{ form.hidden_tag() }}
+          <button type="submit" class="button">Eliminar</button>
+        </form>
+      </div>
+
+    </div>
+
+    <div class="header-content">
+      <div class="rectangle"></div>
+      <div class="label-10">Detalle del Proveedor</div>
+      <img class="info" src="{{ url_for('static', filename='img/info.svg') }}" />
+    </div>
+
+    <a href="{{ url_for('proveedores.listado') }}" class="button-3">
+      Regresar
+    </a>
+
+  </div>
+
+  <img class="img" src="{{ url_for('static', filename='img/rectangle-80.svg') }}" />
+
+</div>
 
 {% endblock %}

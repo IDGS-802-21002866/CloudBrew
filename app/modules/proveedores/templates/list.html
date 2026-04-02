@@ -1,5 +1,100 @@
 {% extends "layout.html" %}
-{% block container %}
+{% block content %}
 {% import "_macros.html" as macros %}
+
+<div class="proveedores">
+
+  <header class="header"></header>
+
+  <div class="page-title">
+    <div class="label">Listado de Proveedores</div>
+  </div>
+
+  <div class="content">
+
+    <div class="tabla">
+      <div class="tabla">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Teléfono</th>
+            <th>Email</th>
+            <th>Dirección</th>
+            <th>Detalles</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {% for proveedor in proveedores %}
+          <tr>
+            <td>{{ proveedor.id_proveedor }}</td>
+            <td>{{ proveedor.nombre }}</td>
+            <td>{{ proveedor.telefono or '-' }}</td>
+            <td>{{ proveedor.email or '-' }}</td>
+            <td>{{ proveedor.direccion or '-' }}</td>
+            <td>
+              <a href="{{ url_for('proveedores.detalles_proveedor', id=proveedor.id_proveedor) }}">
+                Ver
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+    </div>
+
+      <div class="table-footer">
+
+        <div class="paginacion">
+          <p class="text-wrapper">
+            Mostrando {{ pagination.start }} a {{ pagination.end }} de {{ pagination.total }} entradas
+          </p>
+        </div>
+
+        <div class="pagination">
+
+          {% if pagination.has_prev %}
+          <a href="{{ url_for('proveedores.listado', page=pagination.prev_num) }}" class="pagination-previous">
+            <div>Previous</div>
+          </a>
+          {% endif %}
+
+          <div class="pagination-list">
+            {% for p in pagination.pages %}
+              <a href="{{ url_for('proveedores.listado', page=p) }}"
+                 class="pagination-page {{ 'active' if p == pagination.page else '' }}">
+                <div class="text-wrapper-2">{{ p }}</div>
+              </a>
+            {% endfor %}
+          </div>
+
+          {% if pagination.has_next %}
+          <a href="{{ url_for('proveedores.listado', page=pagination.next_num) }}" class="pagination-next">
+            <div>Next</div>
+          </a>
+          {% endif %}
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- BUSCADOR -->
+    <div class="busqueda">
+      <form method="GET" action="{{ url_for('proveedores.listado') }}">
+        <input type="text" name="q" placeholder="Buscar..." value="{{ request.args.get('q', '') }}">
+      </form>
+    </div>
+
+    <!-- FILTRO -->
+    <div class="filtro"></div>
+
+  </div>
+
+</div>
 
 {% endblock %}
