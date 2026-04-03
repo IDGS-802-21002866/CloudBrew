@@ -1,4 +1,4 @@
-{% extends "layout.html" %}
+{% extends "base.html" %}
 {% block content %}
 {% import "_macros.html" as macros %}
 
@@ -12,6 +12,13 @@
 
   <div class="content">
 
+    <div class="busqueda">
+      <form method="GET" action="{{ url_for('proveedores.listado') }}">
+        <input type="text" name="querry" placeholder="Buscar..." value="{{ request.args.get('q', '') }}">
+        <button type="submit">Buscar</button>
+      </form>
+      <a href="{{ url_for('proveedores.crear') }}" class="btn btn-primary">Agregar Proveedor</a>
+    </div>
     <div class="tabla">
       <div class="tabla">
       <table class="table">
@@ -36,7 +43,7 @@
             <td>{{ proveedor.direccion or '-' }}</td>
             <td>
               <a href="{{ url_for('proveedores.detalles_proveedor', id=proveedor.id_proveedor) }}">
-                Ver
+                Ver Detalles
               </a>
             </td>
           </tr>
@@ -45,9 +52,7 @@
       </table>
 
     </div>
-
       <div class="table-footer">
-
         <div class="paginacion">
           <p class="text-wrapper">
             Mostrando {{ pagination.start }} a {{ pagination.end }} de {{ pagination.total }} entradas
@@ -76,20 +81,12 @@
             <div>Next</div>
           </a>
           {% endif %}
-
         </div>
-
       </div>
-
     </div>
 
     <!-- BUSCADOR -->
-    <div class="busqueda">
-      <form method="GET" action="{{ url_for('proveedores.listado') }}">
-        <input type="text" name="querry" placeholder="Buscar..." value="{{ request.args.get('q', '') }}">
-      </form>
-    </div>
-
+    
     <!-- FILTRO -->
     <div class="filtro"></div>
 

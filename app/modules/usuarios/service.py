@@ -9,8 +9,15 @@ from app.modules.usuarios.repository import (
 )
 class UsuarioService:
 
-    def obtener_usuarios(self):
-        return get_usuarios()
+    def obtener_usuarios(self, pagina=1, por_pagina=5, querry=""):
+        pag = get_usuarios(pagina, por_pagina)
+        if querry:
+            filtrados = [
+                usuario for usuario in pag.items
+                if querry.lower() in (usuario.nombre or "").lower()
+            ]
+            pag.items = filtrados
+        return pag
 
     def obtener_usuario_por_email(self, email):
         return getUsuarioByEmail(email)

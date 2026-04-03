@@ -12,9 +12,11 @@ def proveedor_by_id(id_proveedor):
 def obtener_proveedores(pagina=1, por_pagina=5):
     if pagina < 1 or por_pagina < 1:
         raise ValueError("Los parámetros 'pagina' y 'por_pagina' deben ser mayores a 0")
-
-    return Proveedor.query.filter_by(activo=True)\
+    proveedores = Proveedor.query.filter_by(activo=True)\
         .paginate(page=pagina, per_page=por_pagina, error_out=False)
+    if not proveedores:
+        raise ValueError("No hay proveedores activos registrados")
+    return proveedores
 
 
 def agregar_proveedor(data):
