@@ -1,0 +1,75 @@
+{% extends 'layout.html' %}
+{% from '_macros.html' import mostrar_flashes %}
+
+{% block content %}
+<div class="flex flex-col min-h-screen">
+  <!-- Navbar -->
+  <nav class="bg-brew-bg text-brew-beige shadow-lg px-6 py-4 flex items-center justify-between relative">
+    <div class="flex items-center gap-3">
+      <button id="btn-menu" type="button" class="text-xl hover:text-white transition" aria-label="Abrir menu">
+        <i class="fas fa-bars"></i>
+      </button>
+    </div>
+    <div class="absolute left-1/2 -translate-x-1/2">
+      <img src="{{ url_for('static', filename='img/logo-solo.png') }}" alt="CloudBrew" class="h-7 w-auto">
+    </div>
+    
+    <!-- User Menu -->
+    <div class="flex items-center gap-4">
+      <a href="{{ url_for('auth.logout') }}" class="text-2xl hover:text-white transition">
+        <i class="fas fa-user-circle"></i>
+      </a>
+    </div>
+  </nav>
+
+  <div id="overlay-menu" class="fixed inset-0 bg-black/40 z-30 hidden"></div>
+
+  <!-- Content Wrapper -->
+  <div class="flex flex-1">
+    <!-- Sidebar -->
+    <aside id="menu-lateral" class="fixed top-0 left-0 h-screen w-64 bg-brew-dark text-brew-beige shadow-lg overflow-y-auto z-40 transform -translate-x-full transition-transform duration-300">
+      <div class="p-4 space-y-2">
+        <div class="flex items-center justify-between mb-4">
+          <p class="text-sm uppercase tracking-wider opacity-70">Menu</p>
+          <button id="btn-cerrar-menu" type="button" class="text-lg hover:text-white transition" aria-label="Cerrar menu">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <nav class="space-y-1">
+          <a href="{{ url_for('main.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-brew-bg transition">
+            <i class="fas fa-home w-5 flex-shrink-0"></i>
+            <span class="truncate">Inicio</span>
+          </a>
+          
+          <a href="{{ url_for('main.dashboard') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-brew-bg transition">
+            <i class="fas fa-chart-bar w-5 flex-shrink-0"></i>
+            <span class="truncate">Dashboard</span>
+          </a>
+          
+          <div class="pt-2 border-t border-brew-bg">
+            <p class="text-xs uppercase tracking-wider text-brew-beige opacity-50 px-4 py-2">Módulos</p>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-brew-bg transition">
+              <i class="fas fa-beer w-5 flex-shrink-0"></i>
+              <span class="truncate">Mermas</span>
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-brew-bg transition">
+              <i class="fas fa-users w-5 flex-shrink-0"></i>
+              <span class="truncate">Usuarios</span>
+            </a>
+          </div>
+        </nav>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 bg-gray-50 overflow-y-auto">
+      <div class="p-6 max-w-full">
+        {{ mostrar_flashes() }}
+        {% block content %}
+        {% endblock %}
+      </div>
+    </main>
+  </div>
+</div>
+<script src="{{ url_for('static', filename='js/menu_lateral.js') }}"></script>
+{% endblock %}
