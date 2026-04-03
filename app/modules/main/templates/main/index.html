@@ -1,25 +1,89 @@
-{% extends 'layout.html' %}
+{% extends 'base.html' %}
 
 {% block content %}
-<div class="min-h-screen bg-white p-8">
-  <div class="max-w-4xl mx-auto">
-    <h1 class="text-4xl font-bold mb-6">Bienvenido a CloudBrew</h1>
+<div class="space-y-6">
+  <!-- Welcome Card -->
+  <div class="bg-gradient-to-r from-brew-bg to-brew-dark rounded-lg shadow-lg p-8 text-brew-beige">
+    <div class="max-w-2xl">
+      <h1 class="text-4xl font-bold mb-2">¡Bienvenido a CloudBrew!</h1>
+      <p class="text-brew-beige text-opacity-80">
+        Has iniciado sesión exitosamente. Usa el menú lateral para acceder a los diferentes módulos de la aplicación.
+      </p>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <a href="{{ url_for('main.dashboard') }}" class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition border-l-4 border-brew-beige">
+      <div class="flex items-start justify-between">
+        <div>
+          <h3 class="font-semibold text-gray-800 mb-1">Mermas</h3>
+          <p class="text-sm text-gray-600">Ver y gestionar mermas</p>
+        </div>
+        <i class="fas fa-arrow-right text-brew-beige text-2xl"></i>
+      </div>
+    </a>
+
+    <a href="#" class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition border-l-4 border-brew-beige">
+      <div class="flex items-start justify-between">
+        <div>
+          <h3 class="font-semibold text-gray-800 mb-1">Usuarios</h3>
+          <p class="text-sm text-gray-600">Administrar usuarios</p>
+        </div>
+        <i class="fas fa-arrow-right text-brew-beige text-2xl"></i>
+      </div>
+    </a>
+
+    <a href="#" class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition border-l-4 border-brew-beige">
+      <div class="flex items-start justify-between">
+        <div>
+          <h3 class="font-semibold text-gray-800 mb-1">Reportes</h3>
+          <p class="text-sm text-gray-600">Ver reportes y análisis</p>
+        </div>
+        <i class="fas fa-arrow-right text-brew-beige text-2xl"></i>
+      </div>
+    </a>
+  </div>
+
+  <!-- Stats -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="bg-white rounded-lg shadow p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-gray-600 text-sm">Total Mermas</p>
+          <p class="text-3xl font-bold text-brew-dark mt-1">300</p>
+        </div>
+        <i class="fas fa-chart-line text-4xl text-brew-beige opacity-20"></i>
+      </div>
+    </div>
     
-    <div class="bg-gray-100 rounded-lg p-8">
-      <p class="text-lg text-gray-700 mb-4">
-        ¡Has iniciado sesión exitosamente!
-      </p>
-      <p class="text-gray-600 mb-6">
-        Este es un modulo temporal para probar el login.
-      </p>
-      
-      <div class="space-y-4">
-        <a href="{{ url_for('main.dashboard') }}" class="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-          Ir al Dashboard
-        </a>
-        <a href="{{ url_for('auth.logout') }}" class="inline-block px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition ml-4">
-          Cerrar Sesión
-        </a>
+    <div class="bg-white rounded-lg shadow p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-gray-600 text-sm">Este Mes</p>
+          <p class="text-3xl font-bold text-brew-dark mt-1">45</p>
+        </div>
+        <i class="fas fa-calendar text-4xl text-brew-beige opacity-20"></i>
+      </div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-gray-600 text-sm">Usuarios Activos</p>
+          <p class="text-3xl font-bold text-brew-dark mt-1">12</p>
+        </div>
+        <i class="fas fa-users text-4xl text-brew-beige opacity-20"></i>
+      </div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-gray-600 text-sm">Lotes Activos</p>
+          <p class="text-3xl font-bold text-brew-dark mt-1">28</p>
+        </div>
+        <i class="fas fa-boxes text-4xl text-brew-beige opacity-20"></i>
       </div>
     </div>
   </div>
