@@ -7,7 +7,7 @@ from app.modules.usuarios.repository import (
     eliminar_usuario,
     get_usuarios
 )
-class Service:
+class UsuarioService:
 
     def obtener_usuarios(self):
         return get_usuarios()

@@ -1,46 +1,30 @@
-from app import db
-from app.modules.proveedores.model import Proveedor
-class Service:
-    def obtener_proveedores(pagina=1, por_pagina=5):
-        return Proveedor.query.filter_by(activo=True)\
-            .paginate(page=pagina, per_page=por_pagina, error_out=False)
+from . import repository
 
+class ProveedorService:
+    @staticmethod
+    def proveedor_by_id(id_proveedor):
+        return repository.proveedor_by_id(id_proveedor)
+
+    @staticmethod
+    def obtener_proveedores(pagina=1, por_pagina=5, querry=""):
+        proveedores = repository.obtener_proveedores(pagina, por_pagina)
+        if querry:
+            proveedores = [
+                proveedor for proveedor in proveedores.items
+                if querry.lower() in (proveedor.nombre or "").lower()
+            ]
+            return proveedores
+
+        return proveedores
+
+    @staticmethod
     def agregar_proveedor(data):
-        nuevo_proveedor = Proveedor(
-            nombre=data.get("nombre"),
-            telefono=data.get("telefono"),
-            email=data.get("email"),
-            direccion=data.get("direccion"),
-            activo=True
-        )
+        return repository.agregar_proveedor(data)
 
-        db.session.add(nuevo_proveedor)
-        db.session.commit()
-
-        return nuevo_proveedor
-    
+    @staticmethod
     def modificar_proveedor(id_proveedor, data):
-        proveedor = Proveedor.query.get(id_proveedor)
+        return repository.modificar_proveedor(id_proveedor, data)
 
-        if not proveedor or not proveedor.activo:
-            return None
-
-        proveedor.nombre = data.get("nombre", proveedor.nombre)
-        proveedor.telefono = data.get("telefono", proveedor.telefono)
-        proveedor.email = data.get("email", proveedor.email)
-        proveedor.direccion = data.get("direccion", proveedor.direccion)
-
-        db.session.commit()
-
-        return proveedor
-
+    @staticmethod
     def eliminar_proveedor(id_proveedor):
-        proveedor = Proveedor.query.get(id_proveedor)
-
-        if not proveedor or not proveedor.activo:
-            return None
-
-        proveedor.activo = False
-        db.session.commit()
-
-        return proveedor
+        return repository.eliminar_proveedor(id_proveedor)

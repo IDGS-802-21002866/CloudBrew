@@ -9,7 +9,7 @@ import app.modules.usuarios.form
 import app.modules.usuarios.service as service
 from . import bp
 
-service=service.Service();
+service=service.UsuarioService();
 
 @bp.route("/usuarios")
 def index():    
