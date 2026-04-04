@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import mostrar_flashes %}
+
+{% block title %}Unidades de Medida{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+  {{ mostrar_flashes() }}
+
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-3xl font-bold text-gray-800">Unidades de Medida</h1>
+    <a href="{{ url_for('unidades_medida.crear') }}" class="bg-[#4A9062] hover:bg-[#3A7A52] text-white font-bold py-2 px-4 rounded">
+      Crear Nueva Unidad
+    </a>
+  </div>
+
+  <div class="bg-white shadow-md rounded-lg overflow-hidden">
+    <table class="min-w-full table-auto">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Abreviatura</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+        </tr>
+      </thead>
+      <tbody class="bg-white divide-y divide-gray-200">
+        {% for unidad in unidades %}
+        <tr>
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ unidad.nombre }}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ unidad.abreviatura }}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+            <a href="{{ url_for('unidades_medida.detalle', id=unidad.id) }}" class="text-white font-bold py-1 px-3 rounded" style="background-color: #6C9AD0;">Ver Detalle</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

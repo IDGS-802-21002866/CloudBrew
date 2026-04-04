@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% from '_macros.html' import campo_nuevo %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto py-8 px-4">
+    <a href="{{ url_for('unidades_medida.listar') }}" class="flex items-center text-2xl font-bold mb-6 hover:text-gray-600 transition">
+        <i class="fa-solid fa-chevron-left mr-3"></i> 
+        {{ 'Editar' if unidad else 'Insertar' }} Unidad de Medida
+    </a>
+
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
+        <div class="bg-gray-100 px-6 py-4 border-b border-gray-200 flex items-center">
+            <i class="fa-solid fa-circle-info text-gray-500 mr-3"></i>
+            <span class="font-bold text-gray-700">Información de la Unidad</span>
+        </div>
+
+        <form method="POST" class="p-8">
+            {{ form.hidden_tag() }}
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                {{ campo_nuevo(form.nombre) }}
+                {{ campo_nuevo(form.abreviatura) }}
+                {{ campo_nuevo(form.tipo) }}
+                {{ campo_nuevo(form.es_base) }}
+            </div>
+
+            <div id="seccion-conversion" class="mt-6 pt-6 border-t border-dashed border-gray-300 {% if form.es_base.data %}hidden{% endif %}">
+                <h3 class="font-bold text-gray-700 mb-4 italic">Configuración de Conversión</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8">
+                    {{ campo_nuevo(form.unidad_base) }}
+                    {{ campo_nuevo(form.valor_conversion) }}
+                </div>
+            </div>
+
+            <div class="mt-8 flex justify-end space-x-4">
+                <button type="submit" class="px-8 py-2 bg-[#4A9062] text-white font-bold rounded-lg hover:opacity-90 transition shadow-md">
+                    {{ 'Actualizar' if unidad else 'Insertar' }}
+                </button>
+            </div>
+        </form>
+    </div>
+    
+    <div class="mt-8 flex justify-center">
+        <a href="{{ url_for('unidades_medida.listar') }}" class="px-10 py-2 bg-gray-500 text-white rounded-lg font-bold shadow-md hover:bg-gray-600 transition">
+            Regresar
+        </a>
+    </div>
+</div>
+
+<script>
+    const checkBase = document.getElementById('es_base');
+    const seccion = document.getElementById('seccion-conversion');
+    const selectTipo = document.getElementById('tipo');
+    const selectBase = document.getElementById('unidad_base');
+
+    checkBase.addEventListener('change', function() {
+        if(this.checked) {
+            seccion.classList.add('hidden');
+        } else {
+            seccion.classList.remove('hidden');
+        }
+    });
+
+    selectTipo.addEventListener('change', async function() {
+        const tipoSeleccionado = this.value;
+        
+        try {
+            const response = await fetch(`/unidades_medida/api/unidades_base/${tipoSeleccionado}`);
+            const data = await response.json();
+
+            selectBase.innerHTML = '<option value="0">--- Selecciona Base ---</option>';
+
+            data.forEach(unidad => {
+                const option = document.createElement('option');
+                option.value = unidad[0];
+                option.text = unidad[1];
+                selectBase.appendChild(option);
+            });
+        } catch (error) {
+            console.error("Error al filtrar unidades:", error);
+        }
+    });
+</script>
+{% endblock %}
