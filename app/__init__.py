@@ -3,6 +3,7 @@ from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 from flask_login import LoginManager
+from werkzeug import security
 
 from app.core.config import DevelopmentConfig
 
@@ -23,12 +24,14 @@ def create_app():
     from app.modules.main import bp as main_bp
     from app.modules.proveedores import bp as proveedores_bp
     from app.modules.usuarios import bp as usuarios_bp
+    from app.modules.usuarios.model import Rol, Usuario
 
     app = Flask(__name__)
-    app.config.from_object(DevelopmentConfig)    
+    app.config.from_object(DevelopmentConfig)
     db.init_app(app)
     migrate.init_app(app, db)
     from app import modules
+
     login_manager.init_app(app)
     login_manager.login_view = "auth.login"
 
@@ -36,15 +39,15 @@ def create_app():
     def load_user(user_id):
         from app.modules.usuarios.repository import getUsuarioById
 
-        return getUsuarioById(int(user_id))
+        usuario = getUsuarioById(int(user_id))
+        # Solo retornar usuario si está activo
+        if usuario and usuario.activo:
+            return usuario
+        return None
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
     app.register_blueprint(proveedores_bp)
     app.register_blueprint(usuarios_bp)
-
-    #aparentemente entorpece el funcionamiento de flask-migrate, así que lo comento por ahora
-    #with app.app_context():
-    #    db.create_all()
 
     return app
