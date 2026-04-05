@@ -2,72 +2,104 @@
 
 {% block content %}
 
-<div class="header-content">
-  <div class="rectangle"></div>
-  <div class="label-10">Detalle del Usuario</div>
-</div>
+<!-- Panel central: sin color oscuro, solo un borde gris claro -->
+<div class="max-w-3xl mx-auto mt-10 bg-white border border-gray-200 rounded-2xl p-8 shadow-sm">
 
-<form method="POST" action="{{ url_for('usuarios.modificar', id=usuario.id) }}">
-  {{ form.hidden_tag() }}
-
-  <div class="input-field">
-    <div class="text-wrapper">Nombre:</div>
-    {{ form.nombre(class="input") }}
-    {% for error in form.nombre.errors %}
-      <span class="error">{{ error }}</span>
-    {% endfor %}
+  <!-- Header -->
+  <div class="mb-6">
+    <h2 class="text-2xl font-bold text-gray-800">
+      Detalle del Usuario
+    </h2>
+    <p class="text-sm text-gray-500"></p>
   </div>
 
-  <div class="div">
-    <div class="text-wrapper">Email:</div>
-    {{ form.email(class="input") }}
-    {% for error in form.email.errors %}
-      <span class="error">{{ error }}</span>
-    {% endfor %}
-  </div>
-
-  <!-- Password -->
-  <div class="input-field-2">
-    <div class="text-wrapper">Password:</div>
-    {{ form.password(class="input") }}
-    {% for error in form.password.errors %}
-      <span class="error">{{ error }}</span>
-    {% endfor %}
-  </div>
-
-  <div class="input-field-3">
-    <div class="text-wrapper">Confirmar Password:</div>
-    {{ form.confirm_password(class="input") }}
-    {% for error in form.confirm_password.errors %}
-      <span class="error">{{ error }}</span>
-    {% endfor %}
-  </div>
-
-  <div class="input-field-4">
-    <div class="text-wrapper">Rol:</div>
-    {{ form.rol(class="input") }}
-    {% for error in form.rol.errors %}
-      <span class="error">{{ error }}</span>
-    {% endfor %}
-  </div>
-
-  <div style="margin-top:20px;">
-    <button type="submit" class="button">Guardar cambios</button>
-  </div>
-
-</form>
-
-<div style="margin-top:20px;">
-  <form method="POST" action="{{ url_for('usuarios.eliminar', id=usuario.id) }}">
+  <!-- Formulario principal -->
+  <form method="POST" action="{{ url_for('usuarios.modificar', id=usuario.id) }}" class="space-y-5">
     {{ form.hidden_tag() }}
-    <button type="submit" class="button">
-      Eliminar
-    </button>
-  </form>
-</div>
 
-<a href="{{ url_for('usuarios.index') }}" class="button-3">
-  Regresar
-</a>
+    <!-- Nombre -->
+    <div>
+      <label class="block mb-2 text-sm font-medium text-gray-700">
+        Nombre
+      </label>
+      {{ form.nombre(class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5") }}
+      {% for error in form.nombre.errors %}
+        <p class="text-sm text-red-500 mt-1">{{ error }}</p>
+      {% endfor %}
+    </div>
+
+    <!-- Email -->
+    <div>
+      <label class="block mb-2 text-sm font-medium text-gray-700">
+        Email
+      </label>
+      {{ form.email(class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5") }}
+      {% for error in form.email.errors %}
+        <p class="text-sm text-red-500 mt-1">{{ error }}</p>
+      {% endfor %}
+    </div>
+
+    <!-- Password -->
+    <div>
+      <label class="block mb-2 text-sm font-medium text-gray-700">
+        Password
+      </label>
+      {{ form.password(class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5") }}
+      {% for error in form.password.errors %}
+        <p class="text-sm text-red-500 mt-1">{{ error }}</p>
+      {% endfor %}
+    </div>
+
+    <!-- Confirm Password -->
+    <div>
+      <label class="block mb-2 text-sm font-medium text-gray-700">
+        Confirmar Password
+      </label>
+      {{ form.confirm_password(class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5") }}
+      {% for error in form.confirm_password.errors %}
+        <p class="text-sm text-red-500 mt-1">{{ error }}</p>
+      {% endfor %}
+    </div>
+
+    <!-- Rol -->
+    <div>
+      <label class="block mb-2 text-sm font-medium text-gray-700">
+        Rol
+      </label>
+      {{ form.rol(class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5") }}
+      {% for error in form.rol.errors %}
+        <p class="text-sm text-red-500 mt-1">{{ error }}</p>
+      {% endfor %}
+    </div>
+
+    <!-- Botones -->
+    <div class="flex justify-between items-center pt-4">
+      <!-- Guardar -->
+      <button type="submit"
+        class="text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5">
+        Guardar cambios
+      </button>
+
+      <!-- Eliminar -->
+      <form method="POST" action="{{ url_for('usuarios.eliminar', id=usuario.id) }}">
+        {{ form.hidden_tag() }}
+        <button type="submit"
+          class="text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5">
+          Eliminar
+        </button>
+      </form>
+    </div>
+
+  </form>
+
+  <!-- Regresar -->
+  <div class="mt-6 text-right">
+    <a href="{{ url_for('usuarios.index') }}"
+       class="text-gray-600 hover:underline text-sm">
+      ← Regresar
+    </a>
+  </div>
+
+</div>
 
 {% endblock %}

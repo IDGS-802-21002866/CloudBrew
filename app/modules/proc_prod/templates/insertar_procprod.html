@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="max-w-3xl mx-auto mt-10 border border-gray-200 rounded-2xl p-8 shadow-sm">
+
+  <!-- Header -->
+  <div class="mb-6">
+    <h2 class="text-2xl font-bold text-gray-800">
+      Agregar Proceso Productivo
+    </h2>
+    <p class="text-sm text-gray-500">
+      Registra un nuevo proceso en el sistema
+    </p>
+  </div>
+
+  <form action="{{ url_for('proc_prod.insertar') }}" method="POST" class="space-y-5">
+    
+    {{ form.hidden_tag() }}
+
+    <!-- Nombre -->
+    <div>
+      <label class="block mb-2 text-sm font-medium text-gray-700">
+        {{ form.nombre.label }}
+      </label>
+      {{ form.nombre(class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5") }}
+      {% for error in form.nombre.errors %}
+        <p class="text-sm text-red-500 mt-1">{{ error }}</p>
+      {% endfor %}
+    </div>
+
+    <!-- Descripción -->
+    <div>
+      <label class="block mb-2 text-sm font-medium text-gray-700">
+        {{ form.descripcion.label }}
+      </label>
+      {{ form.descripcion(class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5", rows="4") }}
+      {% for error in form.descripcion.errors %}
+        <p class="text-sm text-red-500 mt-1">{{ error }}</p>
+      {% endfor %}
+    </div>
+
+    <!-- Botones -->
+    <div class="flex justify-between items-center pt-4">
+      <!-- Insertar -->
+      <button type="submit"
+        class="flex-1 px-5 py-2.5 text-white bg-green-600 hover:bg-green-700 rounded-lg text-sm font-medium">
+        Insertar
+      </button>
+      <!-- Cancelar -->
+      <a href="{{ url_for('proc_prod.index') }}"
+         class="flex-1 px-5 py-2.5 text-center text-gray-700 bg-gray-200 hover:bg-gray-300 rounded-lg text-sm font-medium">
+        Cancelar
+      </a>
+    </div>
+
+  </form>
+
+</div>
+
+{% endblock %}

@@ -4,7 +4,6 @@ from app.modules.proveedores.model import Proveedor
 
 class ProveedorService:
     def obtener_proveedor(self, id):
-        """Obtiene un proveedor por id"""
         proveedor = repository.get_proveedor_by_id(id)
         if not proveedor:
             raise ValueError(f"No existe un proveedor con id {id}")
@@ -15,8 +14,6 @@ class ProveedorService:
     def listar_proveedores(self, busqueda=""):
         """Lista todos los proveedores activos con filtro de búsqueda opcional"""
         proveedores = repository.get_all_proveedores()
-
-        # Aplicar búsqueda en memoria
         if busqueda:
             proveedores = [
                 p for p in proveedores if busqueda.lower() in (p.nombre or "").lower()
@@ -26,7 +23,6 @@ class ProveedorService:
 
     def crear_proveedor(self, datos):
         """Crea un nuevo proveedor después de validar datos"""
-        # Validaciones de negocio
         if not datos.get("nombre"):
             raise ValueError("El nombre es obligatorio")
 
@@ -34,7 +30,6 @@ class ProveedorService:
         if len(nombre) > 100:
             raise ValueError("El nombre no puede exceder 100 caracteres")
 
-        # Crear instancia
         proveedor = Proveedor(
             nombre=nombre,
             telefono=datos.get("telefono"),
@@ -46,14 +41,12 @@ class ProveedorService:
         return repository.create_proveedor(proveedor)
 
     def actualizar_proveedor(self, id, datos):
-        """Actualiza un proveedor después de validar datos"""
         proveedor = repository.get_proveedor_by_id(id)
         if not proveedor:
             raise ValueError(f"No existe un proveedor con id {id}")
         if not proveedor.activo:
             raise ValueError(f"El proveedor está inactivo")
 
-        # Validar datos
         if not datos.get("nombre"):
             raise ValueError("El nombre es obligatorio")
 

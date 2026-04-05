@@ -2,93 +2,103 @@
 {% block content %}
 {% import "_macros.html" as macros %}
 
-<div class="detalle-del">
-  
-  <header class="header">
-    <img class="vector" src="{{ url_for('static', filename='img/vector.svg') }}" />
-    <img class="PROFILE" src="{{ url_for('static', filename='img/PROFILE.svg') }}" />
-  </header>
+<div class="p-6 max-w-3xl mx-auto">
 
-  <div class="page-title">
-    <a href="{{ url_for('proveedores.listado') }}">
-      <img class="chevron-left" src="{{ url_for('static', filename='img/chevron-left.svg') }}" />
+  <!-- HEADER -->
+  <div class="flex items-center gap-3 mb-6">
+    <a href="{{ url_for('proveedores.listar') }}"
+       class="text-gray-500 hover:text-gray-700 text-xl">
+      ←
     </a>
-    <div class="label">Detalle del Proveedor</div>
+    <h1 class="text-2xl font-semibold text-gray-800">
+      Detalle del Proveedor
+    </h1>
   </div>
 
-  <div class="content">
-    <div class="body-content">
+  <!-- CARD -->
+  <div class="bg-white shadow-md rounded-xl p-6">
 
-      <!-- FORM -->
-      <form method="POST" action="{{ url_for('proveedores.modificar_proveedor', id=proveedor.id_proveedor) }}">
-        {{ form.hidden_tag() }}
+    <!-- FORM -->
+    <form method="POST" action="{{ url_for('proveedores.editar', id=proveedor.id) }}" class="space-y-5">
+      {{ form.hidden_tag() }}
 
-        <!-- Nombre -->
-        <div class="input-field">
-          <div class="text-wrapper">Nombre:</div>
-          {{ form.nombre(class="input") }}
-          {% for error in form.nombre.errors %}
-            <span class="error">{{ error }}</span>
-          {% endfor %}
-        </div>
-
-        <!-- Dirección -->
-        <div class="div">
-          <div class="text-wrapper">Dirección:</div>
-          {{ form.direccion(class="input") }}
-          {% for error in form.direccion.errors %}
-            <span class="error">{{ error }}</span>
-          {% endfor %}
-        </div>
-
-        <!-- Teléfono -->
-        <div class="input-field-2">
-          <div class="text-wrapper">Teléfono:</div>
-          {{ form.telefono(class="input") }}
-          {% for error in form.telefono.errors %}
-            <span class="error">{{ error }}</span>
-          {% endfor %}
-        </div>
-
-        <!-- Email -->
-        <div class="input-field-3">
-          <div class="text-wrapper">Email:</div>
-          {{ form.email(class="input") }}
-          {% for error in form.email.errors %}
-            <span class="error">{{ error }}</span>
-          {% endfor %}
-        </div>
-
-        <!-- Botón modificar -->
-        <div style="margin-top:20px;">
-          <button type="submit" class="button">Guardar cambios</button>
-        </div>
-
-      </form>
-
-      <!-- Eliminar -->
-      <div style="margin-top:20px;">
-        <form method="POST" action="{{ url_for('proveedores.eliminar_proveedor', id=proveedor.id_proveedor) }}">
-          {{ form.hidden_tag() }}
-          <button type="submit" class="button">Eliminar</button>
-        </form>
+      <!-- Nombre -->
+      <div>
+        <label class="block mb-1 text-sm font-medium text-gray-700">
+          Nombre
+        </label>
+        {{ form.nombre(class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500") }}
+        {% for error in form.nombre.errors %}
+          <p class="text-sm text-red-500 mt-1">{{ error }}</p>
+        {% endfor %}
       </div>
 
-    </div>
+      <!-- Dirección -->
+      <div>
+        <label class="block mb-1 text-sm font-medium text-gray-700">
+          Dirección
+        </label>
+        {{ form.direccion(class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500") }}
+        {% for error in form.direccion.errors %}
+          <p class="text-sm text-red-500 mt-1">{{ error }}</p>
+        {% endfor %}
+      </div>
 
-    <div class="header-content">
-      <div class="rectangle"></div>
-      <div class="label-10">Detalle del Proveedor</div>
-      <img class="info" src="{{ url_for('static', filename='img/info.svg') }}" />
-    </div>
+      <!-- Teléfono -->
+      <div>
+        <label class="block mb-1 text-sm font-medium text-gray-700">
+          Teléfono
+        </label>
+        {{ form.telefono(class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500") }}
+        {% for error in form.telefono.errors %}
+          <p class="text-sm text-red-500 mt-1">{{ error }}</p>
+        {% endfor %}
+      </div>
 
-    <a href="{{ url_for('proveedores.listado') }}" class="button-3">
-      Regresar
-    </a>
+      <!-- Email -->
+      <div>
+        <label class="block mb-1 text-sm font-medium text-gray-700">
+          Email
+        </label>
+        {{ form.email(class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500") }}
+        {% for error in form.email.errors %}
+          <p class="text-sm text-red-500 mt-1">{{ error }}</p>
+        {% endfor %}
+      </div>
+
+      <!-- BOTONES -->
+      <div class="flex justify-between items-center pt-4">
+
+        <!-- Guardar -->
+        <button type="submit"
+          class="px-5 py-2.5 text-white bg-blue-600 hover:bg-blue-700 rounded-lg text-sm font-medium">
+          Guardar cambios
+        </button>
+
+      </div>
+    </form>
+
+    <!-- ELIMINAR -->
+    <form method="POST"
+          action="{{ url_for('proveedores.eliminar', id=proveedor.id) }}"
+          class="mt-4">
+      {{ form.hidden_tag() }}
+
+      <button type="submit"
+        class="w-full px-5 py-2.5 text-white bg-red-600 hover:bg-red-700 rounded-lg text-sm font-medium">
+        Eliminar proveedor
+      </button>
+    </form>
 
   </div>
 
-  <img class="img" src="{{ url_for('static', filename='img/rectangle-80.svg') }}" />
+  <!-- REGRESAR -->
+  <div class="mt-6">
+    <a href="{{ url_for('proveedores.listar') }}"
+       class="text-sm text-gray-600 hover:underline">
+      ← Regresar al listado
+    </a>
+  </div>
 
 </div>
 

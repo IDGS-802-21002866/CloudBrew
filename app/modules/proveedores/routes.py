@@ -9,29 +9,19 @@ servicio = ProveedorService()
 @bp.route("/")
 def listar():
     try:
-        # Recibir parámetros de la ruta
         pagina = request.args.get("page", 1, type=int)
         busqueda = request.args.get("q", "", type=str)
         por_pagina = 5
-
-        # Validar paginación
         if pagina < 1:
             pagina = 1
-
-        # Obtener todos los proveedores del servicio
         proveedores = servicio.listar_proveedores(busqueda=busqueda)
 
-        # Validación de presentación (no es lógica de negocio)
         if not proveedores:
             flash("No hay proveedores registrados. Crea uno nuevo.", "info")
-
-        # Paginar en la ruta (presentación)
         total = len(proveedores)
         inicio = (pagina - 1) * por_pagina
         fin = inicio + por_pagina
         proveedores_pagina = proveedores[inicio:fin]
-
-        # Calcular información de paginación
         total_paginas = (total + por_pagina - 1) // por_pagina
 
         pagination = {
@@ -45,7 +35,6 @@ def listar():
             "start": inicio + 1 if total > 0 else 0,
             "end": min(fin, total),
         }
-
         return render_template(
             "proveedores/lista_proveedor.html",
             proveedores=proveedores_pagina,
@@ -74,14 +63,15 @@ def crear():
         except ValueError as e:
             flash(str(e), "danger")
 
-    return render_template("proveedores/crear.html", form=form)
+    return render_template("proveedores/insertar_proveedor.html", form=form)
 
 
 @bp.route("/<int:id>")
 def detalle(id):
     try:
         proveedor = servicio.obtener_proveedor(id)
-        return render_template("proveedores/detalle.html", proveedor=proveedor)
+        form=ProveedorForm(obj=proveedor)
+        return render_template("proveedores/detalle_proveedor.html", proveedor=proveedor, form=form)
     except ValueError as e:
         flash(str(e), "danger")
         return redirect(url_for("proveedores.listar"))
