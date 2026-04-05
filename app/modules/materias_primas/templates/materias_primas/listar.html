@@ -9,13 +9,27 @@
 
   <div class="flex justify-between items-center mb-6">
     <h1 class="text-3xl font-bold text-gray-800">Materias Primas</h1>
-    <a href="{{ url_for('materias_primas.crear') }}" class="bg-[#4A9062] hover:bg-[#3A7A52] text-white font-bold py-2 px-4 rounded flex items-center">
+    <a href="{{ url_for('materias_primas.crear') }}" class="bg-[#4A9062] hover:opacity-90 text-white font-bold py-2 px-4 rounded flex items-center shadow-md transition">
       <i class="fa-solid fa-plus mr-2"></i> Crear Nueva Materia
     </a>
   </div>
 
-  <div class="bg-white shadow-md rounded-lg overflow-hidden">
-    <table class="min-w-full table-auto">
+  <div class="mb-6 flex items-center space-x-2">
+    <div class="relative w-full md:w-1/3">
+      <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+        <i class="fa-solid fa-magnifying-glass text-gray-400"></i>
+      </span>
+      <input type="text" id="inputBusqueda" 
+             class="w-full pl-10 pr-4 py-2 border-2 border-gray-400 rounded-lg focus:outline-none focus:border-[#6C9AD0] transition-colors" 
+             placeholder="Buscar materia prima por nombre...">
+    </div>
+    <div class="p-2 bg-gray-100 rounded-lg border-2 border-gray-200">
+        <i class="fa-solid fa-filter text-gray-500"></i>
+    </div>
+  </div>
+
+  <div class="bg-white shadow-md rounded-lg overflow-hidden border border-gray-200">
+    <table class="min-w-full table-auto" id="tablaMaterias">
       <thead class="bg-gray-50">
         <tr>
           <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
@@ -27,19 +41,21 @@
       </thead>
       <tbody class="bg-white divide-y divide-gray-200">
         {% for materia in materias %}
-        <tr>
-          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ materia.nombre }}</td>
+        <tr class="hover:bg-gray-50 transition-colors">
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900 col-nombre">{{ materia.nombre }}</td>
           <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ materia.unidad.nombre }}</td>
           <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ materia.stock_minimo }}</td>
           <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
             {% if materia.activo %}
-            <span class="rounded-full px-3 py-1 text-xs font-bold bg-green-100 text-green-800">Activa</span>
+            <span class="rounded-full px-3 py-1 text-xs font-bold bg-green-100 text-green-800 border border-green-200">Activa</span>
             {% else %}
-            <span class="rounded-full px-3 py-1 text-xs font-bold bg-red-100 text-red-800">Inactiva</span>
+            <span class="rounded-full px-3 py-1 text-xs font-bold bg-red-100 text-red-800 border border-red-200">Inactiva</span>
             {% endif %}
           </td>
           <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-            <a href="{{ url_for('materias_primas.detalle', id=materia.id) }}" class="text-white font-bold py-1 px-3 rounded flex items-center" style="background-color: #6C9AD0; width: fit-content;">
+            <a href="{{ url_for('materias_primas.detalle', id=materia.id) }}" 
+               class="text-white font-bold py-1.5 px-4 rounded-lg flex items-center shadow-sm hover:opacity-90 transition" 
+               style="background-color: #6C9AD0; width: fit-content;">
               <i class="fa-solid fa-eye mr-2"></i> Ver Detalle
             </a>
           </td>
@@ -49,4 +65,20 @@
     </table>
   </div>
 </div>
+
+<script>
+    document.getElementById('inputBusqueda').addEventListener('keyup', function() {
+        const busqueda = this.value.toLowerCase();
+        const filas = document.querySelectorAll('#tablaMaterias tbody tr');
+
+        filas.forEach(fila => {
+            const nombre = fila.querySelector('.col-nombre').textContent.toLowerCase();
+            if (nombre.includes(busqueda)) {
+                fila.style.display = "";
+            } else {
+                fila.style.display = "none";
+            }
+        });
+    });
+</script>
 {% endblock %}

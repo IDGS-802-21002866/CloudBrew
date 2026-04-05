@@ -2,20 +2,20 @@ from app.modules.materias_primas import repository
 from app.modules.materias_primas.model import MateriaPrima
 
 class MateriaPrimaService:
-    @staticmethod
-    def listar_materias(incluir_inactivas=True):
+    
+    def listar_materias(self, incluir_inactivas=True):
         if incluir_inactivas:
             return repository.get_all_materias_primas_with_inactive()
         return repository.get_all_materias_primas_activas()
 
-    @staticmethod
-    def obtener_por_id(id):
+    
+    def obtener_por_id(self, id):
         materia = repository.get_materia_prima_by_id(id)
         if not materia: raise ValueError("Materia prima no encontrada.")
         return materia
 
-    @staticmethod
-    def crear_materia(data):
+    
+    def crear_materia(self, data):
         nombre = data.get("nombre").strip().capitalize()
         if repository.get_materia_prima_by_nombre(nombre):
             raise ValueError(f"La materia prima '{nombre}' ya existe.")
@@ -34,10 +34,10 @@ class MateriaPrimaService:
             id_unidad_base=data.get("id_unidad_base"),
             stock_minimo=stock
         )
-        return repository.create_materia_prima(nueva)
+        return repository.create_unidad_medida(nueva) 
     
-    @staticmethod
-    def desactivar_materia(id):
+    
+    def desactivar_materia(self, id):
         materia = repository.get_materia_prima_by_id(id)
         if materia and materia.activo:
             materia.activo = False
@@ -45,8 +45,8 @@ class MateriaPrimaService:
         elif materia and not materia.activo:
             raise ValueError("La materia prima ya está desactivada.")
 
-    @staticmethod
-    def activar_materia(id): # NUEVO
+    
+    def activar_materia(self, id):
         materia = repository.get_materia_prima_by_id(id)
         if materia and not materia.activo:
             materia.activo = True
