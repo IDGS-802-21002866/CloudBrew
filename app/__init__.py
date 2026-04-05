@@ -26,6 +26,7 @@ def create_app():
     from app.modules.usuarios import bp as usuarios_bp
     from app.modules.unidades_medida import bp as unidades_medida_bp
     from app.modules.materias_primas import bp as materias_primas_bp
+    from app.modules.presentaciones import bp as presentaciones_bp
     from app.modules.usuarios.model import Rol, Usuario
 
     app = Flask(__name__)
@@ -51,6 +52,9 @@ def create_app():
     app.register_blueprint(main_bp)
     app.register_blueprint(proveedores_bp)
     app.register_blueprint(usuarios_bp)
+    app.register_blueprint(unidades_medida_bp)
+    app.register_blueprint(materias_primas_bp)
+    app.register_blueprint(presentaciones_bp)
 
     # aparentemente entorpece el funcionamiento de flask-migrate, así que lo comento por ahora
     # with app.app_context():

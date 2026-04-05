@@ -9,7 +9,7 @@ servicio_unidades = UnidadMedidaService()
 
 @bp.route("/")
 def listar():
-    materias = servicio.listar_materias(incluir_inactivas=True) 
+    materias = servicio.listar_materias(True) 
     return render_template("materias_primas/listar.html", materias=materias)
 
 @bp.route("/crear", methods=["GET", "POST"])
