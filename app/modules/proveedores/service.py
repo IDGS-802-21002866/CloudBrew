@@ -1,30 +1,80 @@
-from . import repository
+from app.modules.proveedores import repository
+from app.modules.proveedores.model import Proveedor
+
 
 class ProveedorService:
-    @staticmethod
-    def proveedor_by_id(id_proveedor):
-        return repository.proveedor_by_id(id_proveedor)
+    def obtener_proveedor(self, id):
+        """Obtiene un proveedor por id"""
+        proveedor = repository.get_proveedor_by_id(id)
+        if not proveedor:
+            raise ValueError(f"No existe un proveedor con id {id}")
+        if not proveedor.activo:
+            raise ValueError(f"El proveedor con id {id} está inactivo")
+        return proveedor
 
-    @staticmethod
-    def obtener_proveedores(pagina=1, por_pagina=5, querry=""):
-        proveedores = repository.obtener_proveedores(pagina, por_pagina)
-        if querry:
+    def listar_proveedores(self, busqueda=""):
+        """Lista todos los proveedores activos con filtro de búsqueda opcional"""
+        proveedores = repository.get_all_proveedores()
+
+        # Aplicar búsqueda en memoria
+        if busqueda:
             proveedores = [
-                proveedor for proveedor in proveedores.items
-                if querry.lower() in (proveedor.nombre or "").lower()
+                p for p in proveedores if busqueda.lower() in (p.nombre or "").lower()
             ]
-            return proveedores
 
         return proveedores
 
-    @staticmethod
-    def agregar_proveedor(data):
-        return repository.agregar_proveedor(data)
+    def crear_proveedor(self, datos):
+        """Crea un nuevo proveedor después de validar datos"""
+        # Validaciones de negocio
+        if not datos.get("nombre"):
+            raise ValueError("El nombre es obligatorio")
 
-    @staticmethod
-    def modificar_proveedor(id_proveedor, data):
-        return repository.modificar_proveedor(id_proveedor, data)
+        nombre = datos.get("nombre").strip()
+        if len(nombre) > 100:
+            raise ValueError("El nombre no puede exceder 100 caracteres")
 
-    @staticmethod
-    def eliminar_proveedor(id_proveedor):
-        return repository.eliminar_proveedor(id_proveedor)
+        # Crear instancia
+        proveedor = Proveedor(
+            nombre=nombre,
+            telefono=datos.get("telefono"),
+            email=datos.get("email"),
+            direccion=datos.get("direccion"),
+            activo=True,
+        )
+
+        return repository.create_proveedor(proveedor)
+
+    def actualizar_proveedor(self, id, datos):
+        """Actualiza un proveedor después de validar datos"""
+        proveedor = repository.get_proveedor_by_id(id)
+        if not proveedor:
+            raise ValueError(f"No existe un proveedor con id {id}")
+        if not proveedor.activo:
+            raise ValueError(f"El proveedor está inactivo")
+
+        # Validar datos
+        if not datos.get("nombre"):
+            raise ValueError("El nombre es obligatorio")
+
+        nombre = datos.get("nombre").strip()
+        if len(nombre) > 100:
+            raise ValueError("El nombre no puede exceder 100 caracteres")
+
+        # Actualizar
+        proveedor.nombre = nombre
+        proveedor.telefono = datos.get("telefono")
+        proveedor.email = datos.get("email")
+        proveedor.direccion = datos.get("direccion")
+
+        return repository.update_proveedor(proveedor)
+
+    def eliminar_proveedor(self, id):
+        """Elimina (soft delete) un proveedor"""
+        proveedor = repository.get_proveedor_by_id(id)
+        if not proveedor:
+            raise ValueError(f"No existe un proveedor con id {id}")
+        if not proveedor.activo:
+            raise ValueError(f"El proveedor ya está inactivo")
+
+        return repository.delete_proveedor(id)

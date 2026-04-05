@@ -1,87 +1,124 @@
-import re
-
-from wtforms.validators import email
-
-from app.modules.proveedores.model import Proveedor
-from flask import Flask, render_template
-from flask import request
-from flask import redirect, url_for
-import app.modules.proveedores.form
-import app.modules.proveedores.service as service
+from flask import render_template, request, redirect, url_for, flash
+from app.modules.proveedores.form import ProveedorForm
+from app.modules.proveedores.service import ProveedorService
 from . import bp
 
-service=service.ProveedorService;
+servicio = ProveedorService()
 
-from flask import flash
-@bp.route("/proveedores")
-def listado():
+
+@bp.route("/")
+def listar():
     try:
-        page = request.args.get("page", 1, type=int)
-        querry = request.args.get("querry", "", type=str)
-        pag = service.obtener_proveedores(pagina=page,por_pagina=5,querry=querry)
-        proveedores = pag.items
+        # Recibir parámetros de la ruta
+        pagina = request.args.get("page", 1, type=int)
+        busqueda = request.args.get("q", "", type=str)
+        por_pagina = 5
+
+        # Validar paginación
+        if pagina < 1:
+            pagina = 1
+
+        # Obtener todos los proveedores del servicio
+        proveedores = servicio.listar_proveedores(busqueda=busqueda)
+
+        # Validación de presentación (no es lógica de negocio)
+        if not proveedores:
+            flash("No hay proveedores registrados. Crea uno nuevo.", "info")
+
+        # Paginar en la ruta (presentación)
+        total = len(proveedores)
+        inicio = (pagina - 1) * por_pagina
+        fin = inicio + por_pagina
+        proveedores_pagina = proveedores[inicio:fin]
+
+        # Calcular información de paginación
+        total_paginas = (total + por_pagina - 1) // por_pagina
+
         pagination = {
-            "page": pag.page,
-            "pages": list(range(1, pag.pages + 1)),
-            "has_prev": pag.has_prev,
-            "has_next": pag.has_next,
-            "prev_num": pag.prev_num,
-            "next_num": pag.next_num,
-            "total": pag.total,
-            "start": (pag.page - 1) * pag.per_page + 1 if pag.total > 0 else 0,
-            "end": min(pag.page * pag.per_page, pag.total)
+            "page": pagina,
+            "pages": list(range(1, total_paginas + 1)),
+            "has_prev": pagina > 1,
+            "has_next": pagina < total_paginas,
+            "prev_num": pagina - 1 if pagina > 1 else None,
+            "next_num": pagina + 1 if pagina < total_paginas else None,
+            "total": total,
+            "start": inicio + 1 if total > 0 else 0,
+            "end": min(fin, total),
         }
 
-        return render_template("lista_proveedor.html",proveedores=proveedores,pagination=pagination)
+        return render_template(
+            "proveedores/lista_proveedor.html",
+            proveedores=proveedores_pagina,
+            pagination=pagination,
+            busqueda=busqueda,
+        )
     except ValueError as e:
         flash(str(e), "danger")
-        return redirect(url_for("proveedores.listado"))
-    
-@bp.route("/proveedores/agregar", methods=["GET", "POST"])
-def agregar_proveedor():
-    form=app.modules.proveedores.form.ProveedorForm()
-    return render_template("insertar_proveedor.html",form=form)
+        return redirect(url_for("proveedores.listar"))
 
-@bp.route("/proveedores/detalles", methods=["GET", "POST"])
-def detalles_proveedor():
-    id = request.args.get("id", type=int)
-    prov = service.proveedor_by_id(id)
-    form =app.modules.proveedores.form.ProveedorForm(obj=prov)
-    return render_template("detalle_proveedor.html", proveedor=prov,form=form)
 
-@bp.route("/proveedores/eliminar", methods=["POST"])
-def eliminar_proveedor():
+@bp.route("/crear", methods=["GET", "POST"])
+def crear():
+    form = ProveedorForm()
+    if form.validate_on_submit():
+        try:
+            datos = {
+                "nombre": form.nombre.data,
+                "telefono": form.telefono.data,
+                "email": form.email.data,
+                "direccion": form.direccion.data,
+            }
+            servicio.crear_proveedor(datos)
+            flash("Proveedor creado exitosamente", "success")
+            return redirect(url_for("proveedores.listar"))
+        except ValueError as e:
+            flash(str(e), "danger")
+
+    return render_template("proveedores/crear.html", form=form)
+
+
+@bp.route("/<int:id>")
+def detalle(id):
     try:
-        id = request.args.get("id", type=int)
-        service.eliminar_proveedor(id)
-        flash("Proveedor eliminado correctamente", "success")
+        proveedor = servicio.obtener_proveedor(id)
+        return render_template("proveedores/detalle.html", proveedor=proveedor)
     except ValueError as e:
         flash(str(e), "danger")
-    return redirect(url_for("proveedores.listado"))
+        return redirect(url_for("proveedores.listar"))
 
-@bp.route("/proveedores/modificar", methods=["POST"])
-def modificar_proveedor():
-    try:
-        id = request.args.get("id", type=int)
-        form = app.modules.proveedores.form.ProveedorForm(request.form)
-        if form.validate():
-            service.modificar_proveedor(id, request.form)
-            flash("Proveedor actualizado correctamente", "success")
-        else:
-            flash("Verifique los datos ingresados", "danger")
-    except ValueError as e:
-        flash(str(e), "danger")
-    return redirect(url_for("proveedores.listado"))
 
-@bp.route("/proveedores/insertar", methods=["POST"])
-def insertar_proveedor():
+@bp.route("/<int:id>/editar", methods=["GET", "POST"])
+def editar(id):
     try:
-        form = app.modules.proveedores.form.ProveedorForm(request.form)
-        if form.validate():
-            service.agregar_proveedor(request.form)
-            flash("Proveedor agregado correctamente", "success")
-        else:
-            flash("Verifique los datos ingresados", "danger")
+        proveedor = servicio.obtener_proveedor(id)
     except ValueError as e:
         flash(str(e), "danger")
-    return redirect(url_for("proveedores.listado"))
+        return redirect(url_for("proveedores.listar"))
+
+    form = ProveedorForm(obj=proveedor)
+    if form.validate_on_submit():
+        try:
+            datos = {
+                "nombre": form.nombre.data,
+                "telefono": form.telefono.data,
+                "email": form.email.data,
+                "direccion": form.direccion.data,
+            }
+            servicio.actualizar_proveedor(id, datos)
+            flash("Proveedor actualizado exitosamente", "success")
+            return redirect(url_for("proveedores.listar"))
+        except ValueError as e:
+            flash(str(e), "danger")
+
+    return render_template("proveedores/editar.html", form=form, proveedor=proveedor)
+
+
+@bp.route("/<int:id>/eliminar", methods=["POST"])
+def eliminar(id):
+    try:
+        servicio.eliminar_proveedor(id)
+        flash("Proveedor eliminado exitosamente", "success")
+    except ValueError as e:
+        flash(str(e), "danger")
+
+    return redirect(url_for("proveedores.listar"))
