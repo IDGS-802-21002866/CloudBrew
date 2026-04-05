@@ -13,7 +13,7 @@
   <div class="content">
 
     <div class="busqueda">
-      <form method="GET" action="{{ url_for('proveedores.listado') }}">
+      <form method="GET" action="{{ url_for('proveedores.listar') }}">
         <input type="text" name="querry" placeholder="Buscar..." value="{{ request.args.get('q', '') }}">
         <button type="submit">Buscar</button>
       </form>
