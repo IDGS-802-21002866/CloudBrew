@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-4xl mx-auto py-8 px-4">
+    <a href="{{ url_for('materias_primas.listar') }}" class="flex items-center text-2xl font-bold mb-6">
+        <i class="fa-solid fa-chevron-left mr-3"></i> Detalle de Materia Prima
+    </a>
+
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
+        <div class="bg-gray-100 px-6 py-4 border-b border-gray-200">
+            <span class="font-bold text-gray-700"><i class="fa-solid fa-box-open mr-2"></i> Datos Registrados</span>
+        </div>
+
+        <div class="p-8">
+            <div class="grid grid-cols-2 gap-8 mb-8">
+                <div>
+                    <label class="block text-gray-500 text-sm font-bold uppercase">Nombre</label>
+                    <p class="text-xl font-bold text-gray-800">{{ materia.nombre }}</p>
+                </div>
+                <div>
+                    <label class="block text-gray-500 text-sm font-bold uppercase">Unidad Base</label>
+                    <p class="text-xl font-bold text-gray-800">{{ materia.unidad.nombre }}</p>
+                </div>
+                <div>
+                    <label class="block text-gray-500 text-sm font-bold uppercase">Stock Mínimo</label>
+                    <p class="text-lg text-gray-700">{{ materia.stock_minimo }}</p>
+                </div>
+                <div>
+                    <label class="block text-gray-500 text-sm font-bold uppercase">Descripción</label>
+                    <p class="text-lg text-gray-700">{{ materia.descripcion or 'Sin descripción' }}</p>
+                </div>
+            </div>
+
+            <div class="flex justify-end space-x-4 border-t pt-6">
+                <a href="{{ url_for('materias_primas.editar', id=materia.id) }}" class="px-6 py-2 bg-[#6C9AD0] text-white font-bold rounded-lg shadow-md hover:opacity-90 transition">
+                    Modificar
+                </a>
+                {% if materia.activo %}
+                <form action="{{ url_for('materias_primas.desactivar', id=materia.id) }}" method="POST" onsubmit="return confirm('¿Seguro que deseas desactivar esta materia prima?');">
+                    <button type="submit" class="px-6 py-2 bg-[#B85B5B] text-white font-bold rounded-lg shadow-md hover:opacity-90 transition">
+                        <i class="fa-solid fa-ban mr-2"></i> Desactivar
+                    </button>
+                </form>
+                {% else %}
+                <form action="{{ url_for('materias_primas.activar', id=materia.id) }}" method="POST" onsubmit="return confirm('¿Seguro que deseas activar esta materia prima?');">
+                    <button type="submit" class="px-6 py-2 bg-[#4A9062] text-white font-bold rounded-lg shadow-md hover:opacity-90 transition">
+                        <i class="fa-solid fa-check-circle mr-2"></i> Activar
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
