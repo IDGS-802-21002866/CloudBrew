@@ -2,61 +2,93 @@
 
 {% block content %}
 
-<h2>Agregar Usuario</h2>
+<div class="max-w-3xl mx-auto mt-10 border border-gray-200 rounded-2xl p-8 shadow-sm">
 
-<form action="/usuarios/insertar" method="POST">
+  <!-- Header -->
+  <div class="mb-6">
+    <h2 class="text-2xl font-bold text-gray-800">
+      Agregar Usuario
+    </h2>
+    <p class="text-sm text-gray-500">
+      Completa la información para registrar un nuevo usuario
+    </p>
+  </div>
+
+  <form action="/usuarios/insertar" method="POST" class="space-y-5">
     
     {{ form.hidden_tag() }}
 
+    <!-- Nombre -->
     <div>
-        <label>{{ form.nombre.label }}</label><br>
-        {{ form.nombre(size=40) }}
-        {% for error in form.nombre.errors %}
-            <span style="color:red;">{{ error }}</span>
-        {% endfor %}
+      <label class="block mb-2 text-sm font-medium text-gray-700">
+        {{ form.nombre.label }}
+      </label>
+      {{ form.nombre(class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5") }}
+      {% for error in form.nombre.errors %}
+        <p class="text-sm text-red-500 mt-1">{{ error }}</p>
+      {% endfor %}
     </div>
 
+    <!-- Email -->
     <div>
-        <label>{{ form.email.label }}</label><br>
-        {{ form.email(size=40) }}
-        {% for error in form.email.errors %}
-            <span style="color:red;">{{ error }}</span>
-        {% endfor %}
+      <label class="block mb-2 text-sm font-medium text-gray-700">
+        {{ form.email.label }}
+      </label>
+      {{ form.email(class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5") }}
+      {% for error in form.email.errors %}
+        <p class="text-sm text-red-500 mt-1">{{ error }}</p>
+      {% endfor %}
     </div>
 
+    <!-- Password -->
     <div>
-        <label>{{ form.password.label }}</label><br>
-        {{ form.password(size=40) }}
-        {% for error in form.password.errors %}
-            <span style="color:red;">{{ error }}</span>
-        {% endfor %}
+      <label class="block mb-2 text-sm font-medium text-gray-700">
+        {{ form.password.label }}
+      </label>
+      {{ form.password(class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5") }}
+      {% for error in form.password.errors %}
+        <p class="text-sm text-red-500 mt-1">{{ error }}</p>
+      {% endfor %}
     </div>
 
+    <!-- Confirm Password -->
     <div>
-        <label>{{ form.confirm_password.label }}</label><br>
-        {{ form.confirm_password(size=40) }}
-        {% for error in form.confirm_password.errors %}
-            <span style="color:red;">{{ error }}</span>
-        {% endfor %}
+      <label class="block mb-2 text-sm font-medium text-gray-700">
+        {{ form.confirm_password.label }}
+      </label>
+      {{ form.confirm_password(class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5") }}
+      {% for error in form.confirm_password.errors %}
+        <p class="text-sm text-red-500 mt-1">{{ error }}</p>
+      {% endfor %}
     </div>
 
+    <!-- Rol -->
     <div>
-        <label>{{ form.rol.label }}</label><br>
-        {{ form.rol() }}
-        {% for error in form.rol.errors %}
-            <span style="color:red;">{{ error }}</span>
-        {% endfor %}
+      <label class="block mb-2 text-sm font-medium text-gray-700">
+        {{ form.rol.label }}
+      </label>
+      {{ form.rol(class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5") }}
+      {% for error in form.rol.errors %}
+        <p class="text-sm text-red-500 mt-1">{{ error }}</p>
+      {% endfor %}
     </div>
 
-    <br>
-
-    <div>
-        <button type="submit">Insertar</button>
-        <a href="/usuarios">
-            <button type="button">Cancelar</button>
-        </a>
+    <!-- Botones -->
+    <div class="flex justify-between items-center pt-4">
+      <!-- Insertar -->
+      <button type="submit"
+        class="flex-1 px-5 py-2.5 text-white bg-green-600 hover:bg-green-700 rounded-lg text-sm font-medium">
+        Insertar
+      </button>
+      <!-- Cancelar -->
+      <a href="/usuarios"
+         class="flex-1 px-5 py-2.5 text-center text-gray-700 bg-gray-200 hover:bg-gray-300 rounded-lg text-sm font-medium">
+        Cancelar
+      </a>
     </div>
 
-</form>
+  </form>
+
+</div>
 
 {% endblock %}

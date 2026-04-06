@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="max-w-6xl mx-auto mt-10">
+
+  <!-- Header con botones alineados -->
+  <div class="flex justify-between items-center mb-6">
+    <h2 class="text-2xl font-bold text-gray-800">
+      Listado de Procesos Productivos
+    </h2>
+  </div>
+
+  <!-- Búsqueda con botón y campo en misma línea -->
+  <div class="mb-6">
+  <form method="GET" action="{{ url_for('proc_prod.index') }}" class="flex gap-2">
+    <!-- Botón Buscar en azul -->
+    <button type="submit"
+            class="text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5">
+      Buscar
+    </button>
+    
+    <input type="text"
+           name="query"
+           placeholder="Buscar..."
+           value="{{ request.args.get('query', '') }}"
+           class="flex-1 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5">
+    
+    <!-- Botón + en verde -->
+    <a href="{{ url_for('proc_prod.agregar') }}"
+       class="text-white bg-green-600 hover:bg-green-700 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5">
+      +
+    </a>
+  </form>
+</div>
+
+  <!-- Tabla -->
+  <div class="relative overflow-x-auto border border-gray-200 rounded-xl shadow-sm">
+    <table class="w-full text-sm text-left text-gray-700">
+      <thead class="text-xs text-gray-600 uppercase bg-gray-50 border-b">
+        <tr>
+          <th class="px-6 py-3">Nombre</th>
+          <th class="px-6 py-3">Descripción</th>
+          <th class="px-6 py-3 text-right">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for proceso in procprod %}
+        <tr class="bg-white border-b hover:bg-gray-50">
+          <td class="px-6 py-4 font-medium text-gray-900">
+            {{ proceso.nombre }}
+           </td>
+          <td class="px-6 py-4 text-gray-600">
+            {{ proceso.descripcion }}
+           </td>
+          <td class="px-6 py-4 text-right">
+            <a href="{{ url_for('proc_prod.detalles', id=proceso.id) }}"
+               class="text-blue-600 hover:underline text-sm">
+              Ver detalles
+            </a>
+           </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Footer -->
+  <div class="flex justify-between items-center mt-6">
+
+    <!-- Info -->
+    <p class="text-sm text-gray-500">
+      Mostrando {{ pagination.start }} a {{ pagination.end }} de {{ pagination.total }} entradas
+    </p>
+
+    <!-- Paginación -->
+    <div class="flex items-center gap-1">
+
+      {% if pagination.has_prev %}
+      <a href="{{ url_for('proc_prod.index', page=pagination.prev_num) }}"
+         class="px-3 py-1 border border-gray-300 rounded-lg text-sm hover:bg-gray-100">
+        Previous
+      </a>
+      {% endif %}
+
+      {% for p in pagination.pages %}
+      <a href="{{ url_for('proc_prod.index', page=p) }}"
+         class="px-3 py-1 border rounded-lg text-sm
+         {% if p == pagination.page %}
+            bg-blue-600 text-white border-blue-600
+         {% else %}
+            border-gray-300 hover:bg-gray-100
+         {% endif %}">
+        {{ p }}
+      </a>
+      {% endfor %}
+
+      {% if pagination.has_next %}
+      <a href="{{ url_for('proc_prod.index', page=pagination.next_num) }}"
+         class="px-3 py-1 border border-gray-300 rounded-lg text-sm hover:bg-gray-100">
+        Next
+      </a>
+      {% endif %}
+
+    </div>
+
+  </div>
+
+</div>
+
+{% endblock %}

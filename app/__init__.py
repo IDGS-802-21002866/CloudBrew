@@ -28,6 +28,7 @@ def create_app():
     from app.modules.materias_primas import bp as materias_primas_bp
     from app.modules.presentaciones import bp as presentaciones_bp
     from app.modules.compras import bp as compras_bp
+    from app.modules.proc_prod import bp as procprod_bp
     from app.modules.clientes import bp as clientes_bp
 
     app = Flask(__name__)
@@ -52,6 +53,7 @@ def create_app():
     app.register_blueprint(main_bp)
     app.register_blueprint(proveedores_bp)
     app.register_blueprint(usuarios_bp)
+    app.register_blueprint(procprod_bp)
     app.register_blueprint(unidades_medida_bp)
     app.register_blueprint(materias_primas_bp)
     app.register_blueprint(presentaciones_bp)
