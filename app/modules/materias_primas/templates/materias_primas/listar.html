@@ -17,8 +17,10 @@
       <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
         <i class="fa-solid fa-magnifying-glass text-gray-400"></i>
       </span>
-      <input type="text" id="inputBusqueda" 
-             class="w-full pl-10 pr-4 py-2 border-2 border-gray-400 rounded-lg focus:outline-none focus:border-[#6C9AD0] transition-colors" 
+      <input type="text" id="inputBusqueda"
+             data-busqueda-tabla="tablaMaterias"
+             data-busqueda-col="col-nombre"
+             class="w-full pl-10 pr-4 py-2 border-2 border-gray-400 rounded-lg focus:outline-none focus:border-[#6C9AD0] transition-colors"
              placeholder="Buscar materia prima por nombre...">
     </div>
     <div class="p-2 bg-gray-100 rounded-lg border-2 border-gray-200">
@@ -64,19 +66,4 @@
   </div>
 </div>
 
-<script>
-    document.getElementById('inputBusqueda').addEventListener('keyup', function() {
-        const busqueda = this.value.toLowerCase();
-        const filas = document.querySelectorAll('#tablaMaterias tbody tr');
-
-        filas.forEach(fila => {
-            const nombre = fila.querySelector('.col-nombre').textContent.toLowerCase();
-            if (nombre.includes(busqueda)) {
-                fila.style.display = "";
-            } else {
-                fila.style.display = "none";
-            }
-        });
-    });
-</script>
 {% endblock %}

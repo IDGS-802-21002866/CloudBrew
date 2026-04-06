@@ -74,6 +74,11 @@
               <span class="truncate">Presentaciones</span>
             </a>
             
+            <a href="{{ url_for('compras.listar') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-brew-bg transition">
+              <i class="fas fa-shopping-cart w-5 flex-shrink-0"></i>
+              <span class="truncate">Compras</span>
+            </a>
+
             <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-brew-bg transition opacity-50 cursor-not-allowed">
               <i class="fas fa-flask w-5 flex-shrink-0"></i>
               <span class="truncate">Productos</span>
@@ -99,4 +104,5 @@
   </div>
 </div>
 <script src="{{ url_for('static', filename='js/menu_lateral.js') }}"></script>
+<script src="{{ url_for('static', filename='js/busqueda_tabla.js') }}"></script>
 {% endblock %}

@@ -17,8 +17,10 @@
       <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
         <i class="fa-solid fa-magnifying-glass text-gray-400"></i>
       </span>
-      <input type="text" id="inputBusquedaUnidades" 
-             class="w-full pl-10 pr-4 py-2 border-2 border-gray-400 rounded-lg focus:outline-none focus:border-[#6C9AD0] transition-colors" 
+      <input type="text" id="inputBusquedaUnidades"
+             data-busqueda-tabla="tablaUnidades"
+             data-busqueda-col="col-nombre"
+             class="w-full pl-10 pr-4 py-2 border-2 border-gray-400 rounded-lg focus:outline-none focus:border-[#6C9AD0] transition-colors"
              placeholder="Buscar unidad por nombre...">
     </div>
   </div>
@@ -58,15 +60,4 @@
   </div>
 </div>
 
-<script>
-    document.getElementById('inputBusquedaUnidades').addEventListener('keyup', function() {
-        const busqueda = this.value.toLowerCase();
-        const filas = document.querySelectorAll('#tablaUnidades tbody tr');
-
-        filas.forEach(fila => {
-            const nombre = fila.querySelector('.col-nombre').textContent.toLowerCase();
-            fila.style.display = nombre.includes(busqueda) ? "" : "none";
-        });
-    });
-</script>
 {% endblock %}
