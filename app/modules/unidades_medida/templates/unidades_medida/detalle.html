@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-4xl mx-auto py-8 px-4">
+    <a href="{{ url_for('unidades_medida.listar') }}" class="flex items-center text-2xl font-bold mb-6">
+        <i class="fa-solid fa-chevron-left mr-3"></i> Detalle de Unidad
+    </a>
+
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
+        <div class="bg-gray-100 px-6 py-4 border-b border-gray-200">
+            <span class="font-bold text-gray-700"><i class="fa-solid fa-scale-balanced mr-2"></i> Datos Registrados</span>
+        </div>
+
+        <div class="p-8">
+            <div class="grid grid-cols-2 gap-8 mb-8">
+                <div>
+                    <label class="block text-gray-500 text-sm font-bold uppercase">Nombre</label>
+                    <p class="text-xl font-bold text-gray-800">{{ unidad.nombre }}</p>
+                </div>
+                <div>
+                    <label class="block text-gray-500 text-sm font-bold uppercase">Abreviatura</label>
+                    <p class="text-xl font-bold text-gray-800">{{ unidad.abreviatura }}</p>
+                </div>
+                <div>
+                    <label class="block text-gray-500 text-sm font-bold uppercase">Tipo de Medida</label>
+                    <p class="text-lg text-gray-700">{{ unidad.tipo_medida.nombre }}</p>
+                </div>
+                <div>
+                    <label class="block text-gray-500 text-sm font-bold uppercase">¿Valor de Conversión?</label>
+                    <p class="text-lg font-bold {{ 'text-[#4A9062]' if unidad.valor_conversion == 1 else 'text-gray-700' }}">
+                        {{ unidad.valor_conversion }}
+                    </p>
+                </div>
+            </div>
+
+            {% if unidad.es_base_sistema %}
+            <div class="bg-blue-50 border-l-4 border-[#6C9AD0] p-4 mb-8">
+                <p class="text-blue-800 font-bold">
+                    <i class="fa-solid fa-lock mr-2"></i>
+                    Esta es una unidad base del sistema (protegida)
+                </p>
+            </div>
+            {% else %}
+            <div class="bg-green-50 border-l-4 border-[#4A9062] p-4 mb-8">
+                <p class="text-green-800 font-bold">
+                    <i class="fa-solid fa-equals mr-2"></i>
+                    Equivalencia: 1 {{ unidad.nombre }} = {{ unidad.valor_conversion }} {{ unidad.tipo_medida.unidad_base }}
+                </p>
+            </div>
+            {% endif %}
+
+            <div class="flex justify-end space-x-4 border-t pt-6">
+                {% if not unidad.es_base_sistema %}
+                <a href="{{ url_for('unidades_medida.editar', id=unidad.id) }}" class="px-6 py-2 bg-[#6C9AD0] text-white font-bold rounded-lg shadow-md hover:opacity-90 transition">
+                    Modificar
+                </a>
+                <form action="{{ url_for('unidades_medida.eliminar', id=unidad.id) }}" method="POST" onsubmit="return confirm('¿Seguro que deseas eliminar esta unidad?');">
+                    <button type="submit" class="px-6 py-2 bg-[#B85B5B] text-white font-bold rounded-lg shadow-md hover:opacity-90 transition">
+                        Eliminar
+                    </button>
+                </form>
+                {% else %}
+                <div class="text-gray-600 italic">
+                    Esta unidad base no se puede modificar
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
