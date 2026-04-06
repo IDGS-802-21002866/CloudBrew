@@ -17,8 +17,8 @@
                     <p class="text-xl font-bold text-gray-800">{{ materia.nombre }}</p>
                 </div>
                 <div>
-                    <label class="block text-gray-500 text-sm font-bold uppercase">Unidad Base</label>
-                    <p class="text-xl font-bold text-gray-800">{{ materia.unidad.nombre }}</p>
+                    <label class="block text-gray-500 text-sm font-bold uppercase">Tipo de Medida</label>
+                    <p class="text-xl font-bold text-gray-800">{{ materia.tipo_medida.nombre }}</p>
                 </div>
                 <div>
                     <label class="block text-gray-500 text-sm font-bold uppercase">Stock Mínimo</label>
@@ -27,6 +27,12 @@
                 <div>
                     <label class="block text-gray-500 text-sm font-bold uppercase">Descripción</label>
                     <p class="text-lg text-gray-700">{{ materia.descripcion or 'Sin descripción' }}</p>
+                </div>
+                <div>
+                    <label class="block text-gray-500 text-sm font-bold uppercase">Estado</label>
+                    <p class="text-lg font-bold {{ 'text-green-800' if materia.activo else 'text-red-800' }}">
+                        {{ 'Activa' if materia.activo else 'Inactiva' }}
+                    </p>
                 </div>
             </div>
 

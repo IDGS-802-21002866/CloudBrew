@@ -7,23 +7,25 @@ from . import bp
 servicio = PresentacionService()
 servicio_unidades = UnidadMedidaService()
 
+
 @bp.route("/")
 def listar():
     presentaciones = servicio.listar_presentaciones(True)
     return render_template("presentaciones/listar.html", presentaciones=presentaciones)
 
+
 @bp.route("/crear", methods=["GET", "POST"])
 def crear():
     form = PresentacionForm()
-    unidades_base = servicio_unidades.listar_unidades_medida()
-    form.id_unidad.choices = [(u.id, u.nombre) for u in unidades_base if u.es_base]
+    tipos_medida = servicio_unidades.listar_tipos_medida()
+    form.tipo_medida_id.choices = [(t.id, t.nombre) for t in tipos_medida]
 
     if form.validate_on_submit():
         try:
             data = {
                 "nombre": form.nombre.data,
-                "id_unidad": form.id_unidad.data,
-                "cantidad_equivalente": form.cantidad_equivalente.data
+                "tipo_medida_id": form.tipo_medida_id.data,
+                "cantidad_equivalente": form.cantidad_equivalente.data,
             }
             servicio.crear_presentacion(data)
             flash("Presentación creada exitosamente.", "success")
@@ -32,6 +34,7 @@ def crear():
             flash(str(e), "danger")
 
     return render_template("presentaciones/crear.html", form=form)
+
 
 @bp.route("/<int:id>")
 def detalle(id):
@@ -42,21 +45,22 @@ def detalle(id):
         flash(str(e), "danger")
         return redirect(url_for("presentaciones.listar"))
 
+
 @bp.route("/<int:id>/editar", methods=["GET", "POST"])
 def editar(id):
     try:
         presentacion = servicio.obtener_por_id(id)
         form = PresentacionForm(obj=presentacion)
 
-        unidades_base = servicio_unidades.listar_unidades_medida()
-        form.id_unidad.choices = [(u.id, u.nombre) for u in unidades_base if u.es_base]
+        tipos_medida = servicio_unidades.listar_tipos_medida()
+        form.tipo_medida_id.choices = [(t.id, t.nombre) for t in tipos_medida]
 
         if form.validate_on_submit():
             try:
                 data = {
                     "nombre": form.nombre.data,
-                    "id_unidad": form.id_unidad.data,
-                    "cantidad_equivalente": form.cantidad_equivalente.data
+                    "tipo_medida_id": form.tipo_medida_id.data,
+                    "cantidad_equivalente": form.cantidad_equivalente.data,
                 }
                 servicio.actualizar_presentacion(id, data)
                 flash("Presentación actualizada exitosamente.", "success")
@@ -64,10 +68,13 @@ def editar(id):
             except ValueError as e:
                 flash(str(e), "danger")
 
-        return render_template("presentaciones/crear.html", form=form, presentacion=presentacion)
+        return render_template(
+            "presentaciones/crear.html", form=form, presentacion=presentacion
+        )
     except ValueError as e:
         flash(str(e), "danger")
         return redirect(url_for("presentaciones.listar"))
+
 
 @bp.route("/<int:id>/desactivar", methods=["POST"])
 def desactivar(id):
@@ -77,6 +84,7 @@ def desactivar(id):
     except ValueError as e:
         flash(str(e), "danger")
     return redirect(url_for("presentaciones.listar"))
+
 
 @bp.route("/<int:id>/activar", methods=["POST"])
 def activar(id):
