@@ -74,7 +74,7 @@ def crear():
         except ValueError as e:
             flash(str(e), "danger")
 
-    return render_template("proveedores/crear.html", form=form)
+    return render_template("proveedores/insertar_proveedor.html", form=form)
 
 
 @bp.route("/<int:id>")

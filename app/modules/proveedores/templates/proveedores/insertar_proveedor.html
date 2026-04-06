@@ -15,7 +15,7 @@
 
   <div class="content">
 
-    <form method="POST" action="{{ url_for('proveedores.insertar_proveedor') }}">
+    <form method="POST" action="crear">
       {{ form.hidden_tag() }}
 
       <div class="body-content">
@@ -66,7 +66,7 @@
     </div>
 
     <!-- Regresar -->
-    <a href="{{ url_for('proveedores.listado') }}" class="button-3">
+    <a href="{{ url_for('proveedores.listar') }}" class="button-3">
       Regresar
     </a>
 

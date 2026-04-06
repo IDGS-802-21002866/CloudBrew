@@ -48,17 +48,40 @@
           
           <div class="pt-2 border-t border-brew-bg">
             <p class="text-xs uppercase tracking-wider text-brew-beige opacity-50 px-4 py-2">Módulos</p>
-            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-brew-bg transition">
-              <i class="fas fa-beer w-5 flex-shrink-0"></i>
-              <span class="truncate">Mermas</span>
-            </a>
-            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-brew-bg transition">
+            
+            <a href="{{ url_for('usuarios.listar') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-brew-bg transition">
               <i class="fas fa-users w-5 flex-shrink-0"></i>
               <span class="truncate">Usuarios</span>
             </a>
-             <a href="{{url_for('proveedores.listar')}}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-brew-bg transition">
-              <i class="fas fa-users w-5 flex-shrink-0"></i>
+            
+            <a href="{{ url_for('proveedores.listar') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-brew-bg transition">
+              <i class="fas fa-truck w-5 flex-shrink-0"></i>
               <span class="truncate">Proveedores</span>
+            </a>
+            
+            <a href="{{ url_for('materias_primas.listar') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-brew-bg transition">
+              <i class="fas fa-leaf w-5 flex-shrink-0"></i>
+              <span class="truncate">Materias Primas</span>
+            </a>
+            
+            <a href="{{ url_for('unidades_medida.listar') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-brew-bg transition">
+              <i class="fas fa-balance-scale w-5 flex-shrink-0"></i>
+              <span class="truncate">Unidades de Medida</span>
+            </a>
+            
+            <a href="{{ url_for('presentaciones.listar') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-brew-bg transition">
+              <i class="fas fa-box w-5 flex-shrink-0"></i>
+              <span class="truncate">Presentaciones</span>
+            </a>
+            
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-brew-bg transition opacity-50 cursor-not-allowed">
+              <i class="fas fa-flask w-5 flex-shrink-0"></i>
+              <span class="truncate">Productos</span>
+            </a>
+            
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-brew-bg transition opacity-50 cursor-not-allowed">
+              <i class="fas fa-cog w-5 flex-shrink-0"></i>
+              <span class="truncate">Proceso de Producción</span>
             </a>
           </div>
         </nav>
