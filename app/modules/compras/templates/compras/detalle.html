@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto py-8 px-4">
+    <a href="{{ url_for('compras.listar') }}" class="flex items-center text-2xl font-bold mb-6 hover:text-gray-600 transition">
+        <i class="fa-solid fa-chevron-left mr-3"></i> 
+        Detalle de Compra #{{ compra.id }}
+    </a>
+
+    <div class="space-y-6">
+        <!-- Información general -->
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
+            <div class="bg-gray-100 px-6 py-4 border-b border-gray-200 flex items-center">
+                <i class="fa-solid fa-circle-info text-gray-500 mr-3"></i>
+                <span class="font-bold text-gray-700">Información de la compra</span>
+            </div>
+
+            <div class="p-8 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                <div>
+                    <span class="block text-sm font-semibold text-gray-500">Folio</span>
+                    <span class="text-gray-800 font-bold">#{{ compra.id }}</span>
+                </div>
+                <div>
+                    <span class="block text-sm font-semibold text-gray-500">Proveedor</span>
+                    <span class="text-gray-800">{{ compra.proveedor.nombre if compra.proveedor else 'N/A' }}</span>
+                </div>
+                <div>
+                    <span class="block text-sm font-semibold text-gray-500">Fecha de Registro</span>
+                    <span class="text-gray-800">{{ compra.fecha_registro.strftime('%d/%m/%Y %H:%M') if compra.fecha_registro else 'N/A' }}</span>
+                </div>
+                <div>
+                    <span class="block text-sm font-semibold text-gray-500">Fecha de Compra</span>
+                    <span class="text-gray-800">{{ compra.fecha_compra.strftime('%d/%m/%Y') if compra.fecha_compra else 'N/A' }}</span>
+                </div>
+                <div>
+                    <span class="block text-sm font-semibold text-gray-500">Usuario</span>
+                    <span class="text-gray-800">{{ compra.usuario.nombre if compra.usuario else 'N/A' }}</span>
+                </div>
+                <div>
+                    <span class="block text-sm font-semibold text-gray-500">Estado</span>
+                    {% if compra.fecha_compra %}
+                        <span class="rounded-full px-3 py-1 text-xs font-bold bg-[#4A9062] bg-opacity-20 text-[#2D6A3E] border border-[#4A9062]">Pagado</span>
+                    {% else %}
+                        <span class="rounded-full px-3 py-1 text-xs font-bold bg-[#E8A946] bg-opacity-20 text-[#B8860B] border border-[#E8A946]">Pendiente</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Detalles de productos -->
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
+            <div class="bg-gray-100 px-6 py-4 border-b border-gray-200 flex items-center">
+                <i class="fa-solid fa-list text-gray-500 mr-3"></i>
+                <span class="font-bold text-gray-700">Productos</span>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="bg-gray-100 border-b-2 border-gray-300">
+                            <th class="px-6 py-3 text-left font-bold text-gray-700">Materia Prima</th>
+                            <th class="px-6 py-3 text-left font-bold text-gray-700">Presentación</th>
+                            <th class="px-6 py-3 text-center font-bold text-gray-700">Cantidad</th>
+                            <th class="px-6 py-3 text-center font-bold text-gray-700">Precio Unitario</th>
+                            <th class="px-6 py-3 text-center font-bold text-gray-700">Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% set total = namespace(valor=0) %}
+                        {% for detalle in compra.detalles %}
+                        <tr class="border-b border-gray-200 hover:bg-gray-50">
+                            <td class="px-6 py-3">{{ detalle.materia_prima.nombre if detalle.materia_prima else 'N/A' }}</td>
+                            <td class="px-6 py-3">{{ detalle.presentacion.nombre if detalle.presentacion else 'N/A' }}</td>
+                            <td class="px-6 py-3 text-center">{{ detalle.cantidad }}</td>
+                            <td class="px-6 py-3 text-center">${{ "%.2f"|format(detalle.precio_unitario) }}</td>
+                            <td class="px-6 py-3 text-center">${{ "%.2f"|format(detalle.cantidad * detalle.precio_unitario) }}</td>
+                        </tr>
+                        {% set total.valor = total.valor + (detalle.cantidad * detalle.precio_unitario) %}
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr class="bg-gray-50 border-t-2 border-gray-300">
+                            <td colspan="4" class="px-6 py-3 text-right font-bold text-gray-700">Total:</td>
+                            <td class="px-6 py-3 text-center font-bold text-gray-800">${{ "%.2f"|format(total.valor) }}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
