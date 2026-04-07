@@ -2,7 +2,7 @@ from flask import Flask
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
-from flask_login import LoginManager
+from flask_login import LoginManager, login_required
 from werkzeug import security
 
 from app.core.config import DevelopmentConfig
@@ -28,8 +28,6 @@ def create_app():
     from app.modules.materias_primas import bp as materias_primas_bp
     from app.modules.presentaciones import bp as presentaciones_bp
     from app.modules.compras import bp as compras_bp
-    from app.modules.proc_prod import bp as procprod_bp
-    from app.modules.clientes import bp as clientes_bp
 
     app = Flask(__name__)
     app.config.from_object(DevelopmentConfig)
@@ -49,15 +47,21 @@ def create_app():
             return usuario
         return None
 
+    blueprints_protegidos = [
+        main_bp,
+        proveedores_bp,
+        usuarios_bp,
+        unidades_medida_bp,
+        materias_primas_bp,
+        presentaciones_bp,
+        compras_bp,
+    ]
+
+    for bp in blueprints_protegidos:
+        bp.before_request(login_required(lambda: None))
+
     app.register_blueprint(auth_bp)
-    app.register_blueprint(main_bp)
-    app.register_blueprint(proveedores_bp)
-    app.register_blueprint(usuarios_bp)
-    app.register_blueprint(procprod_bp)
-    app.register_blueprint(unidades_medida_bp)
-    app.register_blueprint(materias_primas_bp)
-    app.register_blueprint(presentaciones_bp)
-    app.register_blueprint(clientes_bp)
-    app.register_blueprint(compras_bp)
+    for bp in blueprints_protegidos:
+        app.register_blueprint(bp)
 
     return app
