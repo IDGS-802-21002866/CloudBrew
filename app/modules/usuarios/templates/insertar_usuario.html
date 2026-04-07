@@ -2,21 +2,29 @@
 
 {% block content %}
 
-<div class="max-w-3xl mx-auto mt-10 border border-gray-200 rounded-2xl p-8 shadow-sm">
+<div class="p-6 max-w-3xl mx-auto">
 
   <!-- Header -->
-  <div class="mb-6">
+  <div class="flex items-center gap-3 mb-6">
+    <a href="/usuarios"
+       class="text-2xl font-bold text-gray-800">
+      <
+    </a>
     <h2 class="text-2xl font-bold text-gray-800">
       Agregar Usuario
     </h2>
     <p class="text-sm text-gray-500">
-      Completa la información para registrar un nuevo usuario
     </p>
   </div>
 
-  <form action="/usuarios/insertar" method="POST" class="space-y-5">
-    
-    {{ form.hidden_tag() }}
+<form action="/usuarios/insertar" method="POST" class="max-w-3xl mx-auto mt-10 bg-white border border-gray-200 rounded-2xl shadow-sm">
+  {{ form.hidden_tag() }}
+  <div class="bg-gray-100 px-0 py-0 border-b border-gray-200">
+    <span class="font-bold text-gray-700 block p-4"><i class="fa-solid fa-circle-info mr-2"></i> Datos a Registrar</span>
+  </div>
+
+  <div class="p-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
 
     <!-- Nombre -->
     <div>
@@ -62,8 +70,8 @@
       {% endfor %}
     </div>
 
-    <!-- Rol -->
-    <div>
+    <!-- Rol (opcional ancho completo o mitad) -->
+    <div class="md:col-span-2">
       <label class="block mb-2 text-sm font-medium text-gray-700">
         {{ form.rol.label }}
       </label>
@@ -73,21 +81,20 @@
       {% endfor %}
     </div>
 
-    <!-- Botones -->
-    <div class="flex justify-between items-center pt-4">
-      <!-- Insertar -->
-      <button type="submit"
-        class="flex-1 px-5 py-2.5 text-white bg-green-600 hover:bg-green-700 rounded-lg text-sm font-medium">
-        Insertar
-      </button>
-      <!-- Cancelar -->
-      <a href="/usuarios"
-         class="flex-1 px-5 py-2.5 text-center text-gray-700 bg-gray-200 hover:bg-gray-300 rounded-lg text-sm font-medium">
-        Cancelar
-      </a>
-    </div>
+  </div>
+  <div class="flex gap-4 pt-4">
+    <button type="submit"
+      class="flex-1 px-5 py-2.5 text-white bg-green-600 hover:bg-green-700 rounded-lg text-sm font-medium">
+      Insertar
+    </button>
 
-  </form>
+    <a href="/usuarios"
+       class="flex-1 px-5 py-2.5 text-center text-gray-700 bg-gray-200 hover:bg-gray-300 rounded-lg text-sm font-medium">
+      Cancelar
+    </a>
+  </div>
+  </div>
+</form>
 
 </div>
 
