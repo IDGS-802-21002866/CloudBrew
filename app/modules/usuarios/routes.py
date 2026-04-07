@@ -9,15 +9,16 @@ import app.modules.usuarios.form
 import app.modules.usuarios.service as service
 from . import bp
 
-service=service.UsuarioService();
+service = service.UsuarioService()
+
 
 @bp.route("/usuarios")
-def index():
+def listar():
     try:
         page = request.args.get("page", 1, type=int)
         querry = request.args.get("querry", "", type=str)
         pag = service.obtener_usuarios(pagina=page, por_pagina=5, querry=querry)
-        usuarios=pag.items
+        usuarios = pag.items
         pagination = {
             "page": pag.page,
             "pages": list(range(1, pag.pages + 1)),
@@ -27,18 +28,23 @@ def index():
             "next_num": pag.next_num,
             "total": pag.total,
             "start": (pag.page - 1) * pag.per_page + 1 if pag.total > 0 else 0,
-            "end": min(pag.page * pag.per_page, pag.total)
+            "end": min(pag.page * pag.per_page, pag.total),
         }
-        return render_template("lista_usuario.html", usuarios=usuarios,pagination=pagination)
+        return render_template(
+            "lista_usuario.html", usuarios=usuarios, pagination=pagination
+        )
 
     except ValueError as e:
         flash(str(e), "danger")
         return render_template("lista_usuario.html", usuarios=[])
 
+
 @bp.route("/usuarios/agregar")
 def crear():
-    form=app.modules.usuarios.form.UsuarioForm()
+    form = app.modules.usuarios.form.UsuarioForm()
     return render_template("insertar_usuario.html", form=form)
+
+
 @bp.route("/usuarios/detalles")
 def detalles():
     try:
@@ -47,14 +53,11 @@ def detalles():
         usuario = service.obtener_usuario_por_id(id)
         form = app.modules.usuarios.form.UsuarioFormAux(obj=usuario)
 
-        return render_template(
-            "detalle_usuario.html",
-            form=form,
-            usuario=usuario
-        )
+        return render_template("detalle_usuario.html", form=form, usuario=usuario)
     except ValueError as e:
         flash(str(e), "danger")
         return redirect(url_for("usuarios.index"))
+
 
 @bp.route("/usuarios/insertar", methods=["POST"])
 def insert():
@@ -70,6 +73,7 @@ def insert():
         flash("Verifique los datos ingresados", "danger")
     return render_template("insertar_usuario.html", form=form)
 
+
 @bp.route("/usuarios/eliminar", methods=["POST"])
 def eliminar():
     try:
@@ -79,6 +83,7 @@ def eliminar():
     except ValueError as e:
         flash(str(e), "danger")
     return redirect(url_for("usuarios.index"))
+
 
 @bp.route("/usuarios/actualizar", methods=["POST"])
 def modificar():

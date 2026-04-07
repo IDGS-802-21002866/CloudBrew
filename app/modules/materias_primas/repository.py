@@ -1,0 +1,22 @@
+from app.modules.materias_primas.model import MateriaPrima
+from app import db
+
+def get_all_materias_primas_activas():
+    return MateriaPrima.query.filter_by(activo=True).all()
+
+def get_all_materias_primas_with_inactive():
+    return MateriaPrima.query.all()
+
+def get_materia_prima_by_id(id):
+    return MateriaPrima.query.get(id)
+
+def get_materia_prima_by_nombre(nombre):
+    return MateriaPrima.query.filter(MateriaPrima.nombre == nombre).first()
+
+def create_materia_prima(materia):
+    db.session.add(materia)
+    db.session.commit()
+    return materia
+
+def update_db():
+    db.session.commit()
