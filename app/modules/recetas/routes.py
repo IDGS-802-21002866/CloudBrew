@@ -1,4 +1,12 @@
-from flask import render_template, request, redirect, url_for, flash, session
+from flask import (
+    render_template,
+    request,
+    redirect,
+    url_for,
+    flash,
+    session,
+    make_response,
+)
 from app.modules.recetas import bp
 from app.modules.recetas.service import RecetaService
 from app.modules.recetas.form import RecetaForm, RecetaDetalleForm, ProcesoRecetaForm
@@ -141,10 +149,19 @@ def crear():
                 return _render()
 
             try:
+                archivo = request.files.get("imagen")
+                imagen_bytes = None
+                imagen_tipo = None
+                if archivo and archivo.filename:
+                    imagen_bytes = archivo.read()
+                    imagen_tipo = archivo.mimetype
+
                 data = {
                     "nombre": receta_form.nombre.data,
                     "descripcion": receta_form.descripcion.data,
                     "cantidad_producida": receta_form.cantidad_producida.data,
+                    "imagen": imagen_bytes,
+                    "imagen_tipo": imagen_tipo,
                 }
                 receta = receta_service.crear_receta(data)
 
@@ -327,10 +344,19 @@ def editar(id):
                     return _render()
 
                 try:
+                    archivo = request.files.get("imagen")
+                    imagen_bytes = None
+                    imagen_tipo = None
+                    if archivo and archivo.filename:
+                        imagen_bytes = archivo.read()
+                        imagen_tipo = archivo.mimetype
+
                     data = {
                         "nombre": receta_form.nombre.data,
                         "descripcion": receta_form.descripcion.data,
                         "cantidad_producida": receta_form.cantidad_producida.data,
+                        "imagen": imagen_bytes,
+                        "imagen_tipo": imagen_tipo,
                     }
                     receta_service.actualizar_receta(id, data)
 
@@ -357,6 +383,21 @@ def editar(id):
     except ValueError as e:
         flash(str(e), "danger")
         return redirect(url_for("recetas.listar"))
+
+
+@bp.route("/<int:id>/imagen")
+def imagen(id):
+    """Sirve la imagen de una receta almacenada en BD."""
+    try:
+        receta = receta_service.obtener_receta(id)
+        if not receta.imagen:
+            return redirect(url_for("static", filename="img/logo-solo.png"))
+        response = make_response(receta.imagen)
+        response.headers.set("Content-Type", receta.imagen_tipo or "image/jpeg")
+        response.headers.set("Cache-Control", "public, max-age=3600")
+        return response
+    except ValueError:
+        return redirect(url_for("static", filename="img/logo-solo.png"))
 
 
 @bp.route("/<int:id>/confirmar_desactivar")

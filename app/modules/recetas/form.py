@@ -1,4 +1,5 @@
 from flask_wtf import FlaskForm
+from flask_wtf.file import FileField, FileAllowed
 from wtforms import StringField, DecimalField, SelectField, SubmitField
 from wtforms.validators import DataRequired, Optional, Length
 
@@ -12,6 +13,15 @@ class RecetaForm(FlaskForm):
     cantidad_producida = DecimalField(
         "Cantidad Producida",
         validators=[DataRequired(message="La cantidad producida es obligatoria.")],
+    )
+    imagen = FileField(
+        "Imagen",
+        validators=[
+            Optional(),
+            FileAllowed(
+                ["jpg", "jpeg", "png", "webp"], "Solo imágenes (jpg, png, webp)."
+            ),
+        ],
     )
     submit = SubmitField("Guardar")
 

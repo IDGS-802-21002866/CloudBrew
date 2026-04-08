@@ -44,6 +44,8 @@ class RecetaService:
             descripcion=data.get("descripcion"),
             cantidad_producida=cantidad,
             activo=True,
+            imagen=data.get("imagen"),
+            imagen_tipo=data.get("imagen_tipo"),
         )
         return repository.create_receta(nueva_receta)
 
@@ -66,6 +68,9 @@ class RecetaService:
             )
 
         receta.cantidad_producida = cantidad
+        if data.get("imagen") is not None:
+            receta.imagen = data.get("imagen")
+            receta.imagen_tipo = data.get("imagen_tipo")
         repository.update_db()
         return receta
 

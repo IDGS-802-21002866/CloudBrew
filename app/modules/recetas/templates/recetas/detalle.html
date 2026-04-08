@@ -41,12 +41,27 @@
             {% endif %}
           </p>
         </div>
-
       </div>
     </div>
 
-    <!-- Materias primas y Procesos, lado a lado -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Imagen, Materias primas y Procesos, grid de 3 -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+      <!-- Imagen -->
+      <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
+        <div class="bg-gray-100 px-6 py-4 border-b border-gray-200 flex items-center">
+          <i class="fa-solid fa-image text-gray-500 mr-3"></i>
+          <span class="font-bold text-gray-700">Imagen</span>
+        </div>
+        <div class="p-4 flex items-center justify-center">
+          {% if receta.imagen %}
+          <img src="{{ url_for('recetas.imagen', id=receta.id) }}" alt="{{ receta.nombre }}"
+               class="max-h-52 object-contain rounded-lg">
+          {% else %}
+          <p class="py-8 text-gray-500">Sin imagen</p>
+          {% endif %}
+        </div>
+      </div>
 
       <!-- Materias Primas requeridas -->
       <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
