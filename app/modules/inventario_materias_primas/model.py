@@ -24,11 +24,17 @@ class MovimientosMateriaPrima(db.Model):
     detalle_compra_id: Mapped[int] = mapped_column(
         db.Integer, db.ForeignKey("detalle_compra.id"), nullable=True
     )
+    merma_materia_prima_id: Mapped[int] = mapped_column(
+        db.Integer, db.ForeignKey("mermas_materia_prima.id"), nullable=True
+    )
 
     materia_prima = db.relationship("MateriaPrima", back_populates="movimientos")
     usuario = db.relationship("Usuario", back_populates="movimientos_materia_prima")
     detalle_compra = db.relationship(
         "DetalleCompra", back_populates="movimientos_materia_prima"
+    )
+    merma_materia_prima = db.relationship(
+        "MermaMateriaPrima", back_populates="movimientos_materia_prima"
     )
 
     # TODO: Agregar relacion con salidas, tanto con mermas con produccion
