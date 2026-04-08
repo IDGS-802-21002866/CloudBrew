@@ -2,7 +2,11 @@ from flask import render_template, request, redirect, url_for, flash, session
 from flask_login import current_user
 from app.modules.compras import bp
 from app.modules.compras.service import ComprasService
-from app.modules.compras.form import OrdenDeCompraForm, OrdenDeCompraDetallesForm
+from app.modules.compras.form import (
+    OrdenDeCompraConfirmacionForm,
+    OrdenDeCompraForm,
+    OrdenDeCompraDetallesForm,
+)
 from app.modules.proveedores.service import ProveedorService
 from app.modules.materias_primas.service import MateriaPrimaService
 from app.modules.presentaciones.service import PresentacionService
@@ -118,4 +122,58 @@ def detalle(id):
         flash(str(e), "danger")
         return redirect(url_for("compras.listar"))
 
+    if compra.cancelada:
+        flash("No se puede ver el detalle de una compra cancelada.", "danger")
+        return redirect(url_for("compras.listar"))
+
     return render_template("compras/detalle.html", compra=compra)
+
+
+@bp.route("/<int:id>/cancelar", methods=["GET", "POST"])
+def cancelar(id):
+    cancelacion_form = OrdenDeCompraConfirmacionForm()
+    try:
+        compra = compras_service.obtener_compra(id)
+    except ValidacionNegocioException as e:
+        flash(str(e), "danger")
+        return redirect(url_for("compras.listar"))
+
+    if cancelacion_form.validate_on_submit():
+        try:
+            compras_service.cancelar_compra(id)
+            flash("Compra cancelada exitosamente.", "success")
+            return redirect(url_for("compras.listar"))
+        except ValidacionNegocioException as e:
+            flash(str(e), "danger")
+
+    return render_template(
+        "compras/cancelacion.html", compra=compra, form=cancelacion_form
+    )
+
+
+@bp.route("/<int:id>/confirmar_compra", methods=["GET", "POST"])
+def confirmar_compra(id):
+    confirmacion_form = OrdenDeCompraConfirmacionForm()
+    try:
+        compra = compras_service.obtener_compra(id)
+    except ValidacionNegocioException as e:
+        flash(str(e), "danger")
+        return redirect(url_for("compras.listar"))
+
+    if confirmacion_form.validate_on_submit():
+        detalle_ids = request.form.getlist("detalle_id")
+        precios = request.form.getlist("precio_unitario")
+        try:
+            compras_service.confirmar_compra(
+                compra_id=id,
+                detalle_ids=detalle_ids,
+                precios=precios,
+            )
+            flash("Compra confirmada exitosamente.", "success")
+            return redirect(url_for("compras.detalle", id=id))
+        except ValidacionNegocioException as e:
+            flash(str(e), "danger")
+
+    return render_template(
+        "compras/confirmacion.html", compra=compra, form=confirmacion_form
+    )

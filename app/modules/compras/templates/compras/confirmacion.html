@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+{% from '_macros.html' import campo_nuevo %}
+{% block content %}
+<div class="max-w-6xl mx-auto py-8 px-4">
+    <a href="{{ url_for('compras.listar') }}" class="flex items-center text-2xl font-bold mb-6 hover:text-gray-600 transition">
+        <i class="fa-solid fa-chevron-left mr-3"></i>
+        {% if compra.fecha_compra %}
+            Detalle de Compra #{{ compra.id }}
+        {% else %}
+            Confirmar Compra #{{ compra.id }}
+        {% endif %}
+    </a>
+
+    <form action="{{ url_for('compras.confirmar_compra', id=compra.id) }}" method="post" novalidate>
+    {{ form.hidden_tag() }}
+    <div class="space-y-6">
+
+        <!-- Información general -->
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
+            <div class="bg-gray-100 px-6 py-4 border-b border-gray-200 flex items-center">
+                <i class="fa-solid fa-circle-info text-gray-500 mr-3"></i>
+                <span class="font-bold text-gray-700">Información de la compra</span>
+            </div>
+
+            <div class="p-8 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                <div>
+                    <span class="block text-sm font-semibold text-gray-500">Folio</span>
+                    <span class="text-gray-800 font-bold">#{{ compra.id }}</span>
+                </div>
+                <div>
+                    <span class="block text-sm font-semibold text-gray-500">Proveedor</span>
+                    <span class="text-gray-800">{{ compra.proveedor.nombre if compra.proveedor else 'N/A' }}</span>
+                </div>
+                <div>
+                    <span class="block text-sm font-semibold text-gray-500">Fecha de Registro</span>
+                    <span class="text-gray-800">{{ compra.fecha_registro.strftime('%d/%m/%Y %H:%M') if compra.fecha_registro else 'N/A' }}</span>
+                </div>
+                <div>
+                    <span class="block text-sm font-semibold text-gray-500">Fecha de Compra</span>
+                    {% if compra.fecha_compra %}
+                        <span class="text-gray-800">{{ compra.fecha_compra.strftime('%d/%m/%Y %H:%M') }}</span>
+                    {% else %}
+                        <span class="text-gray-400 italic">Se registrará al confirmar</span>
+                    {% endif %}
+                </div>
+                <div>
+                    <span class="block text-sm font-semibold text-gray-500">Usuario</span>
+                    <span class="text-gray-800">{{ compra.usuario.nombre if compra.usuario else 'N/A' }}</span>
+                </div>
+                <div>
+                    <span class="block text-sm font-semibold text-gray-500">Estado</span>
+                    {% if compra.fecha_compra %}
+                        <span class="rounded-full px-3 py-1 text-xs font-bold bg-[#4A9062] bg-opacity-20 text-[#2D6A3E] border border-[#4A9062]">Pagado</span>
+                    {% else %}
+                        <span class="rounded-full px-3 py-1 text-xs font-bold bg-[#E8A946] bg-opacity-20 text-[#B8860B] border border-[#E8A946]">Pendiente</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Detalles de productos -->
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
+            <div class="bg-gray-100 px-6 py-4 border-b border-gray-200 flex items-center">
+                <i class="fa-solid fa-list text-gray-500 mr-3"></i>
+                <span class="font-bold text-gray-700">Productos</span>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="bg-gray-100 border-b-2 border-gray-300">
+                            <th class="px-6 py-3 text-left font-bold text-gray-700">Materia Prima</th>
+                            <th class="px-6 py-3 text-left font-bold text-gray-700">Presentación</th>
+                            <th class="px-6 py-3 text-center font-bold text-gray-700">Cantidad</th>
+                            <th class="px-6 py-3 text-center font-bold text-gray-700">Precio Unitario</th>
+                            <th class="px-6 py-3 text-center font-bold text-gray-700">Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% set total = namespace(valor=0) %}
+                        {% for detalle in compra.detalles %}
+                        <tr class="border-b border-gray-200 hover:bg-gray-50">
+                            <td class="px-6 py-3">
+                                <input type="hidden" name="detalle_id" value="{{ detalle.id }}">
+                                {{ detalle.materia_prima.nombre if detalle.materia_prima else 'N/A' }}
+                            </td>
+                            <td class="px-6 py-3">{{ detalle.presentacion.nombre if detalle.presentacion else 'N/A' }}</td>
+                            <td class="px-6 py-3 text-center">{{ detalle.cantidad }}</td>
+                            <td class="px-6 py-3 text-center">
+                                {% if compra.fecha_compra %}
+                                    ${{ "%.2f"|format(detalle.precio_unitario) }}
+                                {% else %}
+                                    <input
+                                        type="number"
+                                        name="precio_unitario"
+                                        step="0.01"
+                                        min="0.01"
+                                        placeholder="0.00"
+                                        required
+                                        data-cantidad="{{ detalle.cantidad }}"
+                                        class="precio-input w-32 px-3 py-2 border-2 border-gray-400 rounded-lg focus:border-[#6C9AD0] focus:ring-0 text-center"
+                                    >
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-3 text-center">
+                                {% if compra.fecha_compra %}
+                                    {% set subtotal = detalle.cantidad * detalle.precio_unitario %}
+                                    {% set total.valor = total.valor + subtotal %}
+                                    ${{ "%.2f"|format(subtotal) }}
+                                {% else %}
+                                    <span class="subtotal-cell text-gray-400">—</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr class="bg-gray-50 border-t-2 border-gray-300">
+                            <td colspan="4" class="px-6 py-3 text-right font-bold text-gray-700">Total:</td>
+                            <td class="px-6 py-3 text-center font-bold text-gray-800">
+                                {% if compra.fecha_compra %}
+                                    ${{ "%.2f"|format(total.valor) }}
+                                {% else %}
+                                    <span id="total-display" class="text-gray-400">—</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
+        <!-- Botón confirmar (solo si está pendiente) -->
+        {% if not compra.fecha_compra %}
+        <div class="flex justify-end">
+            <button type="submit" class="px-6 py-3 bg-[#4A9062] hover:bg-[#2D6A3E] text-white font-bold rounded-xl transition">
+                <i class="fa-solid fa-check mr-2"></i>Confirmar Compra
+            </button>
+        </div>
+        {% endif %}
+
+    </div>
+    </form>
+</div>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const inputs = document.querySelectorAll(".precio-input");
+    const totalDisplay = document.getElementById("total-display");
+
+    function recalcular() {
+      let total = 0;
+      inputs.forEach(function (input) {
+        const cantidad = parseFloat(input.dataset.cantidad) || 0;
+        const precio = parseFloat(input.value) || 0;
+        const subtotal = cantidad * precio;
+        total += subtotal;
+        const subtotalCell = input.closest("tr").querySelector(".subtotal-cell");
+        if (subtotalCell) {
+          subtotalCell.textContent = subtotal > 0 ? "$" + subtotal.toFixed(2) : "—";
+          subtotalCell.classList.toggle("text-gray-400", subtotal === 0);
+          subtotalCell.classList.toggle("text-gray-800", subtotal > 0);
+        }
+      });
+      if (totalDisplay) {
+        totalDisplay.textContent = total > 0 ? "$" + total.toFixed(2) : "—";
+        totalDisplay.classList.toggle("text-gray-400", total === 0);
+        totalDisplay.classList.toggle("font-bold", total > 0);
+        totalDisplay.classList.toggle("text-gray-800", total > 0);
+      }
+    }
+
+    inputs.forEach(function (input) {
+      input.addEventListener("input", recalcular);
+    });
+  });
+</script>
+{% endblock %}

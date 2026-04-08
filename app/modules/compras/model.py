@@ -9,7 +9,8 @@ class Compra(db.Model):
     fecha_registro: Mapped[str] = mapped_column(
         db.DateTime, nullable=False, default=db.func.now()
     )
-    fecha_compra: Mapped[str] = mapped_column(db.Date, nullable=True)
+    fecha_compra: Mapped[str] = mapped_column(db.DateTime, nullable=True)
+    cancelada: Mapped[bool] = mapped_column(db.Boolean, default=False)
     proveedor_id: Mapped[int] = mapped_column(db.ForeignKey("proveedor.id"))
     proveedor = db.relationship("Proveedor", back_populates="compras")
     usuario_id: Mapped[int] = mapped_column(db.ForeignKey("usuario.id"))
@@ -30,3 +31,7 @@ class DetalleCompra(db.Model):
     presentacion = db.relationship("Presentacion")
     cantidad: Mapped[int] = mapped_column(db.Integer, nullable=False)
     precio_unitario: Mapped[float] = mapped_column(db.Float, nullable=False)
+
+    movimientos_materia_prima = db.relationship(
+        "MovimientosMateriaPrima", back_populates="detalle_compra"
+    )

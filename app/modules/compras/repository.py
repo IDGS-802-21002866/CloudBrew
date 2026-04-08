@@ -47,3 +47,31 @@ def create_compra(proveedor_id, usuario_id, detalles):
 
 def update_compra():
     db.session.commit()
+
+
+def confirmar_compra(compra_id, detalle_precios, fecha_compra):
+    """
+    Actualiza precios de los detalles y la fecha de compra en una sola transacción.
+
+    Args:
+        compra_id: ID de la compra a confirmar
+        detalle_precios: lista de tuplas (detalle_id, precio_unitario)
+        fecha_compra: fecha de la compra (date)
+    """
+    compra = Compra.query.get(compra_id)
+    if compra:
+        compra.fecha_compra = fecha_compra
+
+    for detalle_id, precio in detalle_precios:
+        detalle = DetalleCompra.query.get(detalle_id)
+        if detalle:
+            detalle.precio_unitario = precio
+
+    db.session.commit()
+
+
+def cancelar_compra(compra_id):
+    compra = Compra.query.get(compra_id)
+    if compra:
+        compra.cancelada = True
+        db.session.commit()

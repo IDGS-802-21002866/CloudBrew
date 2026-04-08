@@ -1,0 +1,197 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import campo_nuevo, mostrar_flashes %}
+
+{% block title %}Editar Receta{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto py-8 px-4">
+
+  {{ mostrar_flashes() }}
+
+  <!--
+    Formularios declarados aquí fuera del layout para evitar anidamiento inválido.
+    Los inputs y botones se asocian al form correspondiente con el atributo form="id".
+  -->
+
+  <!-- Form: información general + actualizar -->
+  <form id="form-receta" method="POST" action="{{ url_for('recetas.editar', id=receta.id) }}" novalidate>
+    {{ receta_form.hidden_tag() }}
+    <input type="hidden" name="accion" value="actualizar_receta">
+  </form>
+
+  <!-- Form: agregar materia prima -->
+  <form id="form-agregar-detalle" method="POST" action="{{ url_for('recetas.editar', id=receta.id) }}" novalidate>
+    {{ detalle_form.hidden_tag() }}
+    <input type="hidden" name="accion" value="agregar_detalle">
+  </form>
+
+  <!-- Form: agregar proceso -->
+  <form id="form-agregar-proceso" method="POST" action="{{ url_for('recetas.editar', id=receta.id) }}" novalidate>
+    {{ proceso_form.hidden_tag() }}
+    <input type="hidden" name="accion" value="agregar_proceso">
+  </form>
+
+  <!-- Forms: quitar materia prima (uno por fila) -->
+  {% for detalle in detalles_carrito %}
+  <form id="form-quitar-detalle-{{ loop.index0 }}" method="POST" action="{{ url_for('recetas.editar', id=receta.id) }}">
+    {{ receta_form.hidden_tag() }}
+    <input type="hidden" name="accion" value="quitar_detalle">
+    <input type="hidden" name="idx" value="{{ loop.index0 }}">
+  </form>
+  {% endfor %}
+
+  <!-- Forms: quitar proceso (uno por fila) -->
+  {% for proceso in procesos_carrito %}
+  <form id="form-quitar-proceso-{{ loop.index0 }}" method="POST" action="{{ url_for('recetas.editar', id=receta.id) }}">
+    {{ receta_form.hidden_tag() }}
+    <input type="hidden" name="accion" value="quitar_proceso">
+    <input type="hidden" name="idx" value="{{ loop.index0 }}">
+  </form>
+  {% endfor %}
+
+  <a href="{{ url_for('recetas.listar') }}" class="flex items-center text-2xl font-bold mb-6 hover:text-gray-600 transition">
+    <i class="fa-solid fa-chevron-left mr-3"></i>
+    {{ receta.nombre }}
+  </a>
+
+  <div class="space-y-6">
+
+    <!-- Información general -->
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
+      <div class="bg-gray-100 px-6 py-4 border-b border-gray-200 flex items-center">
+        <i class="fa-solid fa-circle-info text-gray-500 mr-3"></i>
+        <span class="font-bold text-gray-700">Información general</span>
+      </div>
+      <div class="p-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+        {{ campo_nuevo(receta_form.nombre, form="form-receta") }}
+        {{ campo_nuevo(receta_form.cantidad_producida, form="form-receta") }}
+        {{ campo_nuevo(receta_form.descripcion, form="form-receta") }}
+      </div>
+    </div>
+
+    <!-- Materias primas -->
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
+      <div class="bg-gray-100 px-6 py-4 border-b border-gray-200 flex items-center">
+        <i class="fa-solid fa-flask text-gray-500 mr-3"></i>
+        <span class="font-bold text-gray-700">Materias Primas</span>
+      </div>
+
+      <!-- Fila para agregar -->
+      <div class="px-6 py-4 border-b border-gray-200">
+        <div class="flex flex-wrap gap-3 items-end">
+          <div class="flex-1 min-w-52">
+            {{ campo_nuevo(detalle_form.materia_prima_id, form="form-agregar-detalle") }}
+          </div>
+          <div class="w-36">
+            {{ campo_nuevo(detalle_form.cantidad, form="form-agregar-detalle") }}
+          </div>
+          <button type="submit" form="form-agregar-detalle" class="px-4 py-2 text-sm font-medium text-white bg-[#6C9AD0] rounded-lg hover:opacity-90 transition shadow-md">
+            Agregar
+          </button>
+        </div>
+      </div>
+
+      <!-- Tabla de materias primas -->
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead>
+            <tr class="bg-gray-100 border-b-2 border-gray-300">
+              <th class="px-6 py-3 text-left font-bold text-gray-700">Materia Prima</th>
+              <th class="px-6 py-3 text-center font-bold text-gray-700">Cantidad</th>
+              <th class="px-6 py-3 text-center font-bold text-gray-700">Unidad</th>
+              <th class="px-6 py-3 text-center font-bold text-gray-700">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% if detalles_carrito %}
+              {% for detalle in detalles_carrito %}
+              <tr class="border-b border-gray-200 hover:bg-gray-50">
+                <td class="px-6 py-3">{{ detalle.materia_prima_nombre }}</td>
+                <td class="px-6 py-3 text-center">{{ detalle.cantidad }}</td>
+                <td class="px-6 py-3 text-center">{{ detalle.tipo_medida }}</td>
+                <td class="px-6 py-3 text-center">
+                  <button type="submit" form="form-quitar-detalle-{{ loop.index0 }}" class="px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600 transition">
+                    <i class="fa-solid fa-trash"></i>
+                  </button>
+                </td>
+              </tr>
+              {% endfor %}
+            {% else %}
+              <tr>
+                <td colspan="4" class="px-6 py-8 text-center text-gray-500">
+                  No hay materias primas agregadas.
+                </td>
+              </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Procesos requeridos -->
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
+      <div class="bg-gray-100 px-6 py-4 border-b border-gray-200 flex items-center">
+        <i class="fa-solid fa-gears text-gray-500 mr-3"></i>
+        <span class="font-bold text-gray-700">Procesos Requeridos</span>
+      </div>
+
+      <!-- Fila para agregar -->
+      <div class="px-6 py-4 border-b border-gray-200">
+        <div class="flex flex-wrap gap-3 items-end">
+          <div class="flex-1 min-w-52">
+            {{ campo_nuevo(proceso_form.proceso_productivo_id, form="form-agregar-proceso") }}
+          </div>
+          <div class="w-36">
+            {{ campo_nuevo(proceso_form.tiempo_estimado, form="form-agregar-proceso") }}
+          </div>
+          <button type="submit" form="form-agregar-proceso" class="px-4 py-2 text-sm font-medium text-white bg-[#6C9AD0] rounded-lg hover:opacity-90 transition shadow-md">
+            Agregar
+          </button>
+        </div>
+      </div>
+
+      <!-- Tabla de procesos -->
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead>
+            <tr class="bg-gray-100 border-b-2 border-gray-300">
+              <th class="px-6 py-3 text-left font-bold text-gray-700">Proceso</th>
+              <th class="px-6 py-3 text-center font-bold text-gray-700">Tiempo Estimado (min)</th>
+              <th class="px-6 py-3 text-center font-bold text-gray-700">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% if procesos_carrito %}
+              {% for proceso in procesos_carrito %}
+              <tr class="border-b border-gray-200 hover:bg-gray-50">
+                <td class="px-6 py-3">{{ proceso.proceso_nombre }}</td>
+                <td class="px-6 py-3 text-center">{{ proceso.tiempo_estimado }}</td>
+                <td class="px-6 py-3 text-center">
+                  <button type="submit" form="form-quitar-proceso-{{ loop.index0 }}" class="px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600 transition">
+                    <i class="fa-solid fa-trash"></i>
+                  </button>
+                </td>
+              </tr>
+              {% endfor %}
+            {% else %}
+              <tr>
+                <td colspan="3" class="px-6 py-8 text-center text-gray-500">
+                  No hay procesos agregados (opcional).
+                </td>
+              </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Botón actualizar -->
+    <div class="flex justify-end items-center gap-4">
+      <button type="submit" form="form-receta" class="px-8 py-2 bg-[#4A9062] text-white font-bold rounded-lg hover:opacity-90 transition shadow-md">
+        Actualizar Receta
+      </button>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

@@ -28,6 +28,9 @@ class Usuario(db.Model, UserMixin):
     )
     rol_id: Mapped[int] = mapped_column(ForeignKey("rol.id"))
     rol: Mapped["Rol"] = relationship(back_populates="usuarios")
+    movimientos_materia_prima = relationship(
+        "MovimientosMateriaPrima", back_populates="usuario"
+    )
 
     @property
     def is_active(self):

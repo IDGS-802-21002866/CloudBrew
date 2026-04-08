@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from app.modules.compras import repository
 from app.modules.materias_primas.service import MateriaPrimaService
 from app.modules.presentaciones.service import PresentacionService
@@ -97,3 +99,38 @@ class ComprasService:
         if not compra:
             raise ValidacionNegocioException("Compra no encontrada.")
         return compra
+
+    def confirmar_compra(self, compra_id, detalle_ids, precios):
+        if not detalle_ids or not precios:
+            raise ValidacionNegocioException(
+                "Debe ingresar los precios de los detalles."
+            )
+        if len(detalle_ids) != len(precios):
+            raise ValidacionNegocioException("Datos de confirmación inválidos.")
+
+        detalle_precios = []
+        for detalle_id, precio_str in zip(detalle_ids, precios):
+            try:
+                precio = float(precio_str)
+            except (ValueError, TypeError):
+                raise ValidacionNegocioException(
+                    "El precio unitario debe ser un número válido."
+                )
+            if precio <= 0:
+                raise ValidacionNegocioException(
+                    "El precio unitario debe ser mayor a 0."
+                )
+            detalle_precios.append((int(detalle_id), precio))
+
+        fecha_compra = datetime.now()
+        repository.confirmar_compra(compra_id, detalle_precios, fecha_compra)
+
+    def cancelar_compra(self, compra_id):
+        compra = self.obtener_compra(compra_id)
+        if compra.cancelada:
+            raise ValidacionNegocioException("La compra ya está cancelada.")
+        if compra.fecha_compra:
+            raise ValidacionNegocioException(
+                "No se puede cancelar una compra ya confirmada."
+            )
+        repository.cancelar_compra(compra_id)

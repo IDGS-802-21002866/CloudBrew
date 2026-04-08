@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+
+{% block title %}Detalle de Receta{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto py-8 px-4">
+
+  <a href="{{ url_for('recetas.listar') }}" class="flex items-center text-2xl font-bold mb-6 hover:text-gray-600 transition">
+    <i class="fa-solid fa-chevron-left mr-3"></i>
+    {{ receta.nombre }}
+  </a>
+
+  <div class="space-y-6">
+
+    <!-- Información general (una sola línea) -->
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
+      <div class="bg-gray-100 px-6 py-4 border-b border-gray-200 flex items-center">
+        <i class="fa-solid fa-circle-info text-gray-500 mr-3"></i>
+        <span class="font-bold text-gray-700">Información de receta</span>
+      </div>
+      <div class="px-6 py-4 flex flex-wrap items-center gap-x-8 gap-y-3">
+        <div>
+          <span class="text-sm font-semibold text-gray-500">Nombre</span>
+          <p class="text-gray-900 font-medium">{{ receta.nombre }}</p>
+        </div>
+        <div>
+          <span class="text-sm font-semibold text-gray-500">Descripción</span>
+          <p class="text-gray-900 font-medium">{{ receta.descripcion or 'N/A' }}</p>
+        </div>
+        <div>
+          <span class="text-sm font-semibold text-gray-500">Cantidad Producida</span>
+          <p class="text-gray-900 font-medium">{{ receta.cantidad_producida }}</p>
+        </div>
+        <div>
+          <span class="text-sm font-semibold text-gray-500">Estado</span>
+          <p>
+            {% if receta.activo %}
+            <span class="rounded-full px-3 py-1 text-xs font-bold bg-green-100 text-green-800 border border-green-200">Activa</span>
+            {% else %}
+            <span class="rounded-full px-3 py-1 text-xs font-bold bg-red-100 text-red-800 border border-red-200">Inactiva</span>
+            {% endif %}
+          </p>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Materias primas y Procesos, lado a lado -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+      <!-- Materias Primas requeridas -->
+      <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
+        <div class="bg-gray-100 px-6 py-4 border-b border-gray-200 flex items-center">
+          <i class="fa-solid fa-flask text-gray-500 mr-3"></i>
+          <span class="font-bold text-gray-700">Materias primas requeridas</span>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead>
+              <tr class="bg-gray-100 border-b-2 border-gray-300">
+                <th class="px-6 py-3 text-left font-bold text-gray-700">Materia prima</th>
+                <th class="px-6 py-3 text-center font-bold text-gray-700">Requerido</th>
+                <th class="px-6 py-3 text-center font-bold text-gray-700">Unidad</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if receta.detalle %}
+                {% for detalle in receta.detalle %}
+                <tr class="border-b border-gray-200 hover:bg-gray-50">
+                  <td class="px-6 py-3 text-sm text-gray-900">{{ detalle.materia_prima.nombre }}</td>
+                  <td class="px-6 py-3 text-center text-sm text-gray-900">{{ detalle.cantidad }}</td>
+                  <td class="px-6 py-3 text-center text-sm text-gray-900">{{ detalle.materia_prima.tipo_medida.nombre }}</td>
+                </tr>
+                {% endfor %}
+              {% else %}
+                <tr>
+                  <td colspan="3" class="px-6 py-8 text-center text-gray-500">No hay materias primas asignadas.</td>
+                </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Procesos requeridos -->
+      <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
+        <div class="bg-gray-100 px-6 py-4 border-b border-gray-200 flex items-center">
+          <i class="fa-solid fa-gears text-gray-500 mr-3"></i>
+          <span class="font-bold text-gray-700">Procesos requeridos</span>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead>
+              <tr class="bg-gray-100 border-b-2 border-gray-300">
+                <th class="px-6 py-3 text-left font-bold text-gray-700">Proceso</th>
+                <th class="px-6 py-3 text-center font-bold text-gray-700">Tiempo (min)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if receta.procesos_receta %}
+                {% for proceso in receta.procesos_receta %}
+                <tr class="border-b border-gray-200 hover:bg-gray-50">
+                  <td class="px-6 py-3 text-sm text-gray-900">{{ proceso.proceso_productivo.nombre }}</td>
+                  <td class="px-6 py-3 text-center text-sm text-gray-900">{{ proceso.tiempo_estimado }}</td>
+                </tr>
+                {% endfor %}
+              {% else %}
+                <tr>
+                  <td colspan="2" class="px-6 py-8 text-center text-gray-500">No hay procesos asignados.</td>
+                </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+{% endblock %}

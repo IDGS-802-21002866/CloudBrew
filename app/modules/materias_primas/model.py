@@ -19,3 +19,10 @@ class MateriaPrima(db.Model):
 
     # Relación con detalles de compra
     compras = relationship("DetalleCompra", back_populates="materia_prima")
+
+    # Relacion con movimiento de materia prima
+    movimientos = relationship(
+        "MovimientosMateriaPrima", back_populates="materia_prima"
+    )
+
+    recetas_detalle = relationship("RecetaDetalle", back_populates="materia_prima")

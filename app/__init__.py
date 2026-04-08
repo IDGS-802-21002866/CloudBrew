@@ -29,6 +29,12 @@ def create_app():
     from app.modules.materias_primas import bp as materias_primas_bp
     from app.modules.presentaciones import bp as presentaciones_bp
     from app.modules.compras import bp as compras_bp
+    from app.modules.clientes import bp as clientes_bp
+    from app.modules.proc_prod import bp as proc_prod_bp
+    from app.modules.recetas import bp as recetas_bp
+    from app.modules.inventario_materias_primas import (
+        bp as inventario_materias_primas_bp,
+    )
     
     app = Flask(__name__)
     app.config.from_object(DevelopmentConfig)
@@ -57,6 +63,10 @@ def create_app():
         presentaciones_bp,
         proc_prod_bp,
         compras_bp,
+        clientes_bp,
+        proc_prod_bp,
+        recetas_bp,
+        inventario_materias_primas_bp,
     ]
 
     for bp in blueprints_protegidos:
