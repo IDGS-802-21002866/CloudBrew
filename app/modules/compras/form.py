@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import IntegerField, SelectField, FloatField
+from wtforms import IntegerField, SelectField
 from wtforms.validators import DataRequired, NumberRange
 
 
@@ -27,3 +27,7 @@ class OrdenDeCompraDetallesForm(FlaskForm):
             NumberRange(min=1, message="La cantidad debe ser mayor a 0."),
         ],
     )
+
+
+class OrdenDeCompraConfirmacionForm(FlaskForm):
+    pass
