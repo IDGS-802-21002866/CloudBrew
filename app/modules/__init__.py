@@ -6,6 +6,8 @@ from app.modules.unidades_medida import UnidadMedida
 from app.modules.presentaciones import Presentacion
 from app.modules.proc_prod.model import ProcesoProductivo
 from app.modules.inventario_materias_primas import MovimientosMateriaPrima
+from app.modules.inventario_producto_terminado import MovimientosReceta
+from app.modules.recetas import Recetas, RecetaDetalle, ProcesosReceta
 
 #  Agregar nuevos modelos aquí y luego importarlos en __all__ para que estén disponibles en toda la aplicación
 __all__ = [
@@ -19,4 +21,8 @@ __all__ = [
     "Presentacion",
     "ProcesoProductivo",
     "MovimientosMateriaPrima",
+    "MovimientosReceta",
+    "Recetas",
+    "RecetaDetalle",
+    "ProcesosReceta",
 ]

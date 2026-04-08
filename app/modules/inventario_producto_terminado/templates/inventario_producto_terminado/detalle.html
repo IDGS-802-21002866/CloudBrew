@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}Movimientos de Producto Terminado{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto py-8 px-4">
+  <a href="{{ url_for('inventario_producto_terminado.listar') }}" class="flex items-center text-2xl font-bold mb-6 hover:text-gray-600 transition">
+    <i class="fa-solid fa-chevron-left mr-3"></i>
+    Movimientos de {{ receta.nombre }}
+  </a>
+
+  <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200 mb-6">
+    <div class="bg-gray-100 px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+      <span class="font-bold text-gray-700">Resumen</span>
+      <span class="text-sm text-gray-600">Stock actual: <strong>{{ '%.2f'|format(stock_actual) }}</strong></span>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
+    <div class="bg-gray-100 px-6 py-4 border-b border-gray-200 flex items-center">
+      <i class="fa-solid fa-list text-gray-500 mr-3"></i>
+      <span class="font-bold text-gray-700">Movimientos</span>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full">
+        <thead>
+          <tr class="bg-gray-100 border-b-2 border-gray-300">
+            <th class="px-6 py-3 text-left font-bold text-gray-700">Fecha</th>
+            <th class="px-6 py-3 text-left font-bold text-gray-700">Tipo</th>
+            <th class="px-6 py-3 text-right font-bold text-gray-700">Cantidad</th>
+            <th class="px-6 py-3 text-left font-bold text-gray-700">Motivo</th>
+            <th class="px-6 py-3 text-left font-bold text-gray-700">Referencia</th>
+            <th class="px-6 py-3 text-left font-bold text-gray-700">Usuario</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if movimientos %}
+            {% for mov in movimientos %}
+            <tr class="border-b border-gray-200 hover:bg-gray-50">
+              <td class="px-6 py-3">{{ mov.fecha.strftime('%d/%m/%Y %H:%M') if mov.fecha else 'N/A' }}</td>
+              <td class="px-6 py-3">
+                {% if mov.tipo == 'entrada' %}
+                  <span class="rounded-full px-3 py-1 text-xs font-bold bg-green-100 text-green-700 border border-green-400">Entrada</span>
+                {% else %}
+                  <span class="rounded-full px-3 py-1 text-xs font-bold bg-red-100 text-red-700 border border-red-400">Salida</span>
+                {% endif %}
+              </td>
+              <td class="px-6 py-3 text-right font-semibold">{{ '%.2f'|format(mov.cantidad) }}</td>
+              <td class="px-6 py-3">{{ mov.motivo if mov.motivo else 'N/A' }}</td>
+              <td class="px-6 py-3">
+                {# TODO: Agregar referencia a producción o venta cuando estén disponibles #}
+                N/A
+              </td>
+              <td class="px-6 py-3">{{ mov.usuario.nombre if mov.usuario else 'N/A' }}</td>
+            </tr>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td colspan="6" class="px-6 py-4 text-center text-gray-500">No hay movimientos para esta receta.</td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

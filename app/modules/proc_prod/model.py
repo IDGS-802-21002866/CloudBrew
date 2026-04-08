@@ -12,3 +12,7 @@ class ProcesoProductivo(db.Model, UserMixin):
     nombre: Mapped[str] = mapped_column(String(100), nullable=True)
     descripcion: Mapped[str] = mapped_column(String(200), nullable=True)
     activo: Mapped[bool] = mapped_column(default=True)
+
+    procesos_receta = db.relationship(
+        "ProcesosReceta", back_populates="proceso_productivo"
+    )
