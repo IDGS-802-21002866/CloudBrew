@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import campo_nuevo, mostrar_flashes %}
+
+{% block title %}Generar Pedido Retail{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto py-8 px-4">
+    {{ mostrar_flashes() }}
+
+    <a href="{{ url_for('pedidos.listar') }}"
+        class="flex items-center text-2xl font-bold mb-6 hover:text-[#4A9062] transition">
+        <i class="fa-solid fa-chevron-left mr-3"></i> Generar Orden de Pedido
+    </a>
+
+    <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+        <div class="bg-gray-100 px-6 py-4 border-b border-gray-200">
+            <span class="font-bold text-gray-700 uppercase tracking-widest text-sm">
+                <i class="fa-solid fa-cart-shopping mr-2 text-gray-400"></i> Captura de Pedido
+            </span>
+        </div>
+
+        <form method="POST" class="p-8" id="form-pedido">
+            {{ form.hidden_tag() }}
+            {{ detalle_form.hidden_tag() }}
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
+                <div class="relative">
+                    <label class="block text-gray-500 text-xs font-black uppercase mb-2">Buscar Cliente Retail</label>
+                    <input type="text" id="cliente-search" list="clientes-list"
+                        value="{{ cliente_nombre_default if cliente_nombre_default else request.form.get('cliente_nombre_hidden', '') }}"
+                        class="w-full px-4 py-3 border-2 border-gray-400 rounded-xl focus:border-[#6C9AD0] outline-none"
+                        placeholder="Nombre del cliente..." autocomplete="off">
+
+                    <datalist id="clientes-list">
+                        {% for cliente in clientes_retail %}
+                        <option value="{{ cliente.nombre_completo }}" data-id="{{ cliente.id }}"
+                            data-email="{{ cliente.email }}" data-telefono="{{ cliente.telefono }}"
+                            data-dir="{{ cliente.calle_numero }}, {{ cliente.colonia }}">
+                            {% endfor %}
+                    </datalist>
+
+                    <input type="hidden" name="cliente_id" id="cliente_id" value="{{ form.cliente_id.data or '' }}">
+                    <input type="hidden" name="cliente_nombre_hidden" id="cliente_nombre_hidden"
+                        value="{{ request.form.get('cliente_nombre_hidden', '') }}">
+
+                    <div id="cliente-info-box"
+                        class="mt-4 p-4 bg-blue-50 border-l-4 border-[#6C9AD0] rounded-lg hidden shadow-inner">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-gray-600">
+                            <p><strong>Email:</strong> <span id="info-email"></span></p>
+                            <p><strong>Tel:</strong> <span id="info-tel"></span></p>
+                            <p class="sm:col-span-2"><strong>Dirección:</strong> <span id="info-dir"></span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-gray-50 border-2 border-gray-200 rounded-2xl p-6 mb-10">
+                <h3 class="text-sm font-black text-gray-400 uppercase mb-6 border-b pb-2">Configurar Producto</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <div>
+                        <label class="block text-gray-700 text-xs font-bold uppercase mb-2">Producto / Estilo</label>
+                        <select name="receta_id" id="receta-select"
+                            class="w-full px-4 py-2 border-2 border-gray-400 rounded-lg focus:border-[#4A9062] outline-none">
+                            <option value="">--- Seleccionar ---</option>
+                            {% for receta in recetas %}
+                            <option value="{{ receta.id }}" data-rendimiento="{{ receta.cantidad_producida }}">{{
+                                receta.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-xs font-bold uppercase mb-2">Cantidad de Lotes</label>
+                        {{ detalle_form.cantidad_lotes(class="w-full px-4 py-2 border-2 border-gray-400 rounded-lg",
+                        placeholder="Ej. 1") }}
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-xs font-bold uppercase mb-2">Total Botellas
+                            (Proyectado)</label>
+                        <input type="text" id="total-unidades"
+                            class="w-full px-4 py-2 border-2 border-gray-200 rounded-lg bg-gray-200 font-bold text-gray-500"
+                            readonly>
+                    </div>
+                </div>
+                <button type="submit" name="action" value="agregar_detalle" formnovalidate
+                    class="bg-[#4A9062] text-white font-bold py-3 px-8 rounded-xl hover:bg-green-700 transition shadow-md flex items-center justify-center uppercase text-sm tracking-widest">
+                    <i class="fa-solid fa-cart-plus mr-2 text-lg"></i> Agregar a la Lista
+                </button>
+            </div>
+
+            <div class="mb-10">
+                <div class="overflow-hidden border-2 border-gray-400 rounded-xl">
+                    <table class="min-w-full bg-white">
+                        <thead class="bg-gray-100 border-b-2 border-gray-300">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-black text-gray-500 uppercase">Producto</th>
+                                <th class="px-6 py-3 text-center text-xs font-black text-gray-500 uppercase">Lotes</th>
+                                <th class="px-6 py-3 text-left text-xs font-black text-gray-500 uppercase">Rendimiento
+                                    Total</th>
+                                <th class="px-6 py-3 text-center text-xs font-black text-gray-500 uppercase">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200">
+                            {% for detalle in detalles %}
+                            <tr class="hover:bg-brew-bg hover:bg-opacity-5 transition">
+                                <td class="px-6 py-4 font-bold text-gray-800">{{ detalle.receta_nombre }}</td>
+                                <td class="px-6 py-4 text-center font-black text-[#6C9AD0]">{{ detalle.cantidad_lotes }}
+                                </td>
+                                <td class="px-6 py-4 text-gray-600">{{ '%.0f'|format(detalle.total_unidades) }} unidades
+                                </td>
+                                <td class="px-6 py-4 text-center">
+                                    <button type="submit" name="action" value="quitar_detalle_{{ loop.index0 }}"
+                                        formnovalidate class="text-[#B85B5B] hover:scale-110 transition p-2"
+                                        title="Quitar este producto">
+                                        <i class="fa-solid fa-trash-can text-lg"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            {% if not detalles %}
+                            <tr>
+                                <td colspan="4" class="px-6 py-8 text-center text-gray-400 italic">Lista vacía.
+                                    Configura un producto arriba.</td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="flex justify-end border-t pt-8">
+                <button type="submit" name="action" value="crear_pedido"
+                    class="px-12 py-4 bg-[#4A9062] text-white font-black rounded-2xl hover:bg-green-800 transition shadow-xl uppercase tracking-tighter">
+                    Actualizar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    const clienteSearch = document.getElementById('cliente-search');
+    const clienteIdInput = document.getElementById('cliente_id');
+    const clienteNombreHidden = document.getElementById('cliente_nombre_hidden');
+    const infoBox = document.getElementById('cliente-info-box');
+
+    function actualizarInfoCliente() {
+        const option = document.querySelector(`#clientes-list option[value="${clienteSearch.value}"]`);
+        if (option) {
+            document.getElementById('info-email').textContent = option.getAttribute('data-email');
+            document.getElementById('info-tel').textContent = option.getAttribute('data-telefono');
+            document.getElementById('info-dir').textContent = option.getAttribute('data-dir');
+            clienteIdInput.value = option.getAttribute('data-id');
+            clienteNombreHidden.value = clienteSearch.value;
+            infoBox.classList.remove('hidden');
+        } else {
+            infoBox.classList.add('hidden');
+            clienteIdInput.value = '';
+        }
+    }
+
+    clienteSearch.addEventListener('input', actualizarInfoCliente);
+
+    // Calculadora
+    const recetaSelect = document.getElementById('receta-select');
+    const cantidadLotes = document.querySelector('input[name="cantidad_lotes"]');
+    const totalUnidades = document.getElementById('total-unidades');
+
+    function calcular() {
+        const option = recetaSelect.options[recetaSelect.selectedIndex];
+        const rend = parseFloat(option.getAttribute('data-rendimiento')) || 0;
+        const lotes = parseFloat(cantidadLotes.value) || 0;
+        totalUnidades.value = rend > 0 && lotes > 0 ? Math.round(rend * lotes) + " Unidades" : "";
+    }
+
+    recetaSelect.addEventListener('change', calcular);
+    cantidadLotes.addEventListener('input', calcular);
+
+    // Persistencia al recargar (al agregar producto)
+    window.onload = () => { if (clienteSearch.value) actualizarInfoCliente(); };
+</script>
+{% endblock %}

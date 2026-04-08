@@ -40,6 +40,7 @@ def create_app():
     from app.modules.inventario_producto_terminado import (
         bp as inventario_producto_terminado_bp,
     )
+    from app.modules.pedidos import bp as pedidos_bp
 
     app = Flask(__name__)
     app.config.from_object(DevelopmentConfig)
@@ -73,6 +74,7 @@ def create_app():
         recetas_bp,
         inventario_materias_primas_bp,
         mermas_materia_prima_bp,
+        pedidos_bp,
         inventario_producto_terminado_bp,
     ]
 
