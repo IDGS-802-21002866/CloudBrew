@@ -56,7 +56,7 @@ def detalles():
         return render_template("detalle_usuario.html", form=form, usuario=usuario)
     except ValueError as e:
         flash(str(e), "danger")
-        return redirect(url_for("usuarios.index"))
+        return redirect(url_for("usuarios.listar"))
 
 
 @bp.route("/usuarios/insertar", methods=["POST"])
@@ -66,7 +66,7 @@ def insert():
         try:
             service.crear_usuario(form)
             flash("Usuario creado correctamente", "success")
-            return redirect(url_for("usuarios.index"))
+            return redirect(url_for("usuarios.listar"))
         except ValueError as e:
             flash(str(e), "danger")
     else:
@@ -82,7 +82,7 @@ def eliminar():
         flash("Usuario eliminado correctamente", "success")
     except ValueError as e:
         flash(str(e), "danger")
-    return redirect(url_for("usuarios.index"))
+    return redirect(url_for("usuarios.listar"))
 
 
 @bp.route("/usuarios/actualizar", methods=["POST"])
@@ -97,4 +97,4 @@ def modificar():
             flash(str(e), "danger")
     else:
         flash("Verifique los datos ingresados", "danger")
-    return redirect(url_for("usuarios.index"))
+    return redirect(url_for("usuarios.listar"))

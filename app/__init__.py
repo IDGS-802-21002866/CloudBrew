@@ -24,11 +24,12 @@ def create_app():
     from app.modules.main import bp as main_bp
     from app.modules.proveedores import bp as proveedores_bp
     from app.modules.usuarios import bp as usuarios_bp
+    from app.modules.proc_prod import bp as proc_prod_bp
     from app.modules.unidades_medida import bp as unidades_medida_bp
     from app.modules.materias_primas import bp as materias_primas_bp
     from app.modules.presentaciones import bp as presentaciones_bp
     from app.modules.compras import bp as compras_bp
-
+    
     app = Flask(__name__)
     app.config.from_object(DevelopmentConfig)
     db.init_app(app)
@@ -54,6 +55,7 @@ def create_app():
         unidades_medida_bp,
         materias_primas_bp,
         presentaciones_bp,
+        proc_prod_bp,
         compras_bp,
     ]
 

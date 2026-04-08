@@ -1,8 +1,9 @@
+from flask_security.core import UserMixin
 from flask_sqlalchemy import SQLAlchemy
 from app import db
 
 
-class Proveedor(db.Model):
+class Proveedor(db.Model,UserMixin):
     __tablename__ = "proveedor"
 
     id = db.Column(db.Integer, primary_key=True)

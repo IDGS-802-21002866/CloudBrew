@@ -12,6 +12,7 @@ __all__ = [
     "Rol",
     "Proveedor",
     "Compra",
+    "ProcesoProductivo",
     "DetalleCompra",
     "MateriaPrima",
     "UnidadMedida",
