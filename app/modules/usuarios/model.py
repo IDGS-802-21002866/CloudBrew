@@ -31,6 +31,7 @@ class Usuario(db.Model, UserMixin):
     movimientos_materia_prima = relationship(
         "MovimientosMateriaPrima", back_populates="usuario"
     )
+    movimientos_receta = relationship("MovimientosReceta", back_populates="usuario")
 
     @property
     def is_active(self):
