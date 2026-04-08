@@ -1,5 +1,6 @@
 import uuid
-from sqlalchemy import ForeignKey, String
+from datetime import datetime
+from sqlalchemy import DateTime, ForeignKey, String
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -26,6 +27,8 @@ class Usuario(db.Model, UserMixin):
     fs_uniquifier: Mapped[str] = mapped_column(
         String(255), unique=True, nullable=False, default=lambda: str(uuid.uuid4().hex)
     )
+    reset_token: Mapped[str] = mapped_column(String(255), nullable=True)
+    reset_token_expiry: Mapped[datetime] = mapped_column(DateTime, nullable=True)
     rol_id: Mapped[int] = mapped_column(ForeignKey("rol.id"))
     rol: Mapped["Rol"] = relationship(back_populates="usuarios")
     movimientos_materia_prima = relationship(

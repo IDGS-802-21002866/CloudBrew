@@ -11,10 +11,10 @@
       <div class="mb-8 flex justify-center">
         <img src="{{ url_for('static', filename='img/logo-solo.png') }}" alt="CloudBrew Logo" class="h-20 w-auto">
       </div>
-      
+
       <!-- Title with bottom border -->
       <div class="pb-6 mb-10 border-b-4 border-brew-beige">
-        <h1 class="text-5xl font-black text-brew-beige">Inicia Sesión</h1>
+        <h1 class="text-4xl font-black text-brew-beige">Recuperar contraseña</h1>
       </div>
     </div>
 
@@ -22,31 +22,22 @@
     <form method="post" novalidate class="space-y-6">
       {{ form.hidden_tag() }}
 
-      <!-- Email Field -->
-      {{ campo_nuevo(form.correo, class="w-full px-4 py-3 rounded border-2 border-brew-beige bg-brew-bg text-brew-beige focus:outline-none focus:ring-0", labelClass="block text-base font-medium mb-3 text-white") }}
-
-      <!-- Password Field -->
-      {{ campo_nuevo(form.contrasenia, class="w-full px-4 py-3 rounded border-2 border-brew-beige bg-brew-bg text-brew-beige focus:outline-none focus:ring-0", labelClass="block text-base font-medium mb-3 text-white") }}
-
-      <!-- reCAPTCHA Space -->
-      <div class="flex justify-center py-6">
-        <!-- reCAPTCHA widget will be added here -->
-      </div>
+      {{ campo_nuevo(form.correo, class="w-full px-4 py-3 rounded border-2 border-brew-beige bg-brew-bg text-brew-beige placeholder-brew-beige focus:outline-none focus:ring-0", labelClass="block text-base font-medium mb-3 text-white") }}
 
       <!-- Divider -->
       <div class="my-6 border-t-4 border-brew-beige"></div>
 
-      <!-- Forgot Password -->
-      <div class="text-center py-4">
-        <p class="text-base text-white text-opacity-50">
-          ¿Olvidaste tu contraseña? <a href="{{ url_for('auth.recuperar_contrasena') }}" class="text-brew-beige hover:text-white transition font-medium">Da click aqui</a>
-        </p>
-      </div>
-
       <!-- Submit Button -->
       <button type="submit" class="w-full py-4 font-bold text-lg rounded-xl transition duration-200 hover:opacity-85 shadow-lg bg-brew-beige text-brew-dark">
-        Iniciar Sesión
+        Recuperar contraseña
       </button>
+
+      <!-- Back to login -->
+      <div class="text-center pt-2">
+        <a href="{{ url_for('auth.login') }}" class="text-base text-white hover:text-brew-beige transition font-medium">
+          Volver al inicio de sesión
+        </a>
+      </div>
     </form>
   </div>
 </div>

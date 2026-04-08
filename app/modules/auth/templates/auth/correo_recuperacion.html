@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recuperar contraseña - CloudBrew</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 0; }
+    .container { max-width: 480px; margin: 40px auto; background: #4a4a4a; border-radius: 12px; padding: 40px; text-align: center; }
+    .logo { margin-bottom: 24px; }
+    h1 { color: #f5f0e1; font-size: 24px; margin-bottom: 16px; }
+    p { color: #ffffff; font-size: 16px; margin-bottom: 24px; }
+    .btn { display: inline-block; background: #f5f0e1; color: #333333; font-weight: bold; text-decoration: none; padding: 14px 28px; border-radius: 10px; font-size: 16px; }
+    .footer { color: #aaaaaa; font-size: 12px; margin-top: 24px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">
+      <strong style="color:#f5f0e1; font-size:20px;">CloudBrew</strong>
+    </div>
+    <h1>Recuperar contraseña</h1>
+    <p>Hola {{ nombre }}, recibimos una solicitud para restablecer tu contraseña. Haz clic en el siguiente botón para crear una nueva:</p>
+    <a href="{{ enlace }}" class="btn">Restablecer contraseña</a>
+    <p class="footer">Este enlace expira en 1 hora. Si no solicitaste el cambio, ignora este correo.</p>
+  </div>
+</body>
+</html>

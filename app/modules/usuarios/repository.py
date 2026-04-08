@@ -102,3 +102,25 @@ def eliminar_usuario(id_usuario):
     except Exception as e:
         db.session.rollback()
         raise ValueError("Error inesperado al eliminar usuario")
+
+
+def guardar_token_recuperacion(usuario, token, expiry):
+    usuario.reset_token = token
+    usuario.reset_token_expiry = expiry
+    db.session.commit()
+
+
+def get_usuario_by_reset_token(token):
+    return Usuario.query.filter_by(reset_token=token).first()
+
+
+def limpiar_token_recuperacion(usuario):
+    usuario.reset_token = None
+    usuario.reset_token_expiry = None
+    db.session.commit()
+
+
+def actualizar_password(usuario, nuevo_hash):
+    usuario.password = nuevo_hash
+    db.session.commit()
+

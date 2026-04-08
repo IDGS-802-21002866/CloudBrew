@@ -3,6 +3,7 @@ from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 from flask_login import LoginManager, login_required
+from flask_mail import Mail
 from werkzeug import security
 
 from app.core.config import DevelopmentConfig
@@ -16,6 +17,7 @@ db = SQLAlchemy(model_class=Base)
 
 login_manager = LoginManager()
 migrate = Migrate()
+mail = Mail()
 
 
 def create_app():
@@ -43,6 +45,7 @@ def create_app():
     app.config.from_object(DevelopmentConfig)
     db.init_app(app)
     migrate.init_app(app, db)
+    mail.init_app(app)
 
     login_manager.init_app(app)
     login_manager.login_view = "auth.login"
