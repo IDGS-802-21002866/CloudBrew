@@ -7,6 +7,9 @@ from app.modules.presentaciones import Presentacion
 from app.modules.proc_prod.model import ProcesoProductivo
 from app.modules.inventario_materias_primas import MovimientosMateriaPrima
 from app.modules.recetas import Recetas, RecetaDetalle, ProcesosReceta
+from app.modules.sol_prod.model import Pedido, DetallePedido, PedidoProduccion
+from app.modules.lotes.model import LoteProduccion
+from app.modules.produccion.model import Produccion, ProduccionProceso
 
 #  Agregar nuevos modelos aquí y luego importarlos en __all__ para que estén disponibles en toda la aplicación
 __all__ = [
@@ -24,4 +27,10 @@ __all__ = [
     "Recetas",
     "RecetaDetalle",
     "ProcesosReceta",
+    "Pedido",
+    "DetallePedido",
+    "PedidoProduccion",
+    "LoteProduccion",
+    "Produccion",
+    "ProduccionProceso"
 ]
