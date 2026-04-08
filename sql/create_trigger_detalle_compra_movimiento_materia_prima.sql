@@ -74,3 +74,29 @@ BEGIN
 END$$
 
 DELIMITER;
+
+DELIMITER $$
+
+CREATE TRIGGER after_insert_merma_materia_prima
+AFTER INSERT ON mermas_materia_prima
+FOR EACH ROW
+BEGIN
+    INSERT INTO movimientos_materia_prima (
+        materia_prima_id, tipo, cantidad, fecha, motivo, usuario_id
+    ) VALUES (
+        NEW.materia_prima_id, 'salida', NEW.cantidad, NOW(), 
+        CONCAT('Merma #', NEW.id, ': ', NEW.motivo), NEW.usuario_id
+    );
+END$$
+
+CREATE TRIGGER after_update_merma_materia_prima
+AFTER UPDATE ON mermas_materia_prima
+FOR EACH ROW
+BEGIN
+    IF OLD.activo = 1 AND NEW.activo = 0 THEN
+        DELETE FROM movimientos_materia_prima 
+        WHERE motivo LIKE CONCAT('Merma #', OLD.id, '%');
+    END IF;
+END$$
+
+DELIMITER ;

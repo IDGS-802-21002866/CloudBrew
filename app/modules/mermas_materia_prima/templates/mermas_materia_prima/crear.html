@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import campo_nuevo, mostrar_flashes %}
+
+{% block title %}Registrar Merma{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto py-8 px-4">
+  {{ mostrar_flashes() }}
+
+  <a href="{{ url_for('mermas_materia_prima.listar') }}" class="flex items-center text-2xl font-bold mb-6 hover:text-gray-600 transition">
+    <i class="fa-solid fa-chevron-left mr-3"></i>
+    Registrar Merma de Materia Prima
+  </a>
+
+  <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
+    <div class="bg-gray-100 px-6 py-4 border-b border-gray-200 flex items-center">
+      <i class="fa-solid fa-circle-info text-gray-500 mr-3"></i>
+      <span class="font-bold text-gray-700">Datos de la Merma</span>
+    </div>
+
+    <form method="POST" class="p-8" novalidate>
+      {{ form.hidden_tag() }}
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+        {{ campo_nuevo(form.materia_prima_id) }}
+        {{ campo_nuevo(form.cantidad) }}
+        <div class="md:col-span-2">
+          {{ campo_nuevo(form.motivo) }}
+        </div>
+      </div>
+
+      <div class="mt-8 flex justify-end">
+        <button type="submit" class="px-8 py-3 bg-[#4A9062] text-white font-bold rounded-lg hover:opacity-90 transition shadow-md">
+          Registrar Merma
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
