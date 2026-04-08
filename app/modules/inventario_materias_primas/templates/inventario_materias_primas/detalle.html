@@ -50,7 +50,10 @@
               <td class="px-6 py-3">{{ mov.motivo if mov.motivo else 'N/A' }}</td>
               <td class="px-6 py-3">
                 <!-- TODO: Agregar validacion para mostrar cuando sea una produccion y una merma -->
-                {% if mov.detalle_compra and mov.detalle_compra.compra_id %}
+                {% if 'Merma #' in mov.motivo %}
+                  {% set merma_id = mov.motivo.split('Merma #')[1].split(':')[0] %}
+                  Merma: {{ merma_id }}
+                {% elif mov.detalle_compra and mov.detalle_compra.compra_id %}
                   Compra: {{ mov.detalle_compra.compra_id }}
                 {% else %}
                   N/A
