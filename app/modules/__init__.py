@@ -5,6 +5,7 @@ from app.modules.materias_primas import MateriaPrima
 from app.modules.unidades_medida import UnidadMedida
 from app.modules.presentaciones import Presentacion
 from app.modules.proc_prod.model import ProcesoProductivo
+from app.modules.inventario_materias_primas import MovimientosMateriaPrima
 
 #  Agregar nuevos modelos aquí y luego importarlos en __all__ para que estén disponibles en toda la aplicación
 __all__ = [
@@ -16,4 +17,6 @@ __all__ = [
     "MateriaPrima",
     "UnidadMedida",
     "Presentacion",
+    "ProcesoProductivo",
+    "MovimientosMateriaPrima",
 ]

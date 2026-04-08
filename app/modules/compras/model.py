@@ -31,3 +31,7 @@ class DetalleCompra(db.Model):
     presentacion = db.relationship("Presentacion")
     cantidad: Mapped[int] = mapped_column(db.Integer, nullable=False)
     precio_unitario: Mapped[float] = mapped_column(db.Float, nullable=False)
+
+    movimientos_materia_prima = db.relationship(
+        "MovimientosMateriaPrima", back_populates="detalle_compra"
+    )
