@@ -30,6 +30,7 @@
             <th class="px-6 py-3 text-left font-bold text-gray-700">Tipo</th>
             <th class="px-6 py-3 text-right font-bold text-gray-700">Cantidad</th>
             <th class="px-6 py-3 text-left font-bold text-gray-700">Motivo</th>
+            <th class="px-6 py-3 text-left font-bold text-gray-700">Referencia</th>
             <th class="px-6 py-3 text-left font-bold text-gray-700">Usuario</th>
           </tr>
         </thead>
@@ -47,12 +48,20 @@
               </td>
               <td class="px-6 py-3 text-right font-semibold">{{ '%.2f'|format(mov.cantidad) }}</td>
               <td class="px-6 py-3">{{ mov.motivo if mov.motivo else 'N/A' }}</td>
+              <td class="px-6 py-3">
+                <!-- TODO: Agregar validacion para mostrar cuando sea una produccion y una merma -->
+                {% if mov.detalle_compra and mov.detalle_compra.compra_id %}
+                  Compra: {{ mov.detalle_compra.compra_id }}
+                {% else %}
+                  N/A
+                {% endif %}
+              </td>
               <td class="px-6 py-3">{{ mov.usuario.nombre if mov.usuario else 'N/A' }}</td>
             </tr>
             {% endfor %}
           {% else %}
             <tr>
-              <td colspan="5" class="px-6 py-4 text-center text-gray-500">No hay movimientos para esta materia prima</td>
+              <td colspan="6" class="px-6 py-4 text-center text-gray-500">No hay movimientos para esta materia prima</td>
             </tr>
           {% endif %}
         </tbody>
