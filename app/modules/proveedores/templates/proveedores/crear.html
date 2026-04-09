@@ -4,16 +4,10 @@
 {% block content %}
 <div class="p-6 max-w-3xl mx-auto">
 
-  <!-- Header -->
-  <div class="flex items-center gap-3 mb-6">
-    <a href="{{ url_for('proveedores.listar') }}"
-       class="text-gray-500 hover:text-gray-800 text-xl font-bold">
-      <i class="fa-solid fa-chevron-left"></i>
-    </a>
-    <h2 class="text-2xl font-bold text-gray-800">
-      {% if proveedor %}Editar{% else %}Crear{% endif %} Proveedor
-    </h2>
-  </div>
+  <a href="{{ url_for('proveedores.listar') }}" class="flex items-center text-2xl font-bold mb-6 hover:text-gray-600 transition">
+    <i class="fa-solid fa-chevron-left mr-3"></i>
+    {% if proveedor %}Editar{% else %}Crear{% endif %} Proveedor
+  </a>
 
 <form action="{% if proveedor %}{{ url_for('proveedores.editar', id=proveedor.id) }}{% else %}{{ url_for('proveedores.crear') }}{% endif %}" method="POST" class="max-w-3xl mx-auto mt-10 bg-white border border-gray-200 rounded-2xl shadow-sm">
   {{ form.hidden_tag() }}
@@ -36,15 +30,10 @@
       {{ campo_nuevo(form.direccion) }}
     </div>
 
-    <div class="pt-4 flex gap-2 items-center">
-      <button type="submit"
-        class="flex-1 text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5">
+    <div class="pt-4 flex justify-end">
+      <button type="submit" class="px-8 py-2 bg-[#4A9062] text-white font-bold rounded-lg hover:opacity-90 transition shadow-md">
         {% if proveedor %}Actualizar{% else %}Crear{% endif %}
       </button>
-      <a href="{{ url_for('proveedores.listar') }}"
-        class="flex-1 text-white bg-gray-400 hover:bg-gray-500 focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">
-        Cancelar
-      </a>
     </div>
   </div>
 </form>

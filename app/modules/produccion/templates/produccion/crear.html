@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import campo_nuevo %}
+
+{% block content %}
+<div class="p-6 max-w-3xl mx-auto">
+
+  <a href="{{ url_for('produccion.listar') }}" class="flex items-center text-2xl font-bold mb-6 hover:text-gray-600 transition">
+    <i class="fa-solid fa-chevron-left mr-3"></i>
+    Crear Orden de Producción
+  </a>
+
+<form action="{{ url_for('produccion.crear') }}" method="POST" class="max-w-3xl mx-auto mt-10 bg-white border border-gray-200 rounded-2xl shadow-sm">
+  {{ form.hidden_tag() }}
+  <div class="bg-gray-100 px-0 py-0 border-b border-gray-200">
+    <span class="font-bold text-gray-700 block p-4"><i class="fa-solid fa-circle-info mr-2"></i> Datos de la Orden</span>
+  </div>
+
+  <div class="p-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+      <!-- Receta -->
+      {{ campo_nuevo(form.id_receta, id="select_receta") }}
+
+      <!-- Cantidad de lotes -->
+      {{ campo_nuevo(form.cantidad, id="input_cantidad") }}
+
+      <!-- Total de piezas (informativo) -->
+      <div class="md:col-span-2">
+        <label class="block mb-2 text-sm font-medium text-gray-700">
+          <i class="fa-solid fa-boxes-stacked mr-1 text-blue-500"></i> Total de piezas a producir
+        </label>
+        <input type="text" id="total_piezas" readonly
+          class="bg-blue-50 border border-blue-200 text-blue-800 text-sm rounded-lg block w-full p-2.5 font-semibold cursor-default"
+          value="Selecciona una receta y cantidad" />
+        <p class="text-xs text-gray-400 mt-1">Calculado como: piezas por lote de la receta × cantidad de lotes</p>
+      </div>
+
+    </div>
+
+    <div class="pt-4 flex justify-end">
+      <button type="submit" class="px-8 py-2 bg-[#4A9062] text-white font-bold rounded-lg hover:opacity-90 transition shadow-md">
+        Crear Orden
+      </button>
+    </div>
+  </div>
+</form>
+</div>
+
+<script>
+  const recetasData = {{ recetas_data | tojson }};
+
+  function actualizarTotal() {
+    const recetaId = parseInt(document.getElementById('select_receta').value);
+    const cantidad = parseInt(document.getElementById('input_cantidad')?.value) || 0;
+    const totalEl = document.getElementById('total_piezas');
+
+    if (recetaId && recetasData[recetaId] && cantidad > 0) {
+      const piezasPorLote = recetasData[recetaId];
+      totalEl.value = `${piezasPorLote * cantidad} piezas (${piezasPorLote} por lote × ${cantidad} lotes)`;
+    } else {
+      totalEl.value = 'Selecciona una receta y cantidad';
+    }
+  }
+
+  document.getElementById('select_receta').addEventListener('change', actualizarTotal);
+  document.getElementById('input_cantidad')?.addEventListener('input', actualizarTotal);
+  actualizarTotal();
+</script>
+{% endblock %}

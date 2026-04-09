@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-3xl font-bold text-gray-800">Producción</h1>
+    <a href="{{ url_for('produccion.crear') }}"
+       class="bg-[#4A9062] hover:opacity-90 text-white font-bold py-2 px-4 rounded shadow-md transition flex items-center">
+      <i class="fa-solid fa-plus mr-2"></i> Nueva Orden
+    </a>
+  </div>
+
+  <div class="bg-white shadow-md rounded-lg overflow-hidden border border-gray-200">
+    <table class="min-w-full table-auto">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Receta</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cantidad</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha Inicio</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha Fin</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+        </tr>
+      </thead>
+      <tbody class="bg-white divide-y divide-gray-200">
+        {% for produccion in producciones %}
+        <tr class="hover:bg-gray-50 transition-colors">
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ produccion.receta.nombre if produccion.receta else '-' }}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ produccion.cantidad }}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ produccion.fecha_inicio or '-' }}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ produccion.fecha_fin or '-' }}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+            {% if produccion.estado == 'completado' or produccion.estado == 'completada' %}
+              <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-green-100 text-green-800">{{ produccion.estado }}</span>
+            {% elif produccion.estado == 'en_proceso' or produccion.estado == 'en proceso' %}
+              <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-blue-100 text-blue-800">{{ produccion.estado }}</span>
+            {% elif produccion.estado == 'cancelado' or produccion.estado == 'cancelada' %}
+              <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-red-100 text-red-800">{{ produccion.estado }}</span>
+            {% else %}
+              <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-amber-100 text-amber-800">{{ produccion.estado or 'pendiente' }}</span>
+            {% endif %}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+            <a href="{{ url_for('produccion.detalle', id=produccion.id_produccion) }}"
+               class="text-white font-bold py-1.5 px-4 rounded-lg inline-flex items-center shadow-sm hover:opacity-90 transition bg-[#6C9AD0]">
+              <i class="fa-solid fa-eye mr-2"></i> Ver Detalle
+            </a>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="7" class="px-6 py-4 text-center text-gray-500">
+            No hay producciones registradas
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

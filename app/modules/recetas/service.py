@@ -218,10 +218,11 @@ class RecetaService:
         # Eliminar procesos existentes
         ProcesosReceta.query.filter_by(receta_id=receta_id).delete()
 
-        for item in carrito:
+        for idx, item in enumerate(carrito, start=1):
             proceso = ProcesosReceta(
                 receta_id=receta_id,
                 proceso_productivo_id=item["proceso_productivo_id"],
                 tiempo_estimado=item["tiempo_estimado"],
+                orden=idx,
             )
             repository.create_proceso_receta(proceso)

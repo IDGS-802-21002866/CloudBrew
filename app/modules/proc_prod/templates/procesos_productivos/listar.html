@@ -5,8 +5,8 @@
   <div class="flex justify-between items-center mb-6">
     <h1 class="text-3xl font-bold text-gray-800">Procesos Productivos</h1>
     <a href="{{ url_for('proc_prod.crear') }}"
-       class="text-white font-bold py-2 px-4 rounded-lg shadow hover:opacity-90 transition bg-green-600">
-      + Nuevo Proceso
+       class="bg-[#4A9062] hover:opacity-90 text-white font-bold py-2 px-4 rounded shadow-md transition flex items-center">
+      <i class="fa-solid fa-plus mr-2"></i> Nuevo Proceso
     </a>
   </div>
 
@@ -27,17 +27,8 @@
           <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
             <a href="{{ url_for('proc_prod.detalle', id=proceso.id) }}"
                class="text-white font-bold py-1.5 px-4 rounded-lg inline-flex items-center shadow-sm hover:opacity-90 transition bg-[#6C9AD0]">
-              <i class="fa-solid fa-eye mr-2"></i> Ver
+              <i class="fa-solid fa-eye mr-2"></i> Ver Detalle
             </a>
-            <a href="{{ url_for('proc_prod.editar', id=proceso.id) }}"
-               class="text-white font-bold py-1.5 px-4 rounded-lg inline-flex items-center shadow-sm hover:opacity-90 transition bg-amber-500 ml-2">
-              <i class="fa-solid fa-edit mr-2"></i> Editar
-            </a>
-            <form method="POST" action="{{ url_for('proc_prod.eliminar', id=proceso.id) }}" style="display:inline;">
-              <button type="submit" class="text-white font-bold py-1.5 px-4 rounded-lg inline-flex items-center shadow-sm hover:opacity-90 transition bg-red-600 ml-2" onclick="return confirm('¿Estás seguro?')">
-                <i class="fa-solid fa-trash mr-2"></i> Eliminar
-              </button>
-            </form>
           </td>
         </tr>
         {% else %}

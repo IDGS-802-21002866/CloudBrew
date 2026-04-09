@@ -17,6 +17,7 @@ class Recetas(db.Model):
     produccion = db.relationship("Produccion", back_populates="receta")
     detalle = db.relationship("RecetaDetalle", back_populates="receta")
     procesos_receta = db.relationship("ProcesosReceta", back_populates="receta")
+    producciones = db.relationship("Produccion", back_populates="receta")
 
 
 class RecetaDetalle(db.Model):
@@ -50,3 +51,4 @@ class ProcesosReceta(db.Model):
         "ProcesoProductivo", back_populates="procesos_receta"
     )
     tiempo_estimado: Mapped[float] = mapped_column(db.Float, nullable=False)
+    orden: Mapped[int] = mapped_column(db.Integer, default=0)

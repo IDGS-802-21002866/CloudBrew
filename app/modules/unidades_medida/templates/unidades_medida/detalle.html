@@ -48,7 +48,7 @@
             </div>
             {% endif %}
 
-            <div class="flex justify-end space-x-4 border-t pt-6">
+            <div class="flex justify-end space-x-4 border-t border-gray-200 pt-6 mt-6">
                 {% if not unidad.es_base_sistema %}
                 <a href="{{ url_for('unidades_medida.editar', id=unidad.id) }}" class="px-6 py-2 bg-[#6C9AD0] text-white font-bold rounded-lg shadow-md hover:opacity-90 transition">
                     Modificar

@@ -21,7 +21,7 @@ BEGIN
             
             SELECT r.cantidad_producida INTO v_cantidad_receta
             FROM produccion p
-            JOIN recetas r ON p.id_receta = r.receta_id
+            JOIN recetas r ON p.id_receta = r.id
             WHERE p.id_produccion = NEW.id_produccion;
 
             SET v_codigo_lote = DATE_FORMAT(NOW(), '%d.%m.%Y.%H.%M');
@@ -32,12 +32,13 @@ BEGIN
                 fecha_produccion,
                 cantidad_generada
             )
-            VALUES (
+            SELECT 
                 NEW.id_produccion,
                 v_codigo_lote,
                 CURDATE(),
-                v_cantidad_receta
-            );
+                v_cantidad_receta * p.cantidad
+            FROM produccion p
+            WHERE p.id_produccion = NEW.id_produccion;
             
             UPDATE produccion 
             SET estado = 'completado', fecha_fin = CURDATE() 
@@ -47,4 +48,4 @@ BEGIN
     END IF;
 END$$
 
-DELIMITER ;
+DELIMITER;

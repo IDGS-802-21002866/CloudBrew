@@ -2,109 +2,51 @@
 
 {% block content %}
 
-<div class="p-6 max-w-3xl mx-auto">
+<div class="max-w-3xl mx-auto py-8 px-4">
 
-  <!-- Header -->
-  <div class="flex items-center gap-3 mb-6">
-    <a href="{{ url_for('usuarios.listar') }}"
-       class="text-gray-500 hover:text-gray-800 text-xl font-bold">
-      <i class="fa-solid fa-chevron-left"></i>
-    </a>
-    <h2 class="text-2xl font-bold text-gray-800">
-      Detalle del Usuario
-    </h2>
-  </div>
+  <a href="{{ url_for('usuarios.listar') }}" class="flex items-center text-2xl font-bold mb-6 hover:text-gray-600 transition">
+    <i class="fa-solid fa-chevron-left mr-3"></i> Detalle del Usuario
+  </a>
 
-<form method="POST" action="{{ url_for('usuarios.editar', id=usuario.id) }}" class="max-w-3xl mx-auto mt-10 bg-white border border-gray-200 rounded-2xl shadow-sm">
-  {{ form.hidden_tag() }}
+  <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
+    <div class="bg-gray-100 px-6 py-4 border-b border-gray-200">
+      <span class="font-bold text-gray-700"><i class="fa-solid fa-circle-info mr-2"></i> Datos del Usuario</span>
+    </div>
 
-  <!-- Etiqueta superior sin padding y con icono de información -->
-  <div class="bg-gray-100 px-0 py-0 border-b border-gray-200">
-    <span class="font-bold text-gray-700 block p-4"><i class="fa-solid fa-circle-info mr-2"></i> Datos del Usuario</span>
-  </div>
-
-  <div class="p-8">
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-
-      <div>
-        <label class="block mb-2 text-sm font-medium text-gray-700">
-          Nombre
-        </label>
-        {{ form.nombre(class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5") }}
-        {% for error in form.nombre.errors %}
-          <p class="text-sm text-red-500 mt-1">{{ error }}</p>
-        {% endfor %}
-      </div>
-
-      <div>
-        <label class="block mb-2 text-sm font-medium text-gray-700">
-          Email
-        </label>
-        {{ form.email(class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5") }}
-        {% for error in form.email.errors %}
-          <p class="text-sm text-red-500 mt-1">{{ error }}</p>
-        {% endfor %}
-      </div>
-
-      <div>
-        <label class="block mb-2 text-sm font-medium text-gray-700">
-          Nueva Contraseña (opcional)
-        </label>
-        {{ form.password(class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5") }}
-        {% for error in form.password.errors %}
-          <p class="text-sm text-red-500 mt-1">{{ error }}</p>
-        {% endfor %}
-      </div>
-
-      <div>
-        <label class="block mb-2 text-sm font-medium text-gray-700">
-          Confirmar Contraseña
-        </label>
-        {{ form.confirm_password(class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5") }}
-        {% for error in form.confirm_password.errors %}
-          <p class="text-sm text-red-500 mt-1">{{ error }}</p>
-        {% endfor %}
-      </div>
-
-      <div>
-        <label class="block mb-2 text-sm font-medium text-gray-700">
-          Rol
-        </label>
-        {{ form.rol(class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5") }}
-        {% for error in form.rol.errors %}
-          <p class="text-sm text-red-500 mt-1">{{ error }}</p>
-        {% endfor %}
-      </div>
-
-      <div>
-        <label class="block mb-2 text-sm font-medium text-gray-700">
-          Estado
-        </label>
-        <div class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5">
-          <span class="px-3 py-1 text-xs font-bold rounded-full {% if usuario.activo %}bg-green-100 text-green-800 border border-green-200{% else %}bg-red-100 text-red-800 border border-red-200{% endif %}">
+    <div class="p-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+        <div>
+          <label class="block text-gray-500 text-sm font-bold uppercase">Nombre</label>
+          <p class="text-xl font-bold text-gray-800">{{ usuario.nombre }}</p>
+        </div>
+        <div>
+          <label class="block text-gray-500 text-sm font-bold uppercase">Email</label>
+          <p class="text-lg text-gray-700">{{ usuario.email }}</p>
+        </div>
+        <div>
+          <label class="block text-gray-500 text-sm font-bold uppercase">Rol</label>
+          <p class="text-lg text-gray-700">{{ usuario.rol.name }}</p>
+        </div>
+        <div>
+          <label class="block text-gray-500 text-sm font-bold uppercase">Estado</label>
+          <p class="text-lg font-bold {{ 'text-[#4A9062]' if usuario.activo else 'text-[#B85B5B]' }}">
             {{ 'Activo' if usuario.activo else 'Inactivo' }}
-          </span>
+          </p>
         </div>
       </div>
 
-    </div>
-
-    <div class="pt-4 flex gap-2 items-center">
-      <button type="submit"
-        class="flex-1 text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5">
-        Guardar cambios
-      </button>
-      
-      <form method="POST" action="{{ url_for('usuarios.eliminar', id=usuario.id) }}" class="inline flex-1">
-        {{ form.hidden_tag() }}
-        <button type="submit"
-          class="w-full text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-4 py-2">
-          Eliminar
-        </button>
-      </form>
+      <div class="flex justify-end space-x-4 border-t pt-6">
+        <a href="{{ url_for('usuarios.editar', id=usuario.id) }}" class="px-6 py-2 bg-[#6C9AD0] text-white font-bold rounded-lg shadow-md hover:opacity-90 transition">
+          Modificar
+        </a>
+        <form method="POST" action="{{ url_for('usuarios.eliminar', id=usuario.id) }}" onsubmit="return confirm('¿Estás seguro de que deseas eliminar este usuario?');">
+          <button type="submit" class="px-6 py-2 bg-[#B85B5B] text-white font-bold rounded-lg shadow-md hover:opacity-90 transition">
+            <i class="fa-solid fa-trash mr-2"></i> Eliminar
+          </button>
+        </form>
+      </div>
     </div>
   </div>
-</form>
 
 </div>
 
