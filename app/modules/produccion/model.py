@@ -8,6 +8,7 @@ class Produccion(db.Model):
     fecha_inicio = db.Column(db.Date)
     fecha_fin = db.Column(db.Date)
     estado = db.Column(db.String(50))
+    cantidad = db.Column(db.Integer, nullable=False, default=1)
 
     # Relaciones
     procesos = db.relationship(
