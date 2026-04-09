@@ -10,7 +10,11 @@ class Produccion(db.Model):
     estado = db.Column(db.String(50))
     cantidad = db.Column(db.Integer, nullable=False, default=1)
 
-    # Relaciones
+    receta = db.relationship(
+        'Recetas',
+        back_populates='produccion'
+    )
+
     procesos = db.relationship(
         'ProduccionProceso',
         back_populates='produccion',

@@ -13,7 +13,7 @@ from app.modules.produccion.repository import (
 from .forms import ProduccionForm
 from app.modules.produccion.forms import ProduccionProcesoForm
 from app.modules.recetas.service import RecetaService
-
+RecetaService=RecetaService()
 class ProduccionService:
 
     def crear_produccion(self, form: ProduccionForm):

@@ -14,6 +14,7 @@ class Recetas(db.Model):
     imagen: Mapped[bytes] = mapped_column(db.LargeBinary, nullable=True)
     imagen_tipo: Mapped[str] = mapped_column(db.String(50), nullable=True)
 
+    produccion = db.relationship("Produccion", back_populates="receta")
     detalle = db.relationship("RecetaDetalle", back_populates="receta")
     procesos_receta = db.relationship("ProcesosReceta", back_populates="receta")
 
