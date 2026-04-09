@@ -16,8 +16,9 @@
     
     <!-- User Menu -->
     <div class="flex items-center gap-4">
-      <a href="{{ url_for('auth.logout') }}" class="text-2xl hover:text-white transition">
-        <i class="fas fa-user-circle"></i>
+      <a href="{{ url_for('auth.logout') }}" class="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-brew-dark transition">
+        <i class="fas fa-user-circle text-2xl"></i>
+        <span class="text-sm font-medium  sm:inline">{{ current_user.nombre }}</span>
       </a>
     </div>
   </nav>
