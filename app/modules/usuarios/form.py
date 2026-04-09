@@ -40,10 +40,10 @@ class UsuarioForm(FlaskForm):
     rol = SelectField(
         "Rol",
         choices=[
-            ("administrador", "Administrador"),
-            ("compras", "Compras"),
-            ("ventas", "Ventas"),
-            ("almacen", "Almacén")
+            (1, "Administrador"),
+            (2, "Compras"),
+            (3, "Ventas"),
+            (4, "Almacén")
         ],
         validators=[DataRequired(message="El rol es obligatorio")]
     )
@@ -85,10 +85,10 @@ class UsuarioFormAux(FlaskForm):
     rol = SelectField(
         "Rol",
         choices=[
-            ("administrador", "Administrador"),
-            ("compras", "Compras"),
-            ("ventas", "Ventas"),
-            ("almacen", "Almacén")
+            (1, "Administrador"),
+            (2, "Compras"),
+            (3, "Ventas"),
+            (4, "Almacén")
         ],
         validators=[DataRequired(message="El rol es obligatorio")]
     )

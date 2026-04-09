@@ -24,6 +24,9 @@ class MovimientosMateriaPrima(db.Model):
     detalle_compra_id: Mapped[int] = mapped_column(
         db.Integer, db.ForeignKey("detalle_compra.id"), nullable=True
     )
+    lote_produccion_id: Mapped[int] = mapped_column(
+        db.Integer, db.ForeignKey("lotes_produccion.id_lote"), nullable=True
+    )
     merma_materia_prima_id: Mapped[int] = mapped_column(
         db.Integer, db.ForeignKey("mermas_materia_prima.id"), nullable=True
     )
@@ -33,6 +36,10 @@ class MovimientosMateriaPrima(db.Model):
     detalle_compra = db.relationship(
         "DetalleCompra", back_populates="movimientos_materia_prima"
     )
+    lote_produccion = db.relationship(
+        "lotes_produccion", back_populates="movimientos_materia_prima"
+    )
+
     merma_materia_prima = db.relationship(
         "MermaMateriaPrima", back_populates="movimientos_materia_prima"
     )

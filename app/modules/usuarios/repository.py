@@ -33,7 +33,7 @@ def insertar_usuario(form):
             nombre=form.nombre.data,
             email=form.email.data,
             password=generate_password_hash(form.password.data),
-            rol=form.rol.data,
+            rol_id=form.rol.data,
             activo=form.activo.data if hasattr(form, "activo") else True,
         )
         db.session.add(nuevo_usuario)
@@ -63,7 +63,7 @@ def modificar_usuario(id_usuario, form):
 
         usuario.nombre = form.nombre.data
         usuario.email = form.email.data
-        usuario.rol = form.rol.data
+        usuario.rol_id = form.rol.data
 
         if form.password.data:
             usuario.password = generate_password_hash(form.password.data)
@@ -77,6 +77,7 @@ def modificar_usuario(id_usuario, form):
         raise
     except Exception as e:
         db.session.rollback()
+        print(e)
         raise ValueError("Error inesperado al modificar usuario")
 
 
