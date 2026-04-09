@@ -31,6 +31,7 @@ class PedidoService:
 
         receta_service = RecetaService()
         detalles = []
+        total_pedido = 0.0
 
         for detalle in detalles_data:
             receta_id = detalle.get("receta_id")
@@ -40,18 +41,28 @@ class PedidoService:
                 raise ValueError("Datos de detalle incompletos.")
 
             receta = receta_service.obtener_receta(receta_id)
+
+            if receta.precio_venta is None:
+                raise ValueError(
+                    f"La receta '{receta.nombre}' no tiene precio de venta definido. "
+                    "Configura el precio antes de crear el pedido."
+                )
+
             total_unidades = float(cantidad_lotes) * receta.cantidad_producida
+            precio_unitario = float(receta.precio_venta)
+            total_pedido += precio_unitario * total_unidades
 
             detalles.append(
                 {
                     "receta_id": receta_id,
                     "cantidad_lotes": cantidad_lotes,
                     "total_unidades": total_unidades,
+                    "precio_unitario": precio_unitario,
                 }
             )
 
         # Crear pedido y detalles (flush, sin commit)
-        pedido = pedido_repo.create_pedido(cliente_id, detalles)
+        pedido = pedido_repo.create_pedido(cliente_id, detalles, total_pedido)
 
         # Crear orden de produccion por cada detalle y registrar relacion transaccional
         produccion_service = ProduccionService()

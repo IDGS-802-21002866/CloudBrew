@@ -48,7 +48,7 @@
 
   <a href="{{ url_for('recetas.listar') }}" class="flex items-center text-2xl font-bold mb-6 hover:text-gray-600 transition">
     <i class="fa-solid fa-chevron-left mr-3"></i>
-    Nueva Receta
+    {{ nombre_receta or "Nueva Receta" }}
   </a>
 
   <div class="space-y-6">
@@ -62,6 +62,23 @@
       <div class="p-8 grid grid-cols-1 md:grid-cols-3 gap-4">
         {{ campo_nuevo(receta_form.nombre, form="form-receta") }}
         {{ campo_nuevo(receta_form.cantidad_producida, form="form-receta") }}
+        <div>
+          {{ campo_nuevo(receta_form.precio_venta, form="form-receta") }}
+          {% if costo_ingredientes > 0 %}
+          <div id="costo-hint" class="mt-1 text-xs text-gray-600 flex flex-wrap items-center gap-2">
+            <span id="costo-hint-texto"></span>
+            <button type="button" id="btn-usar-recomendado"
+                    class="text-[#4A9062] font-semibold underline hover:opacity-80">
+              Usar precio recomendado
+            </button>
+          </div>
+          {% if mp_sin_costo %}
+          <p class="mt-1 text-xs text-[#B85B5B]">
+            &#9888; Sin historial de compras: {{ mp_sin_costo | join(', ') }}
+          </p>
+          {% endif %}
+          {% endif %}
+        </div>
         {{ campo_nuevo(receta_form.descripcion, form="form-receta") }}
         <div class="md:col-span-3">
           <label class="block text-sm font-semibold text-gray-700 mb-1">{{ receta_form.imagen.label.text }}</label>
@@ -199,4 +216,66 @@
 
   </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelectorAll('form').forEach(function (form) {
+    if (form.id === 'form-receta') return;
+    form.addEventListener('submit', function () {
+      ['nombre', 'cantidad_producida', 'descripcion', 'precio_venta'].forEach(function (fieldId) {
+        var el = document.getElementById(fieldId);
+        if (el) {
+          var hidden = document.createElement('input');
+          hidden.type = 'hidden';
+          hidden.name = 'h_' + fieldId;
+          hidden.value = el.value;
+          form.appendChild(hidden);
+        }
+      });
+    });
+  });
+});
+</script>
+
+{% if costo_ingredientes > 0 %}
+<script>
+(function () {
+  var COSTO_INGREDIENTES = {{ costo_ingredientes }};
+
+  function actualizar() {
+    var cantInput = document.getElementById('cantidad_producida');
+    var hint = document.getElementById('costo-hint');
+    var texto = document.getElementById('costo-hint-texto');
+    if (!cantInput || !hint || !texto) return;
+
+    var cantidad = parseFloat(cantInput.value) || 0;
+    if (cantidad <= 0) {
+      texto.textContent = 'Ingresa la cantidad producida para ver el precio recomendado.';
+      document.getElementById('btn-usar-recomendado').classList.add('hidden');
+      return;
+    }
+
+    var costoUnitario = COSTO_INGREDIENTES / cantidad;
+    var precioRec = Math.ceil(costoUnitario * 1.20 * 100) / 100;
+
+    texto.textContent =
+      'Costo unitario: $' + costoUnitario.toFixed(4) +
+      ' → Recomendado (+20%): $' + precioRec.toFixed(2);
+    document.getElementById('btn-usar-recomendado').classList.remove('hidden');
+
+    document.getElementById('btn-usar-recomendado').onclick = function () {
+      var campo = document.getElementById('precio_venta');
+      if (campo) campo.value = precioRec.toFixed(2);
+    };
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    actualizar();
+    var cantInput = document.getElementById('cantidad_producida');
+    if (cantInput) cantInput.addEventListener('input', actualizar);
+  });
+})();
+</script>
+{% endif %}
+
 {% endblock %}

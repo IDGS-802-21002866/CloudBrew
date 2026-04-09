@@ -44,6 +44,9 @@ class RecetaService:
             descripcion=data.get("descripcion"),
             cantidad_producida=cantidad,
             activo=True,
+            precio_venta=(
+                float(data["precio_venta"]) if data.get("precio_venta") else None
+            ),
             imagen=data.get("imagen"),
             imagen_tipo=data.get("imagen_tipo"),
         )
@@ -68,6 +71,8 @@ class RecetaService:
             )
 
         receta.cantidad_producida = cantidad
+        precio = data.get("precio_venta")
+        receta.precio_venta = float(precio) if precio else None
         if data.get("imagen") is not None:
             receta.imagen = data.get("imagen")
             receta.imagen_tipo = data.get("imagen_tipo")

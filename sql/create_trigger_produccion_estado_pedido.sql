@@ -76,12 +76,18 @@ BEGIN
 
                 SET v_venta_id = LAST_INSERT_ID();
 
-                INSERT INTO detalle_venta (id_venta, id_receta, cantidad)
+                INSERT INTO detalle_venta (id_venta, id_receta, cantidad, precio_unitario, subtotal)
                 SELECT v_venta_id,
                        receta_id,
-                       CAST(total_unidades AS SIGNED)
+                       CAST(total_unidades AS SIGNED),
+                       precio_unitario,
+                       CAST(total_unidades AS SIGNED) * COALESCE(precio_unitario, 0)
                 FROM pedido_detalle
                 WHERE pedido_id = v_pedido_id;
+
+                UPDATE venta
+                SET total = (SELECT SUM(subtotal) FROM detalle_venta WHERE id_venta = v_venta_id)
+                WHERE id = v_venta_id;
 
             END IF;
         END IF;

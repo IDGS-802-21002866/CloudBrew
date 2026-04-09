@@ -19,6 +19,7 @@ class Venta(db.Model):
     fecha: Mapped[datetime] = mapped_column(DateTime, default=db.func.now())
     cancelada: Mapped[bool] = mapped_column(db.Boolean, default=False)
     tipo: Mapped[str] = mapped_column(db.String(20), nullable=False)
+    total: Mapped[float] = mapped_column(db.Float, nullable=True)
 
     # Relaciones
     cliente = relationship(
@@ -39,6 +40,8 @@ class DetalleVenta(db.Model):
         db.Integer, ForeignKey("recetas.id"), nullable=False
     )
     cantidad: Mapped[int] = mapped_column(db.Integer, nullable=False)
+    precio_unitario: Mapped[float] = mapped_column(db.Float, nullable=True)
+    subtotal: Mapped[float] = mapped_column(db.Float, nullable=True)
 
     # Relaciones
     venta = relationship("Venta", back_populates="detallesVenta")

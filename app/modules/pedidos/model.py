@@ -14,6 +14,7 @@ class Pedido(db.Model):
     # Estados: 'Pendiente', 'En Proceso', 'Terminado', 'Cancelado'
     estado: Mapped[str] = mapped_column(String(50), default="Pendiente")
     activo: Mapped[bool] = mapped_column(db.Boolean, default=True)
+    total: Mapped[float] = mapped_column(Float, nullable=True)
 
     cliente = relationship("Cliente")
     detalles = relationship(
@@ -40,6 +41,7 @@ class PedidoDetalle(db.Model):
     )
     cantidad_lotes: Mapped[int] = mapped_column(Integer, nullable=False)
     total_unidades: Mapped[float] = mapped_column(Float, nullable=False)
+    precio_unitario: Mapped[float] = mapped_column(Float, nullable=True)
 
     pedido = relationship("Pedido", back_populates="detalles")
     receta = relationship("Recetas")

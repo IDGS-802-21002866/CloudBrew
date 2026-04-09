@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
 from wtforms import StringField, DecimalField, SelectField, SubmitField
-from wtforms.validators import DataRequired, Optional, Length
+from wtforms.validators import DataRequired, Optional, Length, NumberRange
 
 
 class RecetaForm(FlaskForm):
@@ -13,6 +13,14 @@ class RecetaForm(FlaskForm):
     cantidad_producida = DecimalField(
         "Cantidad Producida",
         validators=[DataRequired(message="La cantidad producida es obligatoria.")],
+    )
+    precio_venta = DecimalField(
+        "Precio de Venta (por unidad)",
+        validators=[
+            Optional(),
+            NumberRange(min=0.01, message="El precio debe ser mayor a 0."),
+        ],
+        places=2,
     )
     imagen = FileField(
         "Imagen",

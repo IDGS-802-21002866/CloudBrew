@@ -11,6 +11,7 @@ class Recetas(db.Model):
     descripcion: Mapped[str] = mapped_column(db.Text, nullable=True)
     cantidad_producida: Mapped[float] = mapped_column(db.Float, nullable=False)
     activo: Mapped[bool] = mapped_column(db.Boolean, default=True)
+    precio_venta: Mapped[float] = mapped_column(db.Float, nullable=True)
     imagen: Mapped[bytes] = mapped_column(db.LargeBinary, nullable=True)
     imagen_tipo: Mapped[str] = mapped_column(db.String(50), nullable=True)
 

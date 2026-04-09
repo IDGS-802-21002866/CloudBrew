@@ -12,6 +12,7 @@ from app.modules.recetas.service import RecetaService
 from app.modules.recetas.form import RecetaForm, RecetaDetalleForm, ProcesoRecetaForm
 from app.modules.materias_primas.service import MateriaPrimaService
 from app.modules.proc_prod.service import ProcesoProductivoService
+from app.modules.costos import repository as costos_repo
 from app.shared.exceptions import ValidacionNegocioException
 
 receta_service = RecetaService()
@@ -29,6 +30,12 @@ def listar():
 @bp.route("/crear", methods=["GET", "POST"])
 def crear():
     """Crea una nueva receta con detalles y procesos."""
+    if request.method == "GET" and request.args.get("nuevo"):
+        session.pop("receta_carrito_detalles", None)
+        session.pop("receta_carrito_procesos", None)
+        session.pop("receta_form_data", None)
+        session.modified = True
+
     receta_form = RecetaForm()
     detalle_form = RecetaDetalleForm()
     proceso_form = ProcesoRecetaForm()
@@ -49,13 +56,63 @@ def crear():
     if "receta_carrito_procesos" not in session:
         session["receta_carrito_procesos"] = []
 
+    def _guardar_form_data():
+        session["receta_form_data"] = {
+            "nombre": request.form.get("h_nombre", ""),
+            "cantidad_producida": request.form.get("h_cantidad_producida", ""),
+            "descripcion": request.form.get("h_descripcion", ""),
+            "precio_venta": request.form.get("h_precio_venta", ""),
+        }
+        session.modified = True
+
     def _render():
-        detalles_carrito = receta_service.obtener_carrito_detalles(
-            session.get("receta_carrito_detalles", [])
-        )
+        carrito_items = session.get("receta_carrito_detalles", [])
+        detalles_carrito = receta_service.obtener_carrito_detalles(carrito_items)
         procesos_carrito = receta_service.obtener_carrito_procesos(
             session.get("receta_carrito_procesos", [])
         )
+
+        costo_ingredientes = 0.0
+        mp_sin_costo = []
+        for item in carrito_items:
+            costo_mp = costos_repo.get_costo_promedio_materia_prima(
+                item["materia_prima_id"]
+            )
+            if costo_mp == 0:
+                mp = next(
+                    (
+                        d
+                        for d in detalles_carrito
+                        if d["materia_prima_id"] == item["materia_prima_id"]
+                    ),
+                    None,
+                )
+                mp_sin_costo.append(mp["materia_prima_nombre"] if mp else "Desconocida")
+            costo_ingredientes += costo_mp * item["cantidad"]
+
+        from decimal import Decimal, InvalidOperation
+
+        form_data = session.get("receta_form_data") or {}
+        if form_data:
+            receta_form.nombre.data = form_data.get("nombre", "")
+            receta_form.descripcion.data = form_data.get("descripcion", "")
+            try:
+                if form_data.get("cantidad_producida"):
+                    receta_form.cantidad_producida.data = Decimal(
+                        str(form_data["cantidad_producida"])
+                    )
+            except InvalidOperation:
+                pass
+            try:
+                if form_data.get("precio_venta"):
+                    receta_form.precio_venta.data = Decimal(
+                        str(form_data["precio_venta"])
+                    )
+            except InvalidOperation:
+                pass
+
+        nombre_receta = form_data.get("nombre", "")
+
         return render_template(
             "recetas/crear.html",
             receta_form=receta_form,
@@ -65,6 +122,9 @@ def crear():
             procesos=procesos,
             detalles_carrito=detalles_carrito,
             procesos_carrito=procesos_carrito,
+            costo_ingredientes=costo_ingredientes,
+            mp_sin_costo=mp_sin_costo,
+            nombre_receta=nombre_receta,
         )
 
     if request.method == "POST":
@@ -89,6 +149,7 @@ def crear():
                 flash("Materia prima agregada al carrito.", "success")
             except ValidacionNegocioException as e:
                 flash(str(e), "danger")
+            _guardar_form_data()
             return redirect(url_for("recetas.crear"))
 
         elif accion == "quitar_detalle":
@@ -101,6 +162,7 @@ def crear():
                 flash("Materia prima removida del carrito.", "success")
             except ValidacionNegocioException as e:
                 flash(str(e), "danger")
+            _guardar_form_data()
             return redirect(url_for("recetas.crear"))
 
         elif accion == "agregar_proceso":
@@ -122,6 +184,7 @@ def crear():
                 flash("Proceso agregado al carrito.", "success")
             except ValidacionNegocioException as e:
                 flash(str(e), "danger")
+            _guardar_form_data()
             return redirect(url_for("recetas.crear"))
 
         elif accion == "quitar_proceso":
@@ -134,6 +197,7 @@ def crear():
                 flash("Proceso removido del carrito.", "success")
             except ValidacionNegocioException as e:
                 flash(str(e), "danger")
+            _guardar_form_data()
             return redirect(url_for("recetas.crear"))
 
         elif accion == "finalizar_receta":
@@ -175,6 +239,7 @@ def crear():
                 session["receta_carrito_detalles"] = []
                 session["receta_carrito_procesos"] = []
                 session.pop("receta_carrito_editando_id", None)
+                session.pop("receta_form_data", None)
                 session.modified = True
 
                 flash("Receta creada exitosamente.", "success")
@@ -252,12 +317,32 @@ def editar(id):
             session.modified = True
 
         def _render():
-            detalles_carrito = receta_service.obtener_carrito_detalles(
-                session.get("receta_carrito_detalles", [])
-            )
+            carrito_items = session.get("receta_carrito_detalles", [])
+            detalles_carrito = receta_service.obtener_carrito_detalles(carrito_items)
             procesos_carrito = receta_service.obtener_carrito_procesos(
                 session.get("receta_carrito_procesos", [])
             )
+
+            costo_ingredientes = 0.0
+            mp_sin_costo = []
+            for item in carrito_items:
+                costo_mp = costos_repo.get_costo_promedio_materia_prima(
+                    item["materia_prima_id"]
+                )
+                if costo_mp == 0:
+                    mp = next(
+                        (
+                            d
+                            for d in detalles_carrito
+                            if d["materia_prima_id"] == item["materia_prima_id"]
+                        ),
+                        None,
+                    )
+                    mp_sin_costo.append(
+                        mp["materia_prima_nombre"] if mp else "Desconocida"
+                    )
+                costo_ingredientes += costo_mp * item["cantidad"]
+
             return render_template(
                 "recetas/editar.html",
                 receta=receta,
@@ -268,6 +353,8 @@ def editar(id):
                 procesos=procesos,
                 detalles_carrito=detalles_carrito,
                 procesos_carrito=procesos_carrito,
+                costo_ingredientes=costo_ingredientes,
+                mp_sin_costo=mp_sin_costo,
             )
 
         if request.method == "POST":
