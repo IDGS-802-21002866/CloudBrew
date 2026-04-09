@@ -23,6 +23,7 @@
              class="w-full pl-10 pr-4 py-2 border-2 border-gray-400 rounded-lg focus:outline-none focus:border-[#6C9AD0] focus:ring-0 transition-colors"
              placeholder="Buscar compra por proveedor...">
     </div>
+  </div>
 
   <div class="bg-white shadow-md rounded-lg overflow-hidden border border-gray-200">
     <table class="min-w-full table-auto" id="tablaCompras">
@@ -56,24 +57,10 @@
               {% endif %}
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-              <div class="flex flex-col gap-2">
-                {% if not compra.cancelada %}
-                <a href="{{ url_for('compras.detalle', id=compra.id) }}"
-                   class="text-white font-bold py-1.5 px-4 rounded-lg flex items-center justify-center shadow-sm hover:opacity-90 transition bg-[#6C9AD0] w-full">
-                  <i class="fa-solid fa-eye mr-2"></i> Ver Detalle
-                </a>
-                {% endif %}
-                {% if not compra.fecha_compra and not compra.cancelada %}
-                <a href="{{ url_for('compras.confirmar_compra', id=compra.id) }}"
-                   class="text-white font-bold py-1.5 px-4 rounded-lg flex items-center justify-center shadow-sm hover:opacity-90 transition bg-[#4A9062] w-full">
-                  <i class="fa-solid fa-circle-check mr-2"></i> Confirmar Pago
-                </a>
-                <a href="{{ url_for('compras.cancelar', id=compra.id) }}"
-                   class="text-white font-bold py-1.5 px-4 rounded-lg flex items-center justify-center shadow-sm hover:opacity-90 transition bg-red-500 w-full">
-                  <i class="fa-solid fa-ban mr-2"></i> Cancelar
-                </a>
-                {% endif %}
-              </div>
+              <a href="{{ url_for('compras.detalle', id=compra.id) }}"
+                 class="text-white font-bold py-1.5 px-4 rounded-lg inline-flex items-center shadow-sm hover:opacity-90 transition bg-[#6C9AD0]">
+                <i class="fa-solid fa-eye mr-2"></i> Ver Detalle
+              </a>
             </td>
           </tr>
           {% endfor %}

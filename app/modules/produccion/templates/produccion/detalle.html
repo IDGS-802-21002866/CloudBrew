@@ -148,7 +148,7 @@
   {% endif %}
 
   <!-- Action Buttons -->
-  <div class="flex gap-3 justify-end">
+  <div class="flex gap-3 justify-end border-t border-gray-200 pt-6 mt-6">
     {% if produccion.estado != 'cancelado' and produccion.estado != 'cancelada' %}
       <a href="{{ url_for('procesos_produccion.listar', produccion_id=produccion.id_produccion) }}"
          class="text-white font-bold py-2 px-6 rounded-lg shadow hover:opacity-90 transition bg-[#6C9AD0]">
