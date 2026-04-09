@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import campo_nuevo %}
+
+{% block content %}
+<div class="p-6 max-w-3xl mx-auto">
+
+  <!-- Header -->
+  <div class="flex items-center gap-3 mb-6">
+    <a href="{{ url_for('produccion.listar') }}"
+       class="text-gray-500 hover:text-gray-800 text-xl font-bold">
+      <i class="fa-solid fa-chevron-left"></i>
+    </a>
+    <h2 class="text-2xl font-bold text-gray-800">
+      Crear Orden de Producción
+    </h2>
+  </div>
+
+<form action="{{ url_for('produccion.crear') }}" method="POST" class="max-w-3xl mx-auto mt-10 bg-white border border-gray-200 rounded-2xl shadow-sm">
+  {{ form.hidden_tag() }}
+  <div class="bg-gray-100 px-0 py-0 border-b border-gray-200">
+    <span class="font-bold text-gray-700 block p-4"><i class="fa-solid fa-circle-info mr-2"></i> Datos de la Orden</span>
+  </div>
+
+  <div class="p-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+      <!-- Receta -->
+      {{ campo_nuevo(form.id_receta, id="select_receta") }}
+
+      <!-- Cantidad de lotes -->
+      {{ campo_nuevo(form.cantidad, id="input_cantidad") }}
+
+      <!-- Total de piezas (informativo) -->
+      <div class="md:col-span-2">
+        <label class="block mb-2 text-sm font-medium text-gray-700">
+          <i class="fa-solid fa-boxes-stacked mr-1 text-blue-500"></i> Total de piezas a producir
+        </label>
+        <input type="text" id="total_piezas" readonly
+          class="bg-blue-50 border border-blue-200 text-blue-800 text-sm rounded-lg block w-full p-2.5 font-semibold cursor-default"
+          value="Selecciona una receta y cantidad" />
+        <p class="text-xs text-gray-400 mt-1">Calculado como: piezas por lote de la receta × cantidad de lotes</p>
+      </div>
+
+    </div>
+
+    <div class="pt-4 flex gap-2 items-center">
+      <button type="submit"
+        class="flex-1 text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5">
+        Crear Orden
+      </button>
+      <a href="{{ url_for('produccion.listar') }}"
+        class="flex-1 text-white bg-gray-400 hover:bg-gray-500 focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">
+        Cancelar
+      </a>
+    </div>
+  </div>
+</form>
+</div>
+
+<script>
+  const recetasData = {{ recetas_data | tojson }};
+
+  function actualizarTotal() {
+    const recetaId = parseInt(document.getElementById('select_receta').value);
+    const cantidad = parseInt(document.getElementById('input_cantidad')?.value) || 0;
+    const totalEl = document.getElementById('total_piezas');
+
+    if (recetaId && recetasData[recetaId] && cantidad > 0) {
+      const piezasPorLote = recetasData[recetaId];
+      totalEl.value = `${piezasPorLote * cantidad} piezas (${piezasPorLote} por lote × ${cantidad} lotes)`;
+    } else {
+      totalEl.value = 'Selecciona una receta y cantidad';
+    }
+  }
+
+  document.getElementById('select_receta').addEventListener('change', actualizarTotal);
+  document.getElementById('input_cantidad')?.addEventListener('input', actualizarTotal);
+  actualizarTotal();
+</script>
+{% endblock %}

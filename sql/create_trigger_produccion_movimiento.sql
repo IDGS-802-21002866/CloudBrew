@@ -7,9 +7,10 @@ AFTER INSERT ON produccion
 FOR EACH ROW
 BEGIN
     DECLARE v_conteo_insumos INT;
+    DECLARE v_usuario_id INT;
 
     SELECT COUNT(*) INTO v_conteo_insumos 
-    FROM detalle_receta 
+    FROM receta_detalle 
     WHERE receta_id = NEW.id_receta;
 
     IF v_conteo_insumos = 0 THEN
@@ -17,24 +18,28 @@ BEGIN
         SET MESSAGE_TEXT = 'Error: La receta no tiene ingredientes configurados. No se puede registrar la producción.';
     END IF;
 
+    SELECT COALESCE(MIN(id), 1) INTO v_usuario_id FROM usuario LIMIT 1;
+
     INSERT INTO movimientos_materia_prima (
         materia_prima_id,
         tipo,
         cantidad,
         fecha,
         motivo,
-        lote_produccion_id
+        usuario_id,
+        produccion_id
     )
     SELECT 
-        dr.materia_prima_id,
+        rd.materia_prima_id,
         'salida',
-        (dr.cantidad * NEW.cantidad), 
+        (rd.cantidad * NEW.cantidad), 
         NOW(),
         CONCAT('Salida por inicio de Producción #', NEW.id_produccion),
+        v_usuario_id,
         NEW.id_produccion
-    FROM detalle_receta dr
-    WHERE dr.receta_id = NEW.id_receta;
+    FROM receta_detalle rd
+    WHERE rd.receta_id = NEW.id_receta;
 
 END$$
 
-DELIMITER ;
+DELIMITER;

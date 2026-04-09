@@ -1,0 +1,180 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="p-6 max-w-6xl mx-auto">
+
+  <!-- Header -->
+  <div class="flex items-center gap-3 mb-6">
+    <a href="{{ url_for('produccion.listar') }}"
+       class="text-gray-500 hover:text-gray-800 text-xl font-bold">
+      <i class="fa-solid fa-chevron-left"></i>
+    </a>
+    <h2 class="text-2xl font-bold text-gray-800">
+      Orden de Producción #{{ produccion.id_produccion }}
+    </h2>
+  </div>
+
+  <!-- Main card with production details -->
+  <div class="bg-white border border-gray-200 rounded-2xl shadow-sm mb-6">
+    <div class="bg-gray-100 px-6 py-4 border-b border-gray-200">
+      <span class="font-bold text-gray-700"><i class="fa-solid fa-circle-info mr-2"></i> Detalles de la Orden</span>
+    </div>
+
+    <div class="p-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        <!-- Receta -->
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-2">Receta</label>
+          <p class="text-lg font-semibold text-gray-900">
+            {{ produccion.receta.nombre if produccion.receta else '-' }}
+          </p>
+        </div>
+
+        <!-- Estado -->
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-2">Estado</label>
+          <div>
+            {% if produccion.estado == 'completado' or produccion.estado == 'completada' %}
+              <span class="inline-flex items-center rounded-full px-4 py-2 text-sm font-semibold bg-green-100 text-green-800">
+                <i class="fa-solid fa-check-circle mr-2"></i> {{ produccion.estado }}
+              </span>
+            {% elif produccion.estado == 'en_proceso' or produccion.estado == 'en proceso' %}
+              <span class="inline-flex items-center rounded-full px-4 py-2 text-sm font-semibold bg-blue-100 text-blue-800">
+                <i class="fa-solid fa-hourglass-half mr-2"></i> {{ produccion.estado }}
+              </span>
+            {% elif produccion.estado == 'cancelado' or produccion.estado == 'cancelada' %}
+              <span class="inline-flex items-center rounded-full px-4 py-2 text-sm font-semibold bg-red-100 text-red-800">
+                <i class="fa-solid fa-times-circle mr-2"></i> {{ produccion.estado }}
+              </span>
+            {% else %}
+              <span class="inline-flex items-center rounded-full px-4 py-2 text-sm font-semibold bg-amber-100 text-amber-800">
+                <i class="fa-solid fa-circle-notch mr-2"></i> {{ produccion.estado or 'pendiente' }}
+              </span>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Cantidad de lotes -->
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-2">Cantidad de Lotes</label>
+          <p class="text-lg font-semibold text-gray-900">{{ produccion.cantidad }}</p>
+        </div>
+
+        <!-- Total de piezas -->
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-2">
+            <i class="fa-solid fa-boxes-stacked mr-1 text-blue-500"></i> Total de Piezas
+          </label>
+          <p class="text-lg font-semibold text-blue-600">
+            {% if produccion.receta and produccion.receta.cantidad_producida %}
+              {{ (produccion.receta.cantidad_producida * produccion.cantidad) | int }} piezas
+            {% else %}
+              -
+            {% endif %}
+          </p>
+        </div>
+
+        <!-- Fecha Inicio -->
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-2">Fecha Inicio</label>
+          <p class="text-gray-900">{{ produccion.fecha_inicio or '-' }}</p>
+        </div>
+
+        <!-- Fecha Fin -->
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-2">Fecha Fin</label>
+          <p class="text-gray-900">{{ produccion.fecha_fin or '-' }}</p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Procesos de Producción -->
+  {% if procesos %}
+  <div class="bg-white border border-gray-200 rounded-2xl shadow-sm mb-6">
+    <div class="bg-gray-100 px-6 py-4 border-b border-gray-200">
+      <span class="font-bold text-gray-700"><i class="fa-solid fa-tasks mr-2"></i> Procesos de Producción</span>
+    </div>
+
+    <div class="overflow-hidden">
+      <table class="min-w-full table-auto">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Orden</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Proceso</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Duración Est.</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          {% for proceso in procesos | sort(attribute='orden') %}
+          <tr class="hover:bg-gray-50 transition-colors">
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+              <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-700">
+                {{ proceso.orden }}
+              </span>
+            </td>
+            <td class="px-6 py-4 text-sm text-gray-900 font-medium">
+              {{ proceso.proceso.nombre if proceso.proceso else '-' }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm">
+              {% if proceso.estado == 'completado' %}
+                <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-green-100 text-green-800">
+                  <i class="fa-solid fa-check-circle mr-1"></i> Completado
+                </span>
+              {% elif proceso.estado == 'en proceso' %}
+                <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-blue-100 text-blue-800">
+                  <i class="fa-solid fa-hourglass-half mr-1"></i> En Proceso
+                </span>
+              {% elif proceso.estado == 'cancelado' %}
+                <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-red-100 text-red-800">
+                  <i class="fa-solid fa-times-circle mr-1"></i> Cancelado
+                </span>
+              {% else %}
+                <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-amber-100 text-amber-800">
+                  <i class="fa-solid fa-circle-notch mr-1"></i> Pendiente
+                </span>
+              {% endif %}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+              {% if proceso.tiempo_estimado %}
+                {{ proceso.tiempo_estimado }} min
+              {% else %}
+                -
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Action Buttons -->
+  <div class="flex gap-3 justify-end">
+    {% if produccion.estado != 'cancelado' and produccion.estado != 'cancelada' %}
+      <a href="{{ url_for('procesos_produccion.listar', produccion_id=produccion.id_produccion) }}"
+         class="text-white font-bold py-2 px-6 rounded-lg shadow hover:opacity-90 transition bg-blue-600">
+        <i class="fa-solid fa-list-check mr-2"></i> Ver Procesos
+      </a>
+    {% endif %}
+    {% if produccion.estado == 'pendiente' %}
+      <form method="POST" action="{{ url_for('produccion.cancelar', id=produccion.id_produccion) }}"
+            onsubmit="return confirm('¿Está seguro de que desea cancelar esta orden de producción?');" class="inline">
+        <button type="submit"
+                class="text-white font-bold py-2 px-6 rounded-lg shadow hover:opacity-90 transition bg-red-600">
+          <i class="fa-solid fa-ban mr-2"></i> Cancelar Orden
+        </button>
+      </form>
+    {% endif %}
+    <a href="{{ url_for('produccion.listar') }}"
+       class="text-white font-bold py-2 px-6 rounded-lg shadow hover:opacity-90 transition bg-gray-500">
+      <i class="fa-solid fa-arrow-left mr-2"></i> Volver
+    </a>
+  </div>
+
+</div>
+{% endblock %}

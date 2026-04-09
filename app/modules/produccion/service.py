@@ -1,4 +1,6 @@
-from app.modules.inventario_materias_primas.service import InventarioMateriasPrimasService
+from app.modules.inventario_materias_primas.service import (
+    InventarioMateriasPrimasService,
+)
 from app.modules.produccion.repository import (
     eliminar_produccion_proceso,
     get_procesos_por_produccion,
@@ -8,136 +10,126 @@ from app.modules.produccion.repository import (
     insertar_produccion_proceso,
     eliminar_produccion,
     modificar_produccion,
-    eliminar_produccion,
-    modificar_produccion_proceso)
+    modificar_produccion_proceso,
+)
 from .forms import ProduccionForm
-from app.modules.produccion.forms import ProduccionProcesoForm
 from app.modules.recetas.service import RecetaService
+
+receta_service = RecetaService()
+inventario_service = InventarioMateriasPrimasService()
+
 
 class ProduccionService:
 
-    def crear_produccion(self, form: ProduccionForm):
-        try:
+    def listar_produccion(self):
+        return get_produccion()
 
-            receta = RecetaService.obtener_receta(form.id_receta.data)
+    def crear_produccion(self, form: ProduccionForm):
+        from app import db
+
+        if not form.id_receta.data:
+            raise ValueError("Debe seleccionar una receta.")
+        if not form.cantidad.data or form.cantidad.data < 1:
+            raise ValueError("La cantidad debe ser mayor a cero.")
+
+        receta = receta_service.obtener_receta(form.id_receta.data)
+        if not receta:
+            raise ValueError("Receta no encontrada.")
+        if not receta.procesos_receta:
+            raise ValueError("La receta no tiene procesos asociados.")
+
+        for detalle in receta.detalle:
+            cantidad_necesaria = detalle.cantidad * form.cantidad.data
+            stock_disponible = inventario_service.obtener_stock_actual_materia_prima(
+                detalle.materia_prima_id
+            )
+            if stock_disponible < cantidad_necesaria:
+                raise ValueError(
+                    f"Stock insuficiente para la materia prima '{detalle.materia_prima.nombre}'. "
+                    f"Necesario: {cantidad_necesaria}, Disponible: {stock_disponible}"
+                )
+
+        try:
+            produccion = insertar_produccion(form.id_receta.data, form.cantidad.data)
+
+            for proceso_receta in receta.procesos_receta:
+                insertar_produccion_proceso(
+                    produccion.id_produccion,
+                    proceso_receta.proceso_productivo_id,
+                    proceso_receta.orden,
+                    proceso_receta.tiempo_estimado,
+                )
+
+            db.session.commit()
+            return produccion
+
+        except Exception as e:
+            db.session.rollback()
+            raise ValueError(f"Error interno al crear producción: {str(e)}")
+
+    def actualizar_produccion(self, id_produccion, form: ProduccionForm):
+        try:
+            receta = receta_service.obtener_receta(form.id_receta.data)
             if not receta:
                 raise ValueError("Receta no encontrada")
-            stock_materias = InventarioMateriasPrimasService().listar_materias_primas_con_stock()
-            stock_dict = {m["id"]: m["stock_actual"] for m in stock_materias}
 
             for detalle in receta.detalle:
-                materia_id = detalle.materia_prima_id
                 cantidad_necesaria = detalle.cantidad * form.cantidad.data
-
-                stock_disponible = stock_dict.get(materia_id, 0)
+                stock_disponible = (
+                    inventario_service.obtener_stock_actual_materia_prima(
+                        detalle.materia_prima_id
+                    )
+                )
 
                 if stock_disponible < cantidad_necesaria:
-    
                     raise ValueError(
-                        f"Stock insuficiente para la materia prima ID {materia_id}. "
+                        f"Stock insuficiente para la materia prima ID {detalle.materia_prima_id}. "
                         f"Necesario: {cantidad_necesaria}, Disponible: {stock_disponible}"
                     )
-                
-            produccion = insertar_produccion(form)
+
+            produccion = modificar_produccion(
+                id_produccion, form.id_receta.data, form.cantidad.data, form.estado.data
+            )
 
             if isinstance(produccion, ValueError):
                 raise produccion
 
-            for proceso_receta in receta.procesos_receta:
-                proceso_form = ProduccionProcesoForm()
-                proceso_form.id_proceso.data = proceso_receta.proceso_productivo_id
-                proceso_form.fecha_inicio.data = form.fecha_inicio.data
-                proceso_form.fecha_fin.data = form.fecha_fin.data
-                proceso_form.estado.data = "pendiente"
+            procesos_query = get_procesos_por_produccion(id_produccion)
 
-                proceso = insertar_produccion_proceso(
-                    produccion.id_produccion,
-                    proceso_form
-                )
-                if isinstance(proceso, ValueError):
-                    eliminar_produccion(produccion.id_produccion)
-                    raise proceso
+            if not isinstance(procesos_query, ValueError):
+                for proceso_actual in procesos_query.all():
+                    resultado = modificar_produccion_proceso(
+                        proceso_actual.id_produccion_proceso,
+                        proceso_actual.id_proceso,
+                        proceso_actual.estado,
+                    )
+                    if isinstance(resultado, ValueError):
+                        raise resultado
 
             return produccion
 
         except ValueError as e:
             raise e
         except Exception as e:
-            raise ValueError(f"Error interno al crear producción: {str(e)}")
-    
-    def actualizar_produccion(self, id_produccion, form: ProduccionForm):
-            try:
+            raise ValueError(f"Error interno al modificar producción: {str(e)}")
 
-                receta = RecetaService.obtener_receta(form.id_receta.data)
-                if not receta:
-                    raise ValueError("Receta no encontrada")
-
-                stock_materias = InventarioMateriasPrimasService().listar_materias_primas_con_stock()
-                stock_dict = {m["id"]: m["stock_actual"] for m in stock_materias}
-
-                for detalle in receta.detalle:
-                    materia_id = detalle.materia_prima_id
-                    cantidad_necesaria = detalle.cantidad * form.cantidad.data
-
-                    stock_disponible = stock_dict.get(materia_id, 0)
-
-                    if stock_disponible < cantidad_necesaria:
-                        raise ValueError(
-                            f"Stock insuficiente para la materia prima ID {materia_id}. "
-                            f"Necesario: {cantidad_necesaria}, Disponible: {stock_disponible}"
-                        )
-
-                produccion = modificar_produccion(id_produccion, form)
-                
-                if isinstance(produccion, ValueError):
-                    raise produccion
-
-                procesos_query = get_procesos_por_produccion(id_produccion)
-                
-                if not isinstance(procesos_query, ValueError):
-                    procesos_actuales = procesos_query.all()
-                    
-                    for proceso_actual in procesos_actuales:
-                        proceso_form = ProduccionProcesoForm()
-                        
-                        proceso_form.id_proceso.data = proceso_actual.id_proceso
-                        proceso_form.fecha_inicio.data = form.fecha_inicio.data
-                        proceso_form.fecha_fin.data = form.fecha_fin.data
-                        proceso_form.estado.data = proceso_actual.estado
-
-                        proceso_modificado = modificar_produccion_proceso(
-                            proceso_actual.id_produccion_proceso, 
-                            proceso_form
-                        )
-                        
-                        if isinstance(proceso_modificado, ValueError):
-                            raise proceso_modificado
-
-                return produccion
-
-            except ValueError as e:
-                raise e
-            except Exception as e:
-                raise ValueError(f"Error interno al modificar producción: {str(e)}")
-            
     def cancelar_produccion(self, id_produccion):
         try:
             produccion_cancelada = eliminar_produccion(id_produccion)
-            
+
             if isinstance(produccion_cancelada, ValueError):
                 raise produccion_cancelada
 
-        
             procesos_query = get_procesos_por_produccion(id_produccion)
-            
+
             if not isinstance(procesos_query, ValueError):
                 procesos_actuales = procesos_query.all()
-                
+
                 for proceso_actual in procesos_actuales:
                     proceso_cancelado = eliminar_produccion_proceso(
                         proceso_actual.id_produccion_proceso
                     )
-                    
+
                     if isinstance(proceso_cancelado, ValueError):
                         raise proceso_cancelado
 
@@ -146,13 +138,15 @@ class ProduccionService:
         except ValueError as e:
             raise e
         except Exception as e:
-            raise ValueError(f"Error interno al intentar cancelar la producción: {str(e)}")
+            raise ValueError(
+                f"Error interno al intentar cancelar la producción: {str(e)}"
+            )
 
     def obtener_procesos_de_produccion(self, id_produccion):
-            return get_procesos_por_produccion(id_produccion)
+        return get_procesos_por_produccion(id_produccion)
 
     def listar_toda_la_produccion(self):
-            return get_produccion()
+        return get_produccion()
 
     def buscar_produccion_por_id(self, id):
-            return get_produccion_by_id(id)
+        return get_produccion_by_id(id)

@@ -1,40 +1,34 @@
-from app.modules.produccion.model import Produccion, ProduccionProceso
+﻿from app.modules.produccion.model import Produccion, ProduccionProceso
 from app import db
 
-def insertar_produccion(form):
-    try:
-        if not form.id_receta.data:
-            raise ValueError("La receta es obligatoria.")
 
+def insertar_produccion(id_receta, cantidad):
+    try:
         produccion = Produccion(
-            id_receta=form.id_receta.data,
-            fecha_inicio=form.fecha_inicio.data,
-            fecha_fin=form.fecha_fin.data,
-            estado=form.estado.data or "pendiente"
+            id_receta=id_receta,
+            cantidad=cantidad,
+            estado="pendiente",
         )
 
         db.session.add(produccion)
-        db.session.commit()
+        db.session.flush()
 
         return produccion
 
-    except ValueError as ve:
-        db.session.rollback()
-        return ve
     except Exception:
-        db.session.rollback()
-        return ValueError("Ocurrió un error al insertar la producción.")
-def modificar_produccion(id_produccion, form):
+        raise
+
+
+def modificar_produccion(id_produccion, id_receta, cantidad, estado):
     try:
         produccion = Produccion.query.get(id_produccion)
 
         if not produccion:
-            raise ValueError("La producción no existe.")
+            raise ValueError("La produccion no existe.")
 
-        produccion.id_receta = form.id_receta.data
-        produccion.fecha_inicio = form.fecha_inicio.data
-        produccion.fecha_fin = form.fecha_fin.data
-        produccion.estado = form.estado.data
+        produccion.id_receta = id_receta
+        produccion.cantidad = cantidad
+        produccion.estado = estado
 
         db.session.commit()
 
@@ -45,13 +39,15 @@ def modificar_produccion(id_produccion, form):
         return ve
     except Exception:
         db.session.rollback()
-        return ValueError("Ocurrió un error al modificar la producción.")
+        return ValueError("Ocurrio un error al modificar la produccion.")
+
+
 def eliminar_produccion(id_produccion):
     try:
         produccion = Produccion.query.get(id_produccion)
 
         if not produccion:
-            raise ValueError("La producción no existe.")
+            raise ValueError("La produccion no existe.")
 
         produccion.estado = "cancelado"
 
@@ -64,47 +60,38 @@ def eliminar_produccion(id_produccion):
         return ve
     except Exception:
         db.session.rollback()
-        return ValueError("Ocurrió un error al cancelar la producción.")
-def insertar_produccion_proceso(id_produccion, form):
+        return ValueError("Ocurrio un error al cancelar la produccion.")
+
+
+def insertar_produccion_proceso(
+    id_produccion, id_proceso, orden=0, tiempo_estimado=None
+):
     try:
-        produccion = Produccion.query.get(id_produccion)
-
-        if not produccion:
-            raise ValueError("La producción no existe.")
-
-        if not form.id_proceso.data:
-            raise ValueError("El proceso es obligatorio.")
-
         proceso = ProduccionProceso(
             id_produccion=id_produccion,
-            id_proceso=form.id_proceso.data,
-            fecha_inicio=form.fecha_inicio.data,
-            fecha_fin=form.fecha_fin.data,
-            estado=form.estado.data or "pendiente"
+            id_proceso=id_proceso,
+            estado="pendiente",
+            orden=orden,
+            tiempo_estimado=tiempo_estimado,
         )
 
         db.session.add(proceso)
-        db.session.commit()
 
         return proceso
 
-    except ValueError as ve:
-        db.session.rollback()
-        return ve
     except Exception:
-        db.session.rollback()
-        return ValueError("Ocurrió un error al agregar el proceso.")
-def modificar_produccion_proceso(id_produccion_proceso, form):
+        raise
+
+
+def modificar_produccion_proceso(id_produccion_proceso, id_proceso, estado):
     try:
         proceso = ProduccionProceso.query.get(id_produccion_proceso)
 
         if not proceso:
-            raise ValueError("El proceso de producción no existe.")
+            raise ValueError("El proceso de produccion no existe.")
 
-        proceso.id_proceso = form.id_proceso.data
-        proceso.fecha_inicio = form.fecha_inicio.data
-        proceso.fecha_fin = form.fecha_fin.data
-        proceso.estado = form.estado.data
+        proceso.id_proceso = id_proceso
+        proceso.estado = estado
 
         db.session.commit()
 
@@ -115,13 +102,15 @@ def modificar_produccion_proceso(id_produccion_proceso, form):
         return ve
     except Exception:
         db.session.rollback()
-        return ValueError("Ocurrió un error al modificar el proceso.")
+        return ValueError("Ocurrio un error al modificar el proceso.")
+
+
 def eliminar_produccion_proceso(id_produccion_proceso):
     try:
         proceso = ProduccionProceso.query.get(id_produccion_proceso)
 
         if not proceso:
-            raise ValueError("El proceso de producción no existe.")
+            raise ValueError("El proceso de produccion no existe.")
 
         proceso.estado = "cancelado"
 
@@ -134,20 +123,25 @@ def eliminar_produccion_proceso(id_produccion_proceso):
         return ve
     except Exception:
         db.session.rollback()
-        return ValueError("Ocurrió un error al cancelar el proceso.")
+        return ValueError("Ocurrio un error al cancelar el proceso.")
+
 
 def get_procesos_por_produccion(id_produccion):
     try:
-           return ProduccionProceso.query.filter_by(id_produccion=id_produccion)
+        return ProduccionProceso.query.filter_by(id_produccion=id_produccion).all()
     except Exception:
-            return ValueError("Ocurrió un error al obtener los Procesos de producción.")
+        return ValueError("Ocurrio un error al obtener los Procesos de produccion.")
+
+
 def get_produccion():
     try:
         return Produccion.query.all()
     except Exception:
-            return ValueError("Ocurrió un error al obtener los registros de producción.")
+        return ValueError("Ocurrio un error al obtener los registros de produccion.")
+
+
 def get_produccion_by_id(id):
     try:
-           return Produccion.query.filter_by(id_produccion=id)
+        return Produccion.query.filter_by(id_produccion=id).first()
     except Exception:
-            return ValueError("Ocurrió un error al obtener los registros de producción.")
+        return ValueError("Ocurrio un error al obtener los registros de produccion.")
