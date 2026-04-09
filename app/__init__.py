@@ -64,9 +64,9 @@ def create_app():
 
     @login_manager.user_loader
     def load_user(user_id):
-        from app.modules.usuarios.repository import getUsuarioById
+        from app.modules.usuarios.repository import get_usuario_by_id
 
-        usuario = getUsuarioById(int(user_id))
+        usuario = get_usuario_by_id(int(user_id))
         # Solo retornar usuario si está activo
         if usuario and usuario.activo:
             return usuario

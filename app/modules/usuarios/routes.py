@@ -1,23 +1,17 @@
-import re
-
-from wtforms.validators import email
-from app.modules.usuarios.model import Usuario
-from flask import Flask, flash, render_template
-from flask import request
-from flask import redirect, url_for
-import app.modules.usuarios.form
-import app.modules.usuarios.service as service
+from flask import flash, render_template, request, redirect, url_for
+from app.modules.usuarios.form import UsuarioForm, UsuarioFormAux
+from app.modules.usuarios.service import UsuarioService
 from . import bp
 
-service = service.UsuarioService()
+servicio = UsuarioService()
 
 
-@bp.route("/usuarios")
+@bp.route("/")
 def listar():
     try:
         page = request.args.get("page", 1, type=int)
         querry = request.args.get("querry", "", type=str)
-        pag = service.obtener_usuarios(pagina=page, por_pagina=5, querry=querry)
+        pag = servicio.obtener_usuarios(pagina=page, por_pagina=5, querry=querry)
         usuarios = pag.items
         pagination = {
             "page": pag.page,
@@ -31,70 +25,65 @@ def listar():
             "end": min(pag.page * pag.per_page, pag.total),
         }
         return render_template(
-            "lista_usuario.html", usuarios=usuarios, pagination=pagination
+            "usuarios/listar.html", usuarios=usuarios, pagination=pagination
         )
 
     except ValueError as e:
         flash(str(e), "danger")
-        return render_template("lista_usuario.html", usuarios=[])
+        return render_template("usuarios/listar.html", usuarios=[])
 
 
-@bp.route("/usuarios/agregar")
+@bp.route("/crear", methods=["GET", "POST"])
 def crear():
-    form = app.modules.usuarios.form.UsuarioForm()
-    return render_template("insertar_usuario.html", form=form)
+    form = UsuarioForm()
+
+    if form.validate_on_submit():
+        try:
+            servicio.crear_usuario(form)
+            flash("Usuario creado correctamente", "success")
+            return redirect(url_for("usuarios.listar"))
+        except ValueError as e:
+            flash(str(e), "danger")
+
+    return render_template("usuarios/crear.html", form=form)
 
 
-@bp.route("/usuarios/detalles")
-def detalles():
+@bp.route("/<int:id>")
+def detalle(id):
     try:
-        id = request.args.get("id", type=int)
-
-        usuario = service.obtener_usuario_por_id(id)
-        form = app.modules.usuarios.form.UsuarioFormAux(obj=usuario)
-
-        return render_template("detalle_usuario.html", form=form, usuario=usuario)
+        usuario = servicio.obtener_usuario_por_id(id)
+        form = UsuarioFormAux(obj=usuario)
+        return render_template("usuarios/detalle.html", form=form, usuario=usuario)
     except ValueError as e:
         flash(str(e), "danger")
         return redirect(url_for("usuarios.listar"))
 
 
-@bp.route("/usuarios/insertar", methods=["POST"])
-def insert():
-    form = app.modules.usuarios.form.UsuarioForm(request.form)
-    if form.validate():
-        try:
-            service.crear_usuario(form)
-            flash("Usuario creado correctamente", "success")
-            return redirect(url_for("usuarios.listar"))
-        except ValueError as e:
-            flash(str(e), "danger")
-    else:
-        flash("Verifique los datos ingresados", "danger")
-    return render_template("insertar_usuario.html", form=form)
-
-
-@bp.route("/usuarios/eliminar", methods=["POST"])
-def eliminar():
+@bp.route("/<int:id>/editar", methods=["GET", "POST"])
+def editar(id):
     try:
-        id = request.args.get("id", type=int)
-        service.borrar_usuario(id)
+        usuario = servicio.obtener_usuario_por_id(id)
+        form = UsuarioFormAux(obj=usuario)
+
+        if form.validate_on_submit():
+            try:
+                servicio.actualizar_usuario(id, form)
+                flash("Usuario actualizado correctamente", "success")
+                return redirect(url_for("usuarios.detalle", id=id))
+            except ValueError as e:
+                flash(str(e), "danger")
+
+        return render_template("usuarios/crear.html", form=form, usuario=usuario)
+    except ValueError as e:
+        flash(str(e), "danger")
+        return redirect(url_for("usuarios.listar"))
+
+
+@bp.route("/<int:id>/eliminar", methods=["POST"])
+def eliminar(id):
+    try:
+        servicio.borrar_usuario(id)
         flash("Usuario eliminado correctamente", "success")
     except ValueError as e:
         flash(str(e), "danger")
-    return redirect(url_for("usuarios.listar"))
-
-
-@bp.route("/usuarios/actualizar", methods=["POST"])
-def modificar():
-    form = app.modules.usuarios.form.UsuarioFormAux(request.form)
-    if form.validate():
-        try:
-            id = request.args.get("id", type=int)
-            service.actualizar_usuario(id, form)
-            flash("Usuario actualizado correctamente", "success")
-        except ValueError as e:
-            flash(str(e), "danger")
-    else:
-        flash("Verifique los datos ingresados", "danger")
     return redirect(url_for("usuarios.listar"))

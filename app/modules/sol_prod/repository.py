@@ -1,12 +1,14 @@
-from app.modules.sol_prod.model import DetallePedido, Pedido, PedidoProduccion
+from app.modules.pedidos.model import Pedido, PedidoDetalle
+from app.modules.sol_prod.model import PedidoProduccion
 from app import db
+
 
 def crear_pedido(form):
     try:
         pedido = Pedido(
-            id_cliente=form.id_cliente.data,
-            fecha_pedido=form.fecha_pedido.data,
-            estado=form.estado.data
+            cliente_id=form.cliente_id.data,
+            fecha_registro=form.fecha_registro.data,
+            estado=form.estado.data,
         )
 
         db.session.add(pedido)
@@ -16,14 +18,17 @@ def crear_pedido(form):
 
     except Exception:
         db.session.rollback()
-        raise ValueError("No se pudo crear el pedido. Verifica los datos proporcionados.")
+        raise ValueError(
+            "No se pudo crear el pedido. Verifica los datos proporcionados."
+        )
 
-def crear_detalle_pedido(form, id_pedido):
+
+def crear_detalle_pedido(form, pedido_id):
     try:
-        detalle = DetallePedido(
-            id_pedido=id_pedido,
-            id_receta=form.id_receta.data,
-            cantidad=form.cantidad.data
+        detalle = PedidoDetalle(
+            pedido_id=pedido_id,
+            receta_id=form.receta_id.data,
+            cantidad_lotes=form.cantidad_lotes.data,
         )
 
         db.session.add(detalle)
@@ -33,13 +38,15 @@ def crear_detalle_pedido(form, id_pedido):
 
     except Exception:
         db.session.rollback()
-        raise ValueError("No se pudo agregar el detalle del pedido. Verifica la receta y cantidad.")
+        raise ValueError(
+            "No se pudo agregar el detalle del pedido. Verifica la receta y cantidad."
+        )
+
 
 def vincular_pedido_produccion(form):
     try:
         relacion = PedidoProduccion(
-            id_pedido=form.id_pedido.data,
-            id_produccion=form.id_produccion.data
+            id_pedido=form.id_pedido.data, id_produccion=form.id_produccion.data
         )
 
         db.session.add(relacion)
@@ -50,15 +57,17 @@ def vincular_pedido_produccion(form):
     except Exception:
         db.session.rollback()
         raise ValueError("No se pudo vincular el pedido con la producción.")
-def actualizar_pedido(form, id_pedido):
+
+
+def actualizar_pedido(form, pedido_id):
     try:
-        pedido = Pedido.query.get(id_pedido)
+        pedido = Pedido.query.get(pedido_id)
 
         if not pedido:
             raise ValueError("El pedido no existe.")
 
-        pedido.id_cliente = form.id_cliente.data
-        pedido.fecha_pedido = form.fecha_pedido.data
+        pedido.cliente_id = form.cliente_id.data
+        pedido.fecha_registro = form.fecha_registro.data
         pedido.estado = form.estado.data
 
         db.session.commit()
@@ -71,18 +80,20 @@ def actualizar_pedido(form, id_pedido):
     except Exception:
         db.session.rollback()
         raise ValueError("No se pudo actualizar el pedido.")
+
+
 def actualizar_detalle_pedido(form, id_detalle):
     try:
-        detalle = DetallePedido.query.get(id_detalle)
+        detalle = PedidoDetalle.query.get(id_detalle)
 
         if not detalle:
             raise ValueError("El detalle del pedido no existe.")
 
-        if form.cantidad.data <= 0:
+        if form.cantidad_lotes.data <= 0:
             raise ValueError("La cantidad debe ser mayor a 0.")
 
-        detalle.id_receta = form.id_receta.data
-        detalle.cantidad = form.cantidad.data
+        detalle.receta_id = form.receta_id.data
+        detalle.cantidad_lotes = form.cantidad_lotes.data
 
         db.session.commit()
 
@@ -94,6 +105,8 @@ def actualizar_detalle_pedido(form, id_detalle):
     except Exception:
         db.session.rollback()
         raise ValueError("No se pudo actualizar el detalle del pedido.")
+
+
 def actualizar_pedido_produccion(form, id_relacion):
     try:
         relacion = PedidoProduccion.query.get(id_relacion)
@@ -114,9 +127,11 @@ def actualizar_pedido_produccion(form, id_relacion):
     except Exception:
         db.session.rollback()
         raise ValueError("No se pudo actualizar la relación pedido-producción.")
-def cancelar_pedido(id_pedido):
+
+
+def cancelar_pedido(pedido_id):
     try:
-        pedido = Pedido.query.get(id_pedido)
+        pedido = Pedido.query.get(pedido_id)
 
         if not pedido:
             raise ValueError("El pedido no existe.")
@@ -136,9 +151,11 @@ def cancelar_pedido(id_pedido):
     except Exception:
         db.session.rollback()
         raise ValueError("No se pudo cancelar el pedido.")
+
+
 def eliminar_detalle_pedido(id_detalle):
     try:
-        detalle = DetallePedido.query.get(id_detalle)
+        detalle = PedidoDetalle.query.get(id_detalle)
 
         if not detalle:
             raise ValueError("El detalle del pedido no existe.")
@@ -154,24 +171,30 @@ def eliminar_detalle_pedido(id_detalle):
     except Exception:
         db.session.rollback()
         raise ValueError("No se pudo eliminar el detalle del pedido.")
-    
+
+
 def get_pedidos():
     try:
-           return Pedido.query.all()
+        return Pedido.query.all()
     except Exception:
-            return ValueError("Ocurrió un error al obtener los pedidos de producción.")
+        return ValueError("Ocurrió un error al obtener los pedidos de producción.")
+
 
 def get_pedidos_by_id(id):
     try:
-           return Pedido.query.filter_by(id_pedido_produccion=id)
+        return Pedido.query.filter_by(id=id)
     except Exception:
-            return ValueError("Ocurrió un error al obtener los pedidos de producción.")
+        return ValueError("Ocurrió un error al obtener los pedidos de producción.")
+
 
 def get_detalles_pedido_by_pedido(id):
     try:
-           return DetallePedido.query.filter_by(id_pedido_produccion=id)
+        return PedidoDetalle.query.filter_by(pedido_id=id)
     except Exception:
-            return ValueError("Ocurrió un error al obtener los detalles del pedido de producción.")
+        return ValueError(
+            "Ocurrió un error al obtener los detalles del pedido de producción."
+        )
+
 
 def get_pedidos_prod():
     try:

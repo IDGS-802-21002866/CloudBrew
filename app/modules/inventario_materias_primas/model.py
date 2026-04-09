@@ -37,7 +37,7 @@ class MovimientosMateriaPrima(db.Model):
         "DetalleCompra", back_populates="movimientos_materia_prima"
     )
     lote_produccion = db.relationship(
-        "lotes_produccion", back_populates="movimientos_materia_prima"
+        "LoteProduccion", back_populates="movimientos_materia_prima"
     )
 
     merma_materia_prima = db.relationship(

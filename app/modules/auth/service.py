@@ -9,7 +9,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from app import mail
 from app.modules.usuarios.repository import (
     get_usuario_by_reset_token,
-    getUsuarioByEmail,
+    get_usuario_by_email,
     guardar_token_recuperacion,
     limpiar_token_recuperacion,
     actualizar_password,
@@ -37,7 +37,7 @@ class AuthService:
         logout_user()
 
     def solicitar_recuperacion(self, correo):
-        usuario = getUsuarioByEmail(correo)
+        usuario = get_usuario_by_email(correo)
         if not usuario or not usuario.activo:
             raise ValueError("Correo inválido")
 
@@ -49,7 +49,9 @@ class AuthService:
         msg = Message(
             subject="Recuperar contraseña - CloudBrew",
             recipients=[usuario.email],
-            html=render_template("auth/correo_recuperacion.html", enlace=enlace, nombre=usuario.nombre),
+            html=render_template(
+                "auth/correo_recuperacion.html", enlace=enlace, nombre=usuario.nombre
+            ),
         )
         mail.send(msg)
 
@@ -66,4 +68,3 @@ class AuthService:
 
         actualizar_password(usuario, generate_password_hash(nueva_contrasenia))
         limpiar_token_recuperacion(usuario)
-

@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% from '_macros.html' import mostrar_flashes %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-3xl font-bold text-gray-800">Listado de Usuarios</h1>
+    <a href="{{ url_for('usuarios.crear') }}"
+       class="text-white font-bold py-2 px-4 rounded-lg shadow hover:opacity-90 transition bg-green-600">
+      + Nuevo Usuario
+    </a>
+  </div>
+
+  <div class="bg-white shadow-md rounded-lg overflow-hidden border border-gray-200">
+    <table class="min-w-full table-auto">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rol</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+        </tr>
+      </thead>
+      <tbody class="bg-white divide-y divide-gray-200">
+        {% for usuario in usuarios %}
+        <tr class="hover:bg-gray-50 transition-colors">
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ usuario.nombre }}</td>
+          <td class="px-6 py-4 text-sm text-gray-700">{{ usuario.email }}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+            <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-blue-100 text-blue-800">{{ usuario.rol.name }}</span>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+            <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold {% if usuario.activo %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+              {{ 'Activo' if usuario.activo else 'Inactivo' }}
+            </span>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+            <a href="{{ url_for('usuarios.detalle', id=usuario.id) }}"
+               class="text-white font-bold py-1.5 px-4 rounded-lg inline-flex items-center shadow-sm hover:opacity-90 transition bg-[#6C9AD0]">
+              <i class="fa-solid fa-eye mr-2"></i> Ver
+            </a>
+            <a href="{{ url_for('usuarios.editar', id=usuario.id) }}"
+               class="text-white font-bold py-1.5 px-4 rounded-lg inline-flex items-center shadow-sm hover:opacity-90 transition bg-amber-500 ml-2">
+              <i class="fa-solid fa-edit mr-2"></i> Editar
+            </a>
+            <form method="POST" action="{{ url_for('usuarios.eliminar', id=usuario.id) }}" style="display:inline;">
+              <button type="submit" class="text-white font-bold py-1.5 px-4 rounded-lg inline-flex items-center shadow-sm hover:opacity-90 transition bg-red-600 ml-2" onclick="return confirm('¿Estás seguro?')">
+                <i class="fa-solid fa-trash mr-2"></i> Eliminar
+              </button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="5" class="px-6 py-4 text-center text-gray-500">
+            No hay usuarios registrados
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if pagination.pages %}
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between mt-6 gap-4">
+    <p class="text-sm text-gray-600">
+      Mostrando {{ pagination.start }} a {{ pagination.end }} de {{ pagination.total }} entradas
+    </p>
+
+    <div class="inline-flex items-center -space-x-px">
+      {% if pagination.has_prev %}
+      <a href="{{ url_for('usuarios.listar', page=pagination.prev_num, querry=request.args.get('querry', '')) }}"
+         class="px-3 py-2 ml-0 leading-tight text-gray-500 bg-white border border-gray-300 rounded-l-lg hover:bg-gray-100">
+        Anterior
+      </a>
+      {% endif %}
+
+      {% for page_num in pagination.pages %}
+      <a href="{{ url_for('usuarios.listar', page=page_num, querry=request.args.get('querry', '')) }}"
+         class="px-3 py-2 leading-tight border border-gray-300 {% if page_num == pagination.page %}text-blue-600 bg-blue-50{% else %}text-gray-500 bg-white hover:bg-gray-100{% endif %}">
+        {{ page_num }}
+      </a>
+      {% endfor %}
+
+      {% if pagination.has_next %}
+      <a href="{{ url_for('usuarios.listar', page=pagination.next_num, querry=request.args.get('querry', '')) }}"
+         class="px-3 py-2 leading-tight text-gray-500 bg-white border border-gray-300 rounded-r-lg hover:bg-gray-100">
+        Siguiente
+      </a>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

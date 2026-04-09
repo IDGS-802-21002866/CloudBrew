@@ -1,12 +1,10 @@
-from sqlalchemy import String
-from flask_sqlalchemy import SQLAlchemy
-from flask_login import UserMixin
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import String, Integer
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app import db
 
 
-class ProcesoProductivo(db.Model, UserMixin):
+class ProcesoProductivo(db.Model):
     __tablename__ = "procesos_productivos"
     id: Mapped[int] = mapped_column(primary_key=True)
     nombre: Mapped[str] = mapped_column(String(100), nullable=True)
@@ -16,3 +14,4 @@ class ProcesoProductivo(db.Model, UserMixin):
     procesos_receta = db.relationship(
         "ProcesosReceta", back_populates="proceso_productivo"
     )
+    producciones = db.relationship("ProduccionProceso", back_populates="proceso")

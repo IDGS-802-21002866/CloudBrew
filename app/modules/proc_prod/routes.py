@@ -1,23 +1,18 @@
-import re
-
-from wtforms.validators import email
-from app.modules.usuarios.model import Usuario
-from flask import Flask, flash, render_template
-from flask import request
-from flask import redirect, url_for
+from flask import flash, render_template, request, redirect, url_for
 from app.modules.proc_prod.form import ProcesoProductivoForm
-import app.modules.proc_prod.service as service
+from app.modules.proc_prod.service import ProcesoProductivoService
 from . import bp
 
-service = service.ProcesoProductivoService()
+servicio = ProcesoProductivoService()
 
-@bp.route("/procprod")
-def index():
+
+@bp.route("/")
+def listar():
     try:
         page = request.args.get("page", 1, type=int)
         querry = request.args.get("querry", "", type=str)
-        pag = service.obtener_procesos(page=page, per_page=5, querry=querry)
-        procprod=pag.items
+        pag = servicio.listar_procesos(page=page, per_page=5, querry=querry)
+        procesos = pag.items
         pagination = {
             "page": pag.page,
             "pages": list(range(1, pag.pages + 1)),
@@ -27,65 +22,68 @@ def index():
             "next_num": pag.next_num,
             "total": pag.total,
             "start": (pag.page - 1) * pag.per_page + 1 if pag.total > 0 else 0,
-            "end": min(pag.page * pag.per_page, pag.total)
+            "end": min(pag.page * pag.per_page, pag.total),
         }
-        return render_template("lista_procprod.html", procprod=procprod,pagination=pagination)
+        return render_template(
+            "procesos_productivos/listar.html", procesos=procesos, pagination=pagination
+        )
 
     except ValueError as e:
         flash(str(e), "danger")
-        return render_template("lista_procprod.html", procprod=[])
-    
-@bp.route("/procprod/agregar")
-def agregar():
+        return render_template("procesos_productivos/listar.html", procesos=[])
+
+
+@bp.route("/crear", methods=["GET", "POST"])
+def crear():
     form = ProcesoProductivoForm()
-    return render_template("insertar_procprod.html", form=form)
+    if form.validate_on_submit():
+        try:
+            servicio.crear_proceso(form)
+            flash("Proceso productivo creado exitosamente", "success")
+            return redirect(url_for("proc_prod.listar"))
+        except ValueError as e:
+            flash(str(e), "danger")
+    return render_template("procesos_productivos/crear.html", form=form)
 
-@bp.route("/procprod/detalles")
-def detalles():
+
+@bp.route("/<int:id>")
+def detalle(id):
     try:
-        proceso_id = request.args.get("id", type=int)
-        proceso=service.obtener_proc_por_id(proceso_id)
-        form=ProcesoProductivoForm(obj=proceso)
-        return render_template("detalle_procprod.html", proceso=proceso, form=form)
+        proceso = servicio.obtener_por_id(id)
+        form = ProcesoProductivoForm(obj=proceso)
+        return render_template(
+            "procesos_productivos/detalle.html", proceso=proceso, form=form
+        )
     except ValueError as e:
         flash(str(e), "danger")
-        return redirect(url_for("procprod.index"))
-    
-@bp.route("/procprod/insertar", methods=["POST"])
-def insertar():
-    form = ProcesoProductivoForm(request.form)
-    if form.validate():
-        try:
-            service.insertar_proc(form)
-            flash("Proceso productivo insertado exitosamente", "success")
-            return redirect(url_for("proc_prod.index"))
-        except ValueError as e:
-            flash(str(e), "danger")
-    else:
-        flash("Error en el formulario. Por favor, revise los campos.", "danger")
-    return render_template("insertar_procprod.html", form=form)
+        return redirect(url_for("proc_prod.listar"))
 
-@bp.route("/procprod/actualizar", methods=["POST"])
-def modificar():    
-    form = ProcesoProductivoForm(request.form)
-    if form.validate():
-        try:
-            id = request.args.get("id", type=int)
-            service.modificar_proc(id,form)
-            flash("Proceso productivo actualizado exitosamente", "success")
-            return redirect(url_for("proc_prod.index"))
-        except ValueError as e:
-            flash(str(e), "danger")
-    else:
-        flash("Error en el formulario. Por favor, revise los campos.", "danger")
-    return render_template("detalle_procprod.html", form=form)
 
-@bp.route("/procprod/eliminar", methods=["POST"])
-def eliminar():   
+@bp.route("/<int:id>/editar", methods=["GET", "POST"])
+def editar(id):
     try:
-        proceso_id = request.args.get("id", type=int)
-        service.eliminar_proc(proceso_id)
+        proceso = servicio.obtener_por_id(id)
+        form = ProcesoProductivoForm(obj=proceso)
+        if form.validate_on_submit():
+            try:
+                servicio.actualizar_proceso(id, form)
+                flash("Proceso productivo actualizado exitosamente", "success")
+                return redirect(url_for("proc_prod.detalle", id=id))
+            except ValueError as e:
+                flash(str(e), "danger")
+        return render_template(
+            "procesos_productivos/crear.html", form=form, proceso=proceso
+        )
+    except ValueError as e:
+        flash(str(e), "danger")
+        return redirect(url_for("proc_prod.listar"))
+
+
+@bp.route("/<int:id>/eliminar", methods=["POST"])
+def eliminar(id):
+    try:
+        servicio.eliminar_proceso(id)
         flash("Proceso productivo eliminado exitosamente", "success")
     except ValueError as e:
         flash(str(e), "danger")
-    return redirect(url_for("proc_prod.index"))
+    return redirect(url_for("proc_prod.listar"))

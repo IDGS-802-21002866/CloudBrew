@@ -8,13 +8,13 @@ from app.modules.sol_prod.repository import (
     get_detalles_pedido_by_pedido,
     get_pedidos,
     get_pedidos_by_id,
-    get_pedidos_prod
+    get_pedidos_prod,
 )
 
 
 class sol_prod_service:
 
-    def insertar(self,form_pedido, lista_detalles_forms):
+    def insertar(self, form_pedido, lista_detalles_forms):
         try:
             pedido = crear_pedido(form_pedido)
 
@@ -22,7 +22,7 @@ class sol_prod_service:
                 if not form_detalle.validate():
                     raise ValueError("Uno de los detalles tiene datos inválidos.")
 
-                crear_detalle_pedido(form_detalle, pedido.id_pedido)
+                crear_detalle_pedido(form_detalle, pedido.id)
 
             return pedido
 
@@ -32,19 +32,19 @@ class sol_prod_service:
         except Exception:
             db.session.rollback()
             raise ValueError("No se pudo registrar la solicitud de producción.")
-    
-    def modificar(self,id_pedido, form_pedido, lista_detalles_forms):
+
+    def modificar(self, id_pedido, form_pedido, lista_detalles_forms):
         try:
             pedido = actualizar_pedido(form_pedido, id_pedido)
 
             for detalle in pedido.detalles:
-                eliminar_detalle_pedido(detalle.id_detalle_pedido)
+                eliminar_detalle_pedido(detalle.id)
 
             for form_detalle in lista_detalles_forms:
                 if not form_detalle.validate():
                     raise ValueError("Uno de los detalles tiene datos inválidos.")
 
-                crear_detalle_pedido(form_detalle, pedido.id_pedido)
+                crear_detalle_pedido(form_detalle, pedido.id)
 
             return pedido
 
@@ -54,8 +54,8 @@ class sol_prod_service:
         except Exception:
             db.session.rollback()
             raise ValueError("No se pudo modificar la solicitud de producción.")
-    
-    def eliminar(self,id_pedido):
+
+    def eliminar(self, id_pedido):
         try:
             pedido = cancelar_pedido(id_pedido)
             return pedido
@@ -66,7 +66,7 @@ class sol_prod_service:
         except Exception:
             db.session.rollback()
             raise ValueError("No se pudo cancelar la solicitud de producción.")
-    
+
     def listar_pedidos(self):
         return get_pedidos()
 

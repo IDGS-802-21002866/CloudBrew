@@ -1,17 +1,19 @@
-from flask_security.core import UserMixin
-from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import String, Integer, Boolean
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from app import db
 
 
-class Proveedor(db.Model,UserMixin):
+class Proveedor(db.Model):
     __tablename__ = "proveedor"
 
-    id = db.Column(db.Integer, primary_key=True)
-    nombre = db.Column(db.String(100), nullable=False)
-    telefono = db.Column(db.String(20), nullable=True)
-    email = db.Column(db.String(100), nullable=True)
-    direccion = db.Column(db.String(255), nullable=True)
-    activo = db.Column(db.Boolean, nullable=False, default=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    nombre: Mapped[str] = mapped_column(String(100), nullable=False)
+    telefono: Mapped[str] = mapped_column(String(20), nullable=True)
+    email: Mapped[str] = mapped_column(String(100), nullable=True)
+    direccion: Mapped[str] = mapped_column(String(255), nullable=True)
+    activo: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+
     compras = db.relationship(
         "Compra", back_populates="proveedor", cascade="all, delete-orphan"
     )

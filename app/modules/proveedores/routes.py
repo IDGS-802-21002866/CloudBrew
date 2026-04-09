@@ -47,7 +47,7 @@ def listar():
         }
 
         return render_template(
-            "proveedores/lista_proveedor.html",
+            "proveedores/listar.html",
             proveedores=proveedores_pagina,
             pagination=pagination,
             busqueda=busqueda,
@@ -74,7 +74,7 @@ def crear():
         except ValueError as e:
             flash(str(e), "danger")
 
-    return render_template("proveedores/insertar_proveedor.html", form=form)
+    return render_template("proveedores/crear.html", form=form)
 
 
 @bp.route("/<int:id>")
@@ -110,7 +110,7 @@ def editar(id):
         except ValueError as e:
             flash(str(e), "danger")
 
-    return render_template("proveedores/editar.html", form=form, proveedor=proveedor)
+    return render_template("proveedores/crear.html", form=form, proveedor=proveedor)
 
 
 @bp.route("/<int:id>/eliminar", methods=["POST"])

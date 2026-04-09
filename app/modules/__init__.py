@@ -8,7 +8,7 @@ from app.modules.proc_prod.model import ProcesoProductivo
 from app.modules.inventario_materias_primas import MovimientosMateriaPrima
 from app.modules.inventario_producto_terminado import MovimientosReceta
 from app.modules.recetas import Recetas, RecetaDetalle, ProcesosReceta
-from app.modules.sol_prod.model import Pedido, DetallePedido, PedidoProduccion
+from app.modules.sol_prod.model import PedidoProduccion
 from app.modules.lotes.model import LoteProduccion
 from app.modules.produccion.model import Produccion, ProduccionProceso
 from app.modules.pedidos import Pedido, PedidoDetalle
@@ -31,10 +31,11 @@ __all__ = [
     "RecetaDetalle",
     "ProcesosReceta",
     "Pedido",
-    "DetallePedido",
+    "PedidoDetalle",
     "PedidoProduccion",
     "LoteProduccion",
     "Produccion",
-    "ProduccionProceso" "Pedido",
+    "ProduccionProceso",
+    "Pedido",
     "PedidoDetalle",
 ]

@@ -34,7 +34,8 @@ def crear():
     proceso_form = ProcesoRecetaForm()
 
     materias_primas = materias_primas_service.listar_materias(incluir_inactivas=False)
-    procesos = proceso_productivo_service.listar_procesos()
+    pag_procesos = proceso_productivo_service.listar_procesos()
+    procesos = pag_procesos.items if hasattr(pag_procesos, "items") else pag_procesos
 
     detalle_form.materia_prima_id.choices = [
         (str(mp.id), mp.nombre) for mp in materias_primas
@@ -208,7 +209,10 @@ def editar(id):
         materias_primas = materias_primas_service.listar_materias(
             incluir_inactivas=False
         )
-        procesos = proceso_productivo_service.listar_procesos()
+        pag_procesos = proceso_productivo_service.listar_procesos()
+        procesos = (
+            pag_procesos.items if hasattr(pag_procesos, "items") else pag_procesos
+        )
 
         detalle_form.materia_prima_id.choices = [
             (str(mp.id), mp.nombre) for mp in materias_primas

@@ -13,17 +13,17 @@ def get_usuarios(pagina=1, por_pagina=5):
     return usuarios
 
 
-def getUsuarioByEmail(email):
+def get_usuario_by_email(email):
     usuario = Usuario.query.filter(Usuario.email == email).first()
     return usuario
 
 
-def getUsuarioById(id):
+def get_usuario_by_id(id):
     usuario = Usuario.query.get(id)
     return usuario
 
 
-def insertar_usuario(form):
+def crear_usuario(form):
     try:
         existente = Usuario.query.filter(Usuario.email == form.email.data).first()
         if existente:
@@ -47,7 +47,7 @@ def insertar_usuario(form):
         raise ValueError("Error inesperado al insertar usuario")
 
 
-def modificar_usuario(id_usuario, form):
+def actualizar_usuario(id_usuario, form):
     try:
         usuario = Usuario.query.get(id_usuario)
 
@@ -124,4 +124,3 @@ def limpiar_token_recuperacion(usuario):
 def actualizar_password(usuario, nuevo_hash):
     usuario.password = nuevo_hash
     db.session.commit()
-

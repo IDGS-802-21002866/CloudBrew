@@ -8,7 +8,7 @@ from app.modules.auth.forms import (
     RestablecerContrasenaForm,
 )
 from app.modules.auth.service import AuthService
-from app.modules.usuarios.repository import getUsuarioByEmail
+from app.modules.usuarios.repository import get_usuario_by_email
 
 auth_service = AuthService()
 

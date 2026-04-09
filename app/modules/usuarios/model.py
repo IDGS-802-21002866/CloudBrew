@@ -6,7 +6,6 @@ from flask_login import UserMixin
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app import db
-from app.modules import usuarios
 
 
 class Rol(db.Model):
