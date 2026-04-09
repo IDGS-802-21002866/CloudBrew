@@ -46,7 +46,7 @@
 
             <!-- Acciones -->
             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-              <a href="{{ url_for('lote_produccion.detalle', id=lote.id_lote) }}"
+              <a href="{{ url_for('lotes.detalle', id=lote.id_lote) }}"
                  class="text-white font-bold py-1.5 px-4 rounded-lg inline-flex items-center shadow-sm hover:opacity-90 transition bg-[#6C9AD0]">
                 <i class="fa-solid fa-eye mr-2"></i> Ver Detalle
               </a>
@@ -65,4 +65,47 @@
     </table>
   </div>
 </div>
+{% if pagination %}
+<div class="flex flex-col md:flex-row md:items-center md:justify-between mt-6 gap-4">
+  
+  <!-- Info -->
+  <p class="text-sm text-gray-600">
+    Mostrando {{ pagination.start }} a {{ pagination.end }} de {{ pagination.total }} registros
+  </p>
+
+  <!-- Controles -->
+  <div class="inline-flex items-center -space-x-px">
+    
+    <!-- Anterior -->
+    {% if pagination.has_prev %}
+    <a href="{{ url_for('lotes.listar', page=pagination.prev_num) }}"
+       class="px-3 py-2 ml-0 leading-tight text-gray-500 bg-white border border-gray-300 rounded-l-lg hover:bg-gray-100">
+      Anterior
+    </a>
+    {% endif %}
+
+    <!-- Números -->
+    {% for p in pagination.pages %}
+    <a href="{{ url_for('lotes.listar', page=p) }}"
+       class="px-3 py-2 leading-tight border border-gray-300
+       {% if p == pagination.page %}
+         text-blue-600 bg-blue-50
+       {% else %}
+         text-gray-500 bg-white hover:bg-gray-100
+       {% endif %}">
+      {{ p }}
+    </a>
+    {% endfor %}
+
+    <!-- Siguiente -->
+    {% if pagination.has_next %}
+    <a href="{{ url_for('lotes.listar', page=pagination.next_num) }}"
+       class="px-3 py-2 leading-tight text-gray-500 bg-white border border-gray-300 rounded-r-lg hover:bg-gray-100">
+      Siguiente
+    </a>
+    {% endif %}
+
+  </div>
+</div>
+{% endif %}
 {% endblock %}
