@@ -1,7 +1,12 @@
 from flask import flash, redirect, render_template, request, url_for
 
+from app import captcha
 from app.modules.auth import bp
-from app.modules.auth.forms import LoginForm, RecuperarContrasenaForm, RestablecerContrasenaForm
+from app.modules.auth.forms import (
+    LoginForm,
+    RecuperarContrasenaForm,
+    RestablecerContrasenaForm,
+)
 from app.modules.auth.service import AuthService
 from app.modules.usuarios.repository import getUsuarioByEmail
 
@@ -11,12 +16,16 @@ auth_service = AuthService()
 @bp.route("/login", methods=["POST", "GET"])
 def login():
     form = LoginForm()
-    if request.method == "POST" and form.validate_on_submit():
-        try:
-            auth_service.iniciar_sesion(form.correo.data, form.contrasenia.data)
-            return redirect(url_for("main.index"))
-        except ValueError as e:
-            flash(str(e), "danger")
+    if request.method == "POST":
+        # Validar captcha primero
+        if not captcha.validate():
+            flash("Captcha incorrecto. Por favor, intenta nuevamente.", "danger")
+        elif form.validate_on_submit():
+            try:
+                auth_service.iniciar_sesion(form.correo.data, form.contrasenia.data)
+                return redirect(url_for("main.index"))
+            except ValueError as e:
+                flash(str(e), "danger")
     return render_template("auth/login.html", form=form)
 
 
@@ -52,4 +61,3 @@ def restablecer_contrasena(token):
             flash(str(e), "danger")
             return redirect(url_for("auth.recuperar_contrasena"))
     return render_template("auth/restablecer_contrasena.html", form=form, token=token)
-

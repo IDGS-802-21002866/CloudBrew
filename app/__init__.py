@@ -4,7 +4,8 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 from flask_login import LoginManager, login_required
 from flask_mail import Mail
-from werkzeug import security
+from flask_session import Session
+from flask_session_captcha import FlaskSessionCaptcha
 
 from app.core.config import DevelopmentConfig
 
@@ -18,6 +19,7 @@ db = SQLAlchemy(model_class=Base)
 login_manager = LoginManager()
 migrate = Migrate()
 mail = Mail()
+captcha = FlaskSessionCaptcha()
 
 
 def create_app():
@@ -45,6 +47,11 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object(DevelopmentConfig)
     db.init_app(app)
+    app.config["SESSION_SQLALCHEMY"] = db
+    Session(app)
+    captcha.init_app(app)
+    app.jinja_env.globals.update(captcha=captcha)
+
     migrate.init_app(app, db)
     mail.init_app(app)
 

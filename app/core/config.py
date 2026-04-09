@@ -26,3 +26,11 @@ class DevelopmentConfig(Config):
     MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
     MAIL_DEFAULT_SENDER = os.environ.get("MAIL_DEFAULT_SENDER")
     BASE_URL = os.environ.get("BASE_URL", "http://localhost:5000")
+    CAPTCHA_ENABLE = True
+    CAPTCHA_LENGTH = 5
+    CAPTCHA_WIDTH = 200
+    CAPTCHA_HEIGHT = 160
+    SESSION_TYPE = "sqlalchemy"
+    SESSION_SQLALCHEMY_TABLE = "session"
+    CAPTCHA_INCLUDE_NUMERIC = True
+    CAPTCHA_INCLUDE_ALPHABET = False
