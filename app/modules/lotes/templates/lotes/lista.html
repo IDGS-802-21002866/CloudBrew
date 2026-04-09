@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+
+{% block title %}Lotes de Producción{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-3xl font-bold text-gray-800">Lotes de Producción</h1>
+  </div>
+
+  <div class="bg-white shadow-md rounded-lg overflow-hidden border border-gray-200">
+    <table class="min-w-full table-auto">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Código de Lote</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Receta</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha de Finalización</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cantidad Generada</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Acciones</th>
+        </tr>
+      </thead>
+      <tbody class="bg-white divide-y divide-gray-200">
+        {% if lotes %}
+          {% for lote in lotes %}
+          <tr class="hover:bg-gray-50 transition-colors">
+            
+            <!-- Código de lote -->
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+              {{ lote.codigo_lote }}
+            </td>
+
+            <!-- Nombre de receta -->
+            <td class="px-6 py-4 text-sm text-gray-600">
+              {{ lote.produccion.receta.nombre if lote.produccion and lote.produccion.receta else 'N/A' }}
+            </td>
+
+            <!-- Fecha -->
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+              {{ lote.fecha_produccion.strftime('%Y-%m-%d') if lote.fecha_produccion else 'N/A' }}
+            </td>
+
+            <!-- Cantidad -->
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 font-bold">
+              {{ '%.2f'|format(lote.cantidad_generada or 0) }}
+            </td>
+
+            <!-- Acciones -->
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+              <a href="{{ url_for('lotes.detalle', id=lote.id_lote) }}"
+                 class="text-white font-bold py-1.5 px-4 rounded-lg inline-flex items-center shadow-sm hover:opacity-90 transition bg-[#6C9AD0]">
+                <i class="fa-solid fa-eye mr-2"></i> Ver Detalle
+              </a>
+            </td>
+
+          </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="5" class="px-6 py-4 text-center text-gray-500">
+              No hay lotes de producción registrados.
+            </td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% if pagination %}
+<div class="flex flex-col md:flex-row md:items-center md:justify-between mt-6 gap-4">
+  
+  <!-- Info -->
+  <p class="text-sm text-gray-600">
+    Mostrando {{ pagination.start }} a {{ pagination.end }} de {{ pagination.total }} registros
+  </p>
+
+  <!-- Controles -->
+  <div class="inline-flex items-center -space-x-px">
+    
+    <!-- Anterior -->
+    {% if pagination.has_prev %}
+    <a href="{{ url_for('lotes.listar', page=pagination.prev_num) }}"
+       class="px-3 py-2 ml-0 leading-tight text-gray-500 bg-white border border-gray-300 rounded-l-lg hover:bg-gray-100">
+      Anterior
+    </a>
+    {% endif %}
+
+    <!-- Números -->
+    {% for p in pagination.pages %}
+    <a href="{{ url_for('lotes.listar', page=p) }}"
+       class="px-3 py-2 leading-tight border border-gray-300
+       {% if p == pagination.page %}
+         text-blue-600 bg-blue-50
+       {% else %}
+         text-gray-500 bg-white hover:bg-gray-100
+       {% endif %}">
+      {{ p }}
+    </a>
+    {% endfor %}
+
+    <!-- Siguiente -->
+    {% if pagination.has_next %}
+    <a href="{{ url_for('lotes.listar', page=pagination.next_num) }}"
+       class="px-3 py-2 leading-tight text-gray-500 bg-white border border-gray-300 rounded-r-lg hover:bg-gray-100">
+      Siguiente
+    </a>
+    {% endif %}
+
+  </div>
+</div>
+{% endif %}
+{% endblock %}

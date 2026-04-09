@@ -19,7 +19,7 @@ from app.modules.recetas.service import RecetaService
 receta_service = RecetaService()
 inventario_service = InventarioMateriasPrimasService()
 
-
+RecetaService=RecetaService()
 class ProduccionService:
 
     def listar_produccion(self):
