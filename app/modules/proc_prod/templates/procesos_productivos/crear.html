@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import campo_nuevo %}
+
+{% block content %}
+<div class="p-6 max-w-3xl mx-auto">
+
+  <a href="{{ url_for('proc_prod.listar') }}" class="flex items-center text-2xl font-bold mb-6 hover:text-gray-600 transition">
+    <i class="fa-solid fa-chevron-left mr-3"></i>
+    {% if proceso %}Editar{% else %}Crear{% endif %} Proceso Productivo
+  </a>
+
+<form action="{% if proceso %}{{ url_for('proc_prod.editar', id=proceso.id) }}{% else %}{{ url_for('proc_prod.crear') }}{% endif %}" method="POST" class="max-w-3xl mx-auto mt-10 bg-white border border-gray-200 rounded-2xl shadow-sm">
+  {{ form.hidden_tag() }}
+  <div class="bg-gray-100 px-0 py-0 border-b border-gray-200">
+    <span class="font-bold text-gray-700 block p-4"><i class="fa-solid fa-circle-info mr-2"></i> Datos del Proceso</span>
+  </div>
+
+  <div class="p-8">
+    <div class="grid grid-cols-1 gap-5">
+      <!-- Nombre -->
+      {{ campo_nuevo(form.nombre) }}
+
+      <!-- Descripción -->
+      {{ campo_nuevo(form.descripcion) }}
+    </div>
+
+    <div class="pt-4 flex justify-end">
+      <button type="submit" class="px-8 py-2 bg-[#4A9062] text-white font-bold rounded-lg hover:opacity-90 transition shadow-md">
+        {% if proceso %}Actualizar{% else %}Crear{% endif %}
+      </button>
+    </div>
+  </div>
+</form>
+</div>
+{% endblock %}

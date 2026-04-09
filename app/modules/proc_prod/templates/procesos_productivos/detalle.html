@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="p-6 max-w-3xl mx-auto">
+
+  <a href="{{ url_for('proc_prod.listar') }}" class="flex items-center text-2xl font-bold mb-6 hover:text-gray-600 transition">
+    <i class="fa-solid fa-chevron-left mr-3"></i>
+    {{ proceso.nombre }}
+  </a>
+
+  <div class="bg-white border border-gray-200 rounded-2xl shadow-sm">
+    <div class="bg-gray-100 px-0 py-0 border-b border-gray-200">
+      <span class="font-bold text-gray-700 block p-4"><i class="fa-solid fa-circle-info mr-2"></i> Detalles del Proceso</span>
+    </div>
+
+    <div class="p-8 space-y-4">
+      <div>
+        <label class="text-sm font-medium text-gray-700">Descripción</label>
+        <p class="text-gray-900 font-medium">{{ proceso.descripcion or 'Sin descripción' }}</p>
+      </div>
+    </div>
+
+    <div class="bg-gray-50 border-t border-gray-200 px-8 py-6 mt-6 flex gap-2">
+      <a href="{{ url_for('proc_prod.editar', id=proceso.id) }}"
+        class="px-6 py-2 bg-[#6C9AD0] text-white font-bold rounded-lg shadow-md hover:opacity-90 transition">
+        <i class="fa-solid fa-edit mr-2"></i> Modificar
+      </a>
+      <form method="POST" action="{{ url_for('proc_prod.eliminar', id=proceso.id) }}">
+        <button type="submit"
+          class="px-6 py-2 bg-[#B85B5B] text-white font-bold rounded-lg shadow-md hover:opacity-90 transition"
+          onclick="return confirm('¿Estás seguro?')">
+          <i class="fa-solid fa-trash mr-2"></i> Eliminar
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
