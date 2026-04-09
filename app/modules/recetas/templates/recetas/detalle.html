@@ -132,5 +132,23 @@
     </div>
 
   </div>
+
+  <div class="flex justify-end space-x-4 mt-6">
+    <a href="{{ url_for('recetas.editar', id=receta.id) }}" class="px-6 py-2 bg-[#6C9AD0] text-white font-bold rounded-lg shadow-md hover:opacity-90 transition">
+      Modificar
+    </a>
+    {% if receta.activo %}
+    <a href="{{ url_for('recetas.confirmar_desactivar', id=receta.id) }}" class="px-6 py-2 bg-[#B85B5B] text-white font-bold rounded-lg shadow-md hover:opacity-90 transition">
+      <i class="fa-solid fa-ban mr-2"></i> Desactivar
+    </a>
+    {% else %}
+    <form method="POST" action="{{ url_for('recetas.activar', id=receta.id) }}">
+      <button type="submit" class="px-6 py-2 bg-[#4A9062] text-white font-bold rounded-lg shadow-md hover:opacity-90 transition">
+        <i class="fa-solid fa-check-circle mr-2"></i> Activar
+      </button>
+    </form>
+    {% endif %}
+  </div>
+
 </div>
 {% endblock %}

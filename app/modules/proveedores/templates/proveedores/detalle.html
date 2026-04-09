@@ -34,20 +34,16 @@
 
     <div class="bg-gray-50 border-t border-gray-200 px-8 py-4 flex gap-2">
       <a href="{{ url_for('proveedores.editar', id=proveedor.id) }}"
-        class="text-white bg-amber-500 hover:bg-amber-600 focus:ring-4 focus:ring-amber-300 font-medium rounded-lg text-sm px-5 py-2.5">
-        <i class="fa-solid fa-edit mr-2"></i> Editar
+        class="px-6 py-2 bg-[#6C9AD0] text-white font-bold rounded-lg shadow-md hover:opacity-90 transition">
+        <i class="fa-solid fa-edit mr-2"></i> Modificar
       </a>
       <form method="POST" action="{{ url_for('proveedores.eliminar', id=proveedor.id) }}">
         <button type="submit"
-          class="text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5"
+          class="px-6 py-2 bg-[#B85B5B] text-white font-bold rounded-lg shadow-md hover:opacity-90 transition"
           onclick="return confirm('¿Estás seguro?')">
           <i class="fa-solid fa-trash mr-2"></i> Eliminar
         </button>
       </form>
-      <a href="{{ url_for('proveedores.listar') }}"
-        class="text-white bg-gray-400 hover:bg-gray-500 focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 ml-auto">
-        <i class="fa-solid fa-arrow-left mr-2"></i> Volver
-      </a>
     </div>
   </div>
 </div>
