@@ -3,6 +3,7 @@ from app.modules.inventario_materias_primas.service import (
 )
 from app.modules.produccion.repository import (
     eliminar_produccion_proceso,
+    get_pedido_produccion_por_produccion,
     get_procesos_por_produccion,
     get_produccion,
     get_produccion_by_id,
@@ -24,22 +25,25 @@ class ProduccionService:
     def listar_produccion(self):
         return get_produccion()
 
-    def crear_produccion(self, form: ProduccionForm):
+    def crear_produccion(self, data: dict):
         from app import db
 
-        if not form.id_receta.data:
+        id_receta = data.get("id_receta")
+        cantidad = data.get("cantidad")
+
+        if not id_receta:
             raise ValueError("Debe seleccionar una receta.")
-        if not form.cantidad.data or form.cantidad.data < 1:
+        if not cantidad or int(cantidad) < 1:
             raise ValueError("La cantidad debe ser mayor a cero.")
 
-        receta = receta_service.obtener_receta(form.id_receta.data)
+        receta = receta_service.obtener_receta(id_receta)
         if not receta:
             raise ValueError("Receta no encontrada.")
         if not receta.procesos_receta:
             raise ValueError("La receta no tiene procesos asociados.")
 
         for detalle in receta.detalle:
-            cantidad_necesaria = detalle.cantidad * form.cantidad.data
+            cantidad_necesaria = detalle.cantidad * int(cantidad)
             stock_disponible = inventario_service.obtener_stock_actual_materia_prima(
                 detalle.materia_prima_id
             )
@@ -50,7 +54,7 @@ class ProduccionService:
                 )
 
         try:
-            produccion = insertar_produccion(form.id_receta.data, form.cantidad.data)
+            produccion = insertar_produccion(id_receta, int(cantidad))
 
             for proceso_receta in receta.procesos_receta:
                 insertar_produccion_proceso(
@@ -114,24 +118,30 @@ class ProduccionService:
             raise ValueError(f"Error interno al modificar producción: {str(e)}")
 
     def cancelar_produccion(self, id_produccion):
+        vinculo = get_pedido_produccion_por_produccion(id_produccion)
+        if vinculo:
+            raise ValueError(
+                "No se puede cancelar una producción vinculada a un pedido. "
+                "Cancele el pedido directamente."
+            )
+        return self.cancelar_produccion_forzada(id_produccion)
+
+    def cancelar_produccion_forzada(self, id_produccion):
         try:
             produccion_cancelada = eliminar_produccion(id_produccion)
 
             if isinstance(produccion_cancelada, ValueError):
                 raise produccion_cancelada
 
-            procesos_query = get_procesos_por_produccion(id_produccion)
+            procesos = get_procesos_por_produccion(id_produccion)
 
-            if not isinstance(procesos_query, ValueError):
-                procesos_actuales = procesos_query.all()
-
-                for proceso_actual in procesos_actuales:
-                    proceso_cancelado = eliminar_produccion_proceso(
-                        proceso_actual.id_produccion_proceso
+            if not isinstance(procesos, ValueError):
+                for proceso in procesos:
+                    resultado = eliminar_produccion_proceso(
+                        proceso.id_produccion_proceso
                     )
-
-                    if isinstance(proceso_cancelado, ValueError):
-                        raise proceso_cancelado
+                    if isinstance(resultado, ValueError):
+                        raise resultado
 
             return produccion_cancelada
 

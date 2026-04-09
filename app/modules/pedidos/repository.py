@@ -2,6 +2,7 @@ from app import db
 from sqlalchemy import or_
 from app.modules.pedidos.model import Pedido, PedidoDetalle
 from app.modules.clientes.model import Cliente
+from app.modules.sol_prod.model import PedidoProduccion
 
 
 def get_all_pedidos():
@@ -16,15 +17,56 @@ def get_paginated_pedidos(page, per_page, search_term=None):
     query = Pedido.query.join(Cliente)
 
     if search_term:
-        # Buscamos en las columnas reales: nombres O apellidos
         query = query.filter(
             or_(
                 Cliente.nombres.ilike(f"%{search_term}%"),
-                Cliente.apellidos.ilike(f"%{search_term}%")
+                Cliente.apellidos.ilike(f"%{search_term}%"),
             )
         )
 
-    return query.order_by(Pedido.fecha_registro.desc()).paginate(page=page, per_page=per_page)
+    return query.order_by(Pedido.fecha_registro.desc()).paginate(
+        page=page, per_page=per_page
+    )
+
+
+def create_pedido(cliente_id, detalles):
+    """
+    Crea un pedido con sus detalles. Solo flush, sin commit.
+
+    Args:
+        cliente_id: ID del cliente
+        detalles: lista de dicts con {receta_id, cantidad_lotes, total_unidades}
+
+    Returns:
+        Pedido creado (sin commit)
+    """
+    nuevo_pedido = Pedido(cliente_id=cliente_id)
+    db.session.add(nuevo_pedido)
+    db.session.flush()
+
+    for detalle in detalles:
+        detalle_pedido = PedidoDetalle(
+            pedido_id=nuevo_pedido.id,
+            receta_id=detalle["receta_id"],
+            cantidad_lotes=detalle["cantidad_lotes"],
+            total_unidades=detalle["total_unidades"],
+        )
+        db.session.add(detalle_pedido)
+
+    return nuevo_pedido
+
+
+def create_pedido_produccion(pedido_id, produccion_id):
+    pedido_produccion = PedidoProduccion(
+        id_pedido=pedido_id,
+        id_produccion=produccion_id,
+    )
+    db.session.add(pedido_produccion)
+
+
+def update_pedido_estado(pedido, estado):
+    pedido.estado = estado
+    db.session.commit()
 
 
 def save(pedido):
@@ -39,4 +81,9 @@ def commit():
 
 def get_clientes_retail():
     from app.modules.clientes.model import Cliente
-    return Cliente.query.filter(Cliente.tipo == 'retail', Cliente.activo == True).all()
+
+    return Cliente.query.filter(Cliente.tipo == "retail", Cliente.activo == True).all()
+
+
+def get_producciones_by_pedido(pedido_id):
+    return PedidoProduccion.query.filter_by(id_pedido=pedido_id).all()

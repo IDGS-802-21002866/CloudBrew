@@ -145,3 +145,9 @@ def get_produccion_by_id(id):
         return Produccion.query.filter_by(id_produccion=id).first()
     except Exception:
         return ValueError("Ocurrio un error al obtener los registros de produccion.")
+
+
+def get_pedido_produccion_por_produccion(id_produccion):
+    from app.modules.sol_prod.model import PedidoProduccion
+
+    return PedidoProduccion.query.filter_by(id_produccion=id_produccion).first()

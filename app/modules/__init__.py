@@ -12,6 +12,7 @@ from app.modules.sol_prod.model import PedidoProduccion
 from app.modules.lotes.model import LoteProduccion
 from app.modules.produccion.model import Produccion, ProduccionProceso
 from app.modules.pedidos import Pedido, PedidoDetalle
+from app.modules.ventas.model import Venta, DetalleVenta
 
 #  Agregar nuevos modelos aquí y luego importarlos en __all__ para que estén disponibles en toda la aplicación
 __all__ = [
@@ -38,4 +39,6 @@ __all__ = [
     "ProduccionProceso",
     "Pedido",
     "PedidoDetalle",
+    "Venta",
+    "DetalleVenta",
 ]

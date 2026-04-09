@@ -1,7 +1,8 @@
 from sqlalchemy import String, Integer, DateTime, Boolean
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app import db
 from datetime import datetime
+
 
 class Cliente(db.Model):
     __tablename__ = "clientes"
@@ -9,17 +10,17 @@ class Cliente(db.Model):
     # Atomización del Nombre
     nombres: Mapped[str] = mapped_column(String(100), nullable=False)
     apellidos: Mapped[str] = mapped_column(String(100), nullable=False)
-    
+
     email: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
     telefono: Mapped[str] = mapped_column(String(20), nullable=True)
-    
+
     # Atomización de la Dirección (Obligatoria)
     calle_numero: Mapped[str] = mapped_column(String(150), nullable=False)
     colonia: Mapped[str] = mapped_column(String(100), nullable=False)
     ciudad: Mapped[str] = mapped_column(String(100), nullable=False)
     estado: Mapped[str] = mapped_column(String(100), nullable=False)
     codigo_postal: Mapped[str] = mapped_column(String(10), nullable=False)
-    
+
     tipo: Mapped[str] = mapped_column(String(20), default="retail")
     fecha_registro: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     activo: Mapped[bool] = mapped_column(Boolean, default=True)
@@ -27,6 +28,9 @@ class Cliente(db.Model):
     @property
     def nombre_completo(self):
         return f"{self.nombres} {self.apellidos}"
+
+    # Relaciones
+    ventas = relationship("Venta", back_populates="cliente")
 
     @property
     def direccion_completa(self):

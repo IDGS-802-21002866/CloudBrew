@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import mostrar_flashes %}
+
+{% block title %}Detalle de Venta{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto py-8 px-4">
+
+  <a href="{{ url_for('ventas.listar') }}" class="flex items-center text-2xl font-bold mb-6 hover:text-gray-600 transition">
+    <i class="fa-solid fa-chevron-left mr-3"></i> Venta #{{ venta.id }}
+  </a>
+
+  <div class="bg-gray-100 rounded-xl shadow-lg border-2 border-gray-400 overflow-hidden">
+    <div class="bg-white px-6 py-4 border-b border-gray-200">
+      <span class="font-bold text-gray-700">Detalle de la Venta</span>
+    </div>
+    <div class="p-8">
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+        <div>
+          <label class="block text-sm font-bold uppercase text-gray-500">Folio</label>
+          <p class="text-xl font-bold text-gray-800">#{{ venta.id }}</p>
+        </div>
+        <div>
+          <label class="block text-sm font-bold uppercase text-gray-500">Fecha</label>
+          <p class="text-lg text-gray-700">{{ venta.fecha.strftime('%d/%m/%Y %H:%M') }}</p>
+        </div>
+        <div>
+          <label class="block text-sm font-bold uppercase text-gray-500">Cliente</label>
+          <p class="text-xl font-bold text-gray-800">
+            {% if venta.cliente %}{{ venta.cliente.nombres }} {{ venta.cliente.apellidos }}{% else %}N/A{% endif %}
+          </p>
+        </div>
+        <div>
+          <label class="block text-sm font-bold uppercase text-gray-500">Pedido asociado</label>
+          <p class="text-lg text-gray-700">
+            {% if venta.pedido %}{{ venta.pedido.folio }}{% else %}Sin pedido{% endif %}
+          </p>
+        </div>
+        <div>
+          <label class="block text-sm font-bold uppercase text-gray-500">Tipo</label>
+          {% if venta.tipo == 'web' %}
+            <span class="px-3 py-1 text-xs font-bold rounded-full bg-blue-100 text-[#6C9AD0] border border-blue-300">Web</span>
+          {% else %}
+            <span class="px-3 py-1 text-xs font-bold rounded-full bg-purple-100 text-purple-700 border border-purple-300">Retail</span>
+          {% endif %}
+        </div>
+        <div>
+          <label class="block text-sm font-bold uppercase text-gray-500">Estado</label>
+          {% if venta.cancelada %}
+            <p class="text-lg font-bold text-[#B85B5B]">Cancelada</p>
+          {% else %}
+            <p class="text-lg font-bold text-[#4A9062]">Activa</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="mb-8">
+        <h3 class="text-xl font-bold text-gray-800 mb-4">Artículos de la Venta</h3>
+        <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+          <table class="min-w-full table-auto">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Receta</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cantidad</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              {% if venta.detallesVenta %}
+                {% for detalle in venta.detallesVenta %}
+                <tr class="hover:bg-brew-bg hover:bg-opacity-10">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    {{ detalle.receta.nombre if detalle.receta else 'N/A' }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ detalle.cantidad }}</td>
+                </tr>
+                {% endfor %}
+              {% else %}
+                <tr>
+                  <td colspan="2" class="px-6 py-6 text-center text-gray-500">Sin artículos registrados</td>
+                </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="flex justify-end space-x-4 border-t border-gray-200 pt-6 mt-6">
+        {% if not venta.cancelada %}
+          <form action="{{ url_for('ventas.cancelar', id=venta.id) }}" method="POST" onsubmit="return confirm('¿Deseas cancelar esta venta?');">
+            <button type="submit" class="px-6 py-2 bg-[#B85B5B] text-white font-bold rounded-lg shadow-md hover:opacity-90 transition">
+              <i class="fa-solid fa-ban mr-2"></i> Cancelar Venta
+            </button>
+          </form>
+        {% endif %}
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -36,7 +36,12 @@ def crear():
 
     if form.validate_on_submit():
         try:
-            produccion_service.crear_produccion(form)
+            produccion_service.crear_produccion(
+                {
+                    "id_receta": form.id_receta.data,
+                    "cantidad": form.cantidad.data,
+                }
+            )
             flash("Orden de producción creada exitosamente", "success")
             return redirect(url_for("produccion.listar"))
         except ValueError as e:

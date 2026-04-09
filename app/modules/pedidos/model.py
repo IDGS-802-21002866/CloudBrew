@@ -22,6 +22,7 @@ class Pedido(db.Model):
     producciones = relationship(
         "PedidoProduccion", back_populates="pedido", cascade="all, delete-orphan"
     )
+    ventas = relationship("Venta", back_populates="pedido")
 
     @property
     def folio(self):
