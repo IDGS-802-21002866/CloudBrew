@@ -5,7 +5,7 @@
   <div class="flex items-center justify-between">
     <div>
       <h1 class="text-3xl font-bold text-brew-dark">Dashboard General</h1>
-      <p class="text-gray-600 text-sm mt-1">Resumen de rendimiento y métricas clave</p>
+      <p class="text-gray-600 text-sm mt-1">Resumen de rendimiento y métricas clave basado en registros</p>
     </div>
     <button onclick="window.location.reload()" class="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-semibold shadow-sm">
       <i class="fas fa-sync-alt"></i>
@@ -27,7 +27,7 @@
           </h3>
           {% if mas_vendido %}
             <p class="text-sm text-gray-600 mt-2">
-              <span class="text-green-600 font-semibold">{{ mas_vendido.cantidad }}</span> unidades vendidas
+              Total: <span class="text-green-600 font-semibold">{{ mas_vendido.total_vendido }}</span> unidades
             </p>
           {% endif %}
         </div>
@@ -50,7 +50,7 @@
           </h3>
           {% if mas_producido %}
             <p class="text-sm text-gray-600 mt-2">
-              <span class="text-brew-dark font-semibold">{{ mas_producido.cantidad }}</span> lotes completados
+              Total: <span class="text-brew-dark font-semibold">{{ mas_producido.total_producido }}</span> unidades
             </p>
           {% endif %}
         </div>
@@ -64,18 +64,23 @@
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
     
     <div class="bg-white rounded-lg shadow p-6">
-      <h2 class="text-lg font-bold text-brew-dark mb-4 border-b pb-2">Ventas por Mes</h2>
+      <div class="flex items-center justify-between mb-4 border-b pb-2">
+        <h2 class="text-lg font-bold text-brew-dark">Ventas por Mes</h2>
+        <i class="fas fa-calendar-alt text-gray-400"></i>
+      </div>
       {% if ventas %}
-        <div class="space-y-4">
+        <div class="space-y-5">
           {% for venta in ventas %}
-          <div class="flex items-center justify-between">
-            <span class="text-gray-700 font-medium">{{ venta.mes }}</span>
-            <div class="flex items-center gap-3 flex-1 mx-8">
-              <div class="w-full bg-gray-100 rounded-full h-2">
-                <div class="bg-brew-beige h-2 rounded-full" style="width: {{ venta.porcentaje }}%"></div>
-              </div>
+          <div>
+            <div class="flex justify-between mb-1">
+              <span class="text-gray-700 font-medium">Mes: {{ venta.mes }} / {{ venta.anio }}</span>
+              <span class="text-brew-dark font-bold">{{ venta.total_unidades_vendidas }} unidades</span>
             </div>
-            <span class="text-brew-dark font-bold">${{ "{:,.2f}".format(venta.total) }}</span>
+            <div class="w-full bg-gray-100 rounded-full h-2.5">
+              {# Cálculo simple para la barra: (unidades / un máximo arbitrario o real si lo tienes) #}
+              <div class="bg-brew-beige h-2.5 rounded-full" style="width: 100%"></div>
+            </div>
+            <p class="text-xs text-gray-500 mt-1">{{ venta.total_pedidos }} pedidos registrados</p>
           </div>
           {% endfor %}
         </div>
@@ -88,23 +93,28 @@
     </div>
 
     <div class="bg-white rounded-lg shadow p-6">
-      <h2 class="text-lg font-bold text-brew-dark mb-4 border-b pb-2">Mermas por Mes</h2>
+      <div class="flex items-center justify-between mb-4 border-b pb-2">
+        <h2 class="text-lg font-bold text-brew-dark">Mermas por Mes</h2>
+        <i class="fas fa-dumpster text-gray-400"></i>
+      </div>
       {% if mermas %}
         <div class="overflow-x-auto">
           <table class="w-full text-sm">
             <thead>
               <tr class="text-left text-gray-500 border-b">
-                <th class="pb-3 font-semibold">Mes</th>
-                <th class="pb-3 font-semibold text-right">Cantidad de Mermas</th>
-                <th class="pb-3 font-semibold text-right">Costo Estimado</th>
+                <th class="pb-3 font-semibold uppercase tracking-tighter">Periodo</th>
+                <th class="pb-3 font-semibold text-right uppercase tracking-tighter">Total Merma</th>
               </tr>
             </thead>
             <tbody class="divide-y">
               {% for merma in mermas %}
-              <tr>
-                <td class="py-3 text-gray-700 font-medium">{{ merma.mes }}</td>
-                <td class="py-3 text-right text-gray-600">{{ merma.cantidad_registros }}</td>
-                <td class="py-3 text-right text-red-600 font-semibold">-${{ "{:,.2f}".format(merma.costo_perdida) }}</td>
+              <tr class="hover:bg-gray-50 transition">
+                <td class="py-4 text-gray-700 font-medium">Mes {{ merma.mes }} - {{ merma.anio }}</td>
+                <td class="py-4 text-right">
+                  <span class="px-3 py-1 bg-red-100 text-red-700 rounded-full font-bold">
+                    {{ merma.costo_total_mermas }}
+                  </span>
+                </td>
               </tr>
               {% endfor %}
             </tbody>

@@ -9,14 +9,14 @@ class VentasPorMes(db.Model):
     total_unidades_vendidas = db.Column(db.Float)
     total_pedidos = db.Column(db.Integer)
 
-
 class MermasPorMes(db.Model):
     __tablename__ = 'vw_mermas_por_mes'
     __table_args__ = {'extend_existing': True}
 
     anio = db.Column(db.Integer, primary_key=True)
     mes = db.Column(db.Integer, primary_key=True)
-    total_mermas = db.Column(db.Float)
+    total_mermas_unidades = db.Column(db.Float) # Cantidad física
+    costo_total_mermas = db.Column(db.Float)    # Sumatoria de precios
 
 
 class ProductoMasVendido(db.Model):
