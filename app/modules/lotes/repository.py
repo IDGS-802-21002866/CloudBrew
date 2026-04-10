@@ -71,6 +71,18 @@ def obtener_lotes_por_produccion(id_produccion):
     except Exception:
         return ValueError("Ocurrió un error al obtener los lotes.")
 
+
+def obtener_lotes_por_receta(receta_id):
+    try:
+        lotes = (
+            LoteProduccion.query.join(Produccion)
+            .filter(Produccion.id_receta == receta_id)
+            .all()
+        )
+        return lotes
+    except Exception:
+        return ValueError("Ocurrió un error al obtener los lotes para la receta.")
+
 def listar_lotes_con_paginacion(page=1, per_page=10, querry=""):
     try:
         query = LoteProduccion.query.join(Produccion).join(Recetas)

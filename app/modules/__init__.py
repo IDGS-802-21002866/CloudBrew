@@ -7,6 +7,7 @@ from app.modules.presentaciones import Presentacion
 from app.modules.proc_prod.model import ProcesoProductivo
 from app.modules.inventario_materias_primas import MovimientosMateriaPrima
 from app.modules.inventario_producto_terminado import MovimientosReceta
+from app.modules.mermas_producto_terminado import MermaProductoTerminado
 from app.modules.recetas import Recetas, RecetaDetalle, ProcesosReceta
 from app.modules.sol_prod.model import PedidoProduccion
 from app.modules.lotes.model import LoteProduccion
@@ -28,6 +29,7 @@ __all__ = [
     "ProcesoProductivo",
     "MovimientosMateriaPrima",
     "MovimientosReceta",
+    "MermaProductoTerminado",
     "Recetas",
     "RecetaDetalle",
     "ProcesosReceta",

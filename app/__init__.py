@@ -35,6 +35,7 @@ def create_app():
     from app.modules.clientes import bp as clientes_bp
     from app.modules.proc_prod import bp as proc_prod_bp
     from app.modules.mermas_materia_prima import bp as mermas_materia_prima_bp
+    from app.modules.mermas_producto_terminado import bp as mermas_producto_terminado_bp
     from app.modules.recetas import bp as recetas_bp
     from app.modules.lotes import bp as lotes_bp
     from app.modules.produccion import bp as produccion_bp
@@ -88,6 +89,7 @@ def create_app():
         recetas_bp,
         inventario_materias_primas_bp,
         mermas_materia_prima_bp,
+        mermas_producto_terminado_bp,
         pedidos_bp,
         inventario_producto_terminado_bp,
         lotes_bp,

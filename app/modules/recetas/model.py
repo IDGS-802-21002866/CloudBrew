@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app import db
 
@@ -19,6 +19,7 @@ class Recetas(db.Model):
     detalle = db.relationship("RecetaDetalle", back_populates="receta")
     procesos_receta = db.relationship("ProcesosReceta", back_populates="receta")
     producciones = db.relationship("Produccion", back_populates="receta")
+    mermas = db.relationship("MermaProductoTerminado", back_populates="receta")
 
 
 class RecetaDetalle(db.Model):
