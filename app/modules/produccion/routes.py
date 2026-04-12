@@ -4,17 +4,20 @@ from app.modules.produccion.forms import ProduccionForm
 from app.modules.produccion.service import ProduccionService
 from app.modules.recetas.service import RecetaService
 from . import bp
+from app.shared.decorators import login_required
 
 produccion_service = ProduccionService()
 receta_service = RecetaService()
 
 
+@login_required
 @bp.route("/")
 def listar():
     producciones = produccion_service.listar_produccion()
     return render_template("produccion/listar.html", producciones=producciones)
 
 
+@login_required
 @bp.route("/<int:id>", methods=["GET"])
 def detalle(id):
     produccion = produccion_service.buscar_produccion_por_id(id)
@@ -27,6 +30,7 @@ def detalle(id):
     )
 
 
+@login_required
 @bp.route("/crear", methods=["GET", "POST"])
 def crear():
     form = ProduccionForm()
@@ -52,6 +56,7 @@ def crear():
     )
 
 
+@login_required
 @bp.route("/<int:id>/cancelar", methods=["POST"])
 def cancelar(id):
     try:

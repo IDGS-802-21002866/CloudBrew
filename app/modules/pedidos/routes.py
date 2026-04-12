@@ -6,6 +6,7 @@ from .service import PedidoService
 from app.modules.clientes.service import ClienteService
 from app.modules.recetas.service import RecetaService
 from app.modules.recetas import repository as receta_repo
+from app.shared.decorators import login_required
 
 # Inicialización de servicios
 pedido_service = PedidoService()
@@ -13,6 +14,7 @@ cliente_service = ClienteService()
 receta_service = RecetaService()
 
 
+@login_required
 @bp.route("/")
 def listar():
     page = request.args.get("page", 1, type=int)
@@ -27,6 +29,7 @@ def listar():
     )
 
 
+@login_required
 @bp.route("/crear", methods=["GET", "POST"])
 def crear():
     form = PedidoForm()
@@ -204,6 +207,7 @@ def crear():
     )
 
 
+@login_required
 @bp.route("/<int:id>/editar")
 def editar(id):
     pedido = pedido_service.obtener_por_id(id)
@@ -230,6 +234,7 @@ def editar(id):
     return redirect(url_for("pedidos.crear"))
 
 
+@login_required
 @bp.route("/<int:id>")
 def detalle(id):
     pedido = pedido_service.obtener_por_id(id)
@@ -239,6 +244,7 @@ def detalle(id):
 # --- ESTAS SON LAS RUTAS QUE TE FALTABAN PARA QUE EL DETALLE NO TRUENE ---
 
 
+@login_required
 @bp.route("/<int:id>/cancelar", methods=["POST"])
 def cancelar(id):
     try:

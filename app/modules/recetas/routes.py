@@ -7,6 +7,7 @@ from flask import (
     session,
     make_response,
 )
+from app.shared.decorators import login_required
 from app.modules.recetas import bp
 from app.modules.recetas.service import RecetaService
 from app.modules.recetas.form import RecetaForm, RecetaDetalleForm, ProcesoRecetaForm
@@ -20,6 +21,7 @@ materias_primas_service = MateriaPrimaService()
 proceso_productivo_service = ProcesoProductivoService()
 
 
+@login_required
 @bp.route("/")
 def listar():
     """Lista todas las recetas"""
@@ -27,6 +29,7 @@ def listar():
     return render_template("recetas/listar.html", recetas=recetas)
 
 
+@login_required
 @bp.route("/crear", methods=["GET", "POST"])
 def crear():
     """Crea una nueva receta con detalles y procesos."""
@@ -251,6 +254,7 @@ def crear():
     return _render()
 
 
+@login_required
 @bp.route("/<int:id>")
 def detalle(id):
     """Muestra el detalle de una receta."""
@@ -262,6 +266,7 @@ def detalle(id):
         return redirect(url_for("recetas.listar"))
 
 
+@login_required
 @bp.route("/<int:id>/editar", methods=["GET", "POST"])
 def editar(id):
     """Edita una receta existente."""
@@ -476,6 +481,7 @@ def editar(id):
         return redirect(url_for("recetas.listar"))
 
 
+@login_required
 @bp.route("/<int:id>/imagen")
 def imagen(id):
     """Sirve la imagen de una receta almacenada en BD."""
@@ -491,6 +497,7 @@ def imagen(id):
         return redirect(url_for("static", filename="img/logo-solo.png"))
 
 
+@login_required
 @bp.route("/<int:id>/confirmar_desactivar")
 def confirmar_desactivar(id):
     """Página de confirmación para desactivar una receta."""
@@ -502,6 +509,7 @@ def confirmar_desactivar(id):
         return redirect(url_for("recetas.listar"))
 
 
+@login_required
 @bp.route("/<int:id>/desactivar", methods=["POST"])
 def desactivar(id):
     """Desactiva una receta (eliminación lógica)."""
@@ -514,6 +522,7 @@ def desactivar(id):
     return redirect(url_for("recetas.listar"))
 
 
+@login_required
 @bp.route("/<int:id>/activar", methods=["POST"])
 def activar(id):
     """Activa una receta desactivada."""

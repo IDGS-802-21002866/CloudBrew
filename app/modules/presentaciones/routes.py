@@ -3,17 +3,20 @@ from app.modules.presentaciones.form import PresentacionForm
 from app.modules.presentaciones.service import PresentacionService
 from app.modules.unidades_medida.service import UnidadMedidaService
 from . import bp
+from app.shared.decorators import login_required
 
 servicio = PresentacionService()
 servicio_unidades = UnidadMedidaService()
 
 
+@login_required
 @bp.route("/")
 def listar():
     presentaciones = servicio.listar_presentaciones(True)
     return render_template("presentaciones/listar.html", presentaciones=presentaciones)
 
 
+@login_required
 @bp.route("/crear", methods=["GET", "POST"])
 def crear():
     form = PresentacionForm()
@@ -36,6 +39,7 @@ def crear():
     return render_template("presentaciones/crear.html", form=form)
 
 
+@login_required
 @bp.route("/<int:id>")
 def detalle(id):
     try:
@@ -46,6 +50,7 @@ def detalle(id):
         return redirect(url_for("presentaciones.listar"))
 
 
+@login_required
 @bp.route("/<int:id>/editar", methods=["GET", "POST"])
 def editar(id):
     try:
@@ -76,6 +81,7 @@ def editar(id):
         return redirect(url_for("presentaciones.listar"))
 
 
+@login_required
 @bp.route("/<int:id>/desactivar", methods=["POST"])
 def desactivar(id):
     try:
@@ -86,6 +92,7 @@ def desactivar(id):
     return redirect(url_for("presentaciones.listar"))
 
 
+@login_required
 @bp.route("/<int:id>/activar", methods=["POST"])
 def activar(id):
     try:
