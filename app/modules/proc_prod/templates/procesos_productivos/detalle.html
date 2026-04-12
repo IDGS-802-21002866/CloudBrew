@@ -18,6 +18,10 @@
         <label class="text-sm font-medium text-gray-700">Descripción</label>
         <p class="text-gray-900 font-medium">{{ proceso.descripcion or 'Sin descripción' }}</p>
       </div>
+      <div>
+        <label class="text-sm font-medium text-gray-700">Agregado por:</label>
+        <p class="text-gray-900 font-medium">{{ proceso.usuario.nombre }}</p>
+      </div>
     </div>
 
     <div class="bg-gray-50 border-t border-gray-200 px-8 py-6 mt-6 flex gap-2">

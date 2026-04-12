@@ -23,8 +23,7 @@ def listar():
             "start": (pag.page - 1) * pag.per_page + 1 if pag.total > 0 else 0,
             "end": min(pag.page * pag.per_page, pag.total),
         }
-        return render_template("lista.html", pagination=pagination, bitacora=bitacora)
+        return render_template("bitacora_lista.html", pagination=pagination, bitacora=bitacora)
     except ValueError as e:
         flash(str(e), "danger")
-        return render_template("lista.html", pagination=None, bitacora=[])
-    
+        return render_template("bitacora_lista.html", pagination=None, bitacora=[])

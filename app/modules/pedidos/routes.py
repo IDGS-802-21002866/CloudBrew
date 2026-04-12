@@ -183,7 +183,8 @@ def crear():
                         from app import db
 
                         db.session.add(nuevo_d)
-                    db.session.commit()
+                    from app.modules.pedidos import repository as pedido_repo
+                    pedido_repo.save(pedido)
                     session.pop("editando_pedido_id", None)
                 else:
                     pedido = pedido_service.crear_pedido(data, current_user.id)

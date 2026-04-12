@@ -3,6 +3,7 @@ from app.modules.pedidos.model import Pedido, PedidoDetalle
 from app.modules.clientes.service import ClienteService
 from app.modules.recetas.service import RecetaService
 from app.modules.produccion.service import ProduccionService
+from flask_login import current_user
 
 
 class PedidoService:
@@ -62,7 +63,7 @@ class PedidoService:
             )
 
         # Crear pedido y detalles (flush, sin commit)
-        pedido = pedido_repo.create_pedido(cliente_id, detalles, total_pedido)
+        pedido = pedido_repo.create_pedido(cliente_id, detalles, total_pedido, current_user.id if current_user.is_authenticated else None)
 
         # Crear orden de produccion por cada detalle y registrar relacion transaccional
         produccion_service = ProduccionService()
@@ -90,5 +91,7 @@ class PedidoService:
                 pedido_produccion.id_produccion
             )
 
-        pedido_repo.update_pedido_estado(pedido, "Cancelado")
+        pedido.usuario_id = current_user.id if current_user.is_authenticated else pedido.usuario_id
+        pedido_repo.update_pedido_estado(pedido, "Cancelado", current_user.id if current_user.is_authenticated else None)
+        return pedido
         return pedido

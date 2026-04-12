@@ -24,6 +24,12 @@
             {{ produccion.receta.nombre if produccion.receta else '-' }}
           </p>
         </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-2">Agregado por:</label>
+          <p class="text-lg font-semibold text-gray-900">
+            {{ produccion.usuario.nombre if produccion.usuario else '-' }}
+          </p>
+        </div>
 
         <!-- Estado -->
         <div>

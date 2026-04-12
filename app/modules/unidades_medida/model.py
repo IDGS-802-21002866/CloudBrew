@@ -1,4 +1,4 @@
-from sqlalchemy import String, Integer, Boolean, ForeignKey, Numeric
+from sqlalchemy import String, Integer, Boolean, Numeric
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app import db
 
@@ -9,14 +9,17 @@ class UnidadMedida(db.Model):
     nombre: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
     abreviatura: Mapped[str] = mapped_column(String(10), nullable=False, unique=True)
     tipo_medida_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("tipo_medida.id"), nullable=False
+        Integer, db.ForeignKey("tipo_medida.id"), nullable=False
     )
     valor_conversion: Mapped[float] = mapped_column(Numeric(10, 4), default=1.0)
     es_base_sistema: Mapped[bool] = mapped_column(Boolean, default=False)
+    activo: Mapped[bool] = mapped_column(Boolean, default=True)
+    usuario_id: Mapped[int] = mapped_column(Integer, db.ForeignKey("usuario.id"), nullable=True)
 
     tipo_medida: Mapped["TipoMedida"] = relationship(
         "TipoMedida", back_populates="unidades_medida"
     )
+    usuario: Mapped["Usuario"] = relationship("Usuario")
 
 
 class TipoMedida(db.Model):

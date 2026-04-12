@@ -14,7 +14,9 @@ class Recetas(db.Model):
     precio_venta: Mapped[float] = mapped_column(db.Float, nullable=True)
     imagen: Mapped[bytes] = mapped_column(db.LargeBinary, nullable=True)
     imagen_tipo: Mapped[str] = mapped_column(db.String(50), nullable=True)
+    usuario_id: Mapped[int] = mapped_column(db.Integer, db.ForeignKey("usuario.id"), nullable=True)
 
+    usuario = db.relationship("Usuario")
     produccion = db.relationship("Produccion", back_populates="receta")
     detalle = db.relationship("RecetaDetalle", back_populates="receta")
     procesos_receta = db.relationship("ProcesosReceta", back_populates="receta")

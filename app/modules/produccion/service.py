@@ -1,3 +1,4 @@
+from flask_login import current_user
 from app.modules.inventario_materias_primas.service import (
     InventarioMateriasPrimasService,
 )
@@ -54,7 +55,11 @@ class ProduccionService:
                 )
 
         try:
-            produccion = insertar_produccion(id_receta, int(cantidad))
+            produccion = insertar_produccion(
+                id_receta,
+                int(cantidad),
+                current_user.id if current_user.is_authenticated else None,
+            )
 
             for proceso_receta in receta.procesos_receta:
                 insertar_produccion_proceso(
@@ -92,7 +97,11 @@ class ProduccionService:
                     )
 
             produccion = modificar_produccion(
-                id_produccion, form.id_receta.data, form.cantidad.data, form.estado.data
+                id_produccion,
+                form.id_receta.data,
+                form.cantidad.data,
+                form.estado.data,
+                current_user.id if current_user.is_authenticated else None,
             )
 
             if isinstance(produccion, ValueError):
@@ -128,7 +137,10 @@ class ProduccionService:
 
     def cancelar_produccion_forzada(self, id_produccion):
         try:
-            produccion_cancelada = eliminar_produccion(id_produccion)
+            produccion_cancelada = eliminar_produccion(
+                id_produccion,
+                current_user.id if current_user.is_authenticated else None,
+            )
 
             if isinstance(produccion_cancelada, ValueError):
                 raise produccion_cancelada

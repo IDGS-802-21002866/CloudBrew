@@ -1,3 +1,4 @@
+from flask_login import current_user
 from app.modules.presentaciones.model import Presentacion
 from app import db
 
@@ -11,9 +12,31 @@ def get_presentacion_by_nombre(nombre):
     return Presentacion.query.filter(Presentacion.nombre == nombre).first()
 
 def create_presentacion(presentacion):
+    if current_user.is_authenticated:
+        presentacion.actualizado_por = current_user.nombre
     db.session.add(presentacion)
     db.session.commit()
     return presentacion
 
-def update_db():
+
+def update_presentacion(presentacion):
+    if current_user.is_authenticated:
+        presentacion.actualizado_por = current_user.nombre
     db.session.commit()
+    return presentacion
+
+
+def deactivate_presentacion(presentacion):
+    if current_user.is_authenticated:
+        presentacion.actualizado_por = current_user.nombre
+    presentacion.activo = False
+    db.session.commit()
+    return presentacion
+
+
+def activate_presentacion(presentacion):
+    if current_user.is_authenticated:
+        presentacion.actualizado_por = current_user.nombre
+    presentacion.activo = True
+    db.session.commit()
+    return presentacion

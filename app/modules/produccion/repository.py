@@ -2,12 +2,13 @@
 from app import db
 
 
-def insertar_produccion(id_receta, cantidad):
+def insertar_produccion(id_receta, cantidad, usuario_id=None):
     try:
         produccion = Produccion(
             id_receta=id_receta,
             cantidad=cantidad,
             estado="pendiente",
+            usuario_id=usuario_id,
         )
 
         db.session.add(produccion)
@@ -19,7 +20,7 @@ def insertar_produccion(id_receta, cantidad):
         raise
 
 
-def modificar_produccion(id_produccion, id_receta, cantidad, estado):
+def modificar_produccion(id_produccion, id_receta, cantidad, estado, usuario_id=None):
     try:
         produccion = Produccion.query.get(id_produccion)
 
@@ -29,6 +30,8 @@ def modificar_produccion(id_produccion, id_receta, cantidad, estado):
         produccion.id_receta = id_receta
         produccion.cantidad = cantidad
         produccion.estado = estado
+        if usuario_id is not None:
+            produccion.usuario_id = usuario_id
 
         db.session.commit()
 
@@ -42,7 +45,7 @@ def modificar_produccion(id_produccion, id_receta, cantidad, estado):
         return ValueError("Ocurrio un error al modificar la produccion.")
 
 
-def eliminar_produccion(id_produccion):
+def eliminar_produccion(id_produccion, usuario_id=None):
     try:
         produccion = Produccion.query.get(id_produccion)
 
@@ -50,6 +53,8 @@ def eliminar_produccion(id_produccion):
             raise ValueError("La produccion no existe.")
 
         produccion.estado = "cancelado"
+        if usuario_id is not None:
+            produccion.usuario_id = usuario_id
 
         db.session.commit()
 

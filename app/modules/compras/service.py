@@ -4,6 +4,7 @@ from app.modules.compras import repository
 from app.modules.materias_primas.service import MateriaPrimaService
 from app.modules.presentaciones.service import PresentacionService
 from app.shared.exceptions import ValidacionNegocioException
+from flask_login import current_user
 
 _materias_primas_service = MateriaPrimaService()
 _presentaciones_service = PresentacionService()
@@ -89,7 +90,7 @@ class ComprasService:
 
         # Crear compra en base de datos
         compra_id = repository.create_compra(
-            proveedor_id=proveedor_id, usuario_id=usuario_id, detalles=detalles
+            proveedor_id=proveedor_id, usuario_id=usuario_id, detalles=detalles, usuario_actual=current_user.nombre
         )
 
         return compra_id
@@ -123,7 +124,7 @@ class ComprasService:
             detalle_precios.append((int(detalle_id), precio))
 
         fecha_compra = datetime.now()
-        repository.confirmar_compra(compra_id, detalle_precios, fecha_compra)
+        repository.confirmar_compra(compra_id, detalle_precios, fecha_compra, current_user.nombre)
 
     def cancelar_compra(self, compra_id):
         compra = self.obtener_compra(compra_id)
@@ -133,4 +134,4 @@ class ComprasService:
             raise ValidacionNegocioException(
                 "No se puede cancelar una compra ya confirmada."
             )
-        repository.cancelar_compra(compra_id)
+        repository.cancelar_compra(compra_id, current_user.nombre)

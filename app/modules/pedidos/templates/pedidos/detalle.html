@@ -25,6 +25,10 @@
           <p class="text-xl font-bold text-gray-800">{{ pedido.cliente.nombre_completo }}</p>
         </div>
         <div>
+          <label class="block text-sm font-bold uppercase text-gray-500">Agregado por:</label>
+          <p class="text-lg text-gray-700">{{ pedido.usuario.nombre }}</p>
+        </div>
+        <div>
           <label class="block text-sm font-bold uppercase text-gray-500">Fecha de Registro</label>
           <p class="text-lg text-gray-700">{{ pedido.fecha_registro.strftime('%d/%m/%Y %H:%M') }}</p>
         </div>

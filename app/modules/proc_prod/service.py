@@ -5,6 +5,7 @@ from app.modules.proc_prod.repository import (
     update_proceso_productivo,
     delete_proceso_productivo,
 )
+from flask_login import current_user
 
 
 class ProcesoProductivoService:
@@ -23,10 +24,10 @@ class ProcesoProductivoService:
         return pag
 
     def crear_proceso(self, form):
-        return create_proceso_productivo(form)
+        return create_proceso_productivo(form, current_user.id if current_user.is_authenticated else None)
 
     def actualizar_proceso(self, proceso_id: int, form):
-        return update_proceso_productivo(proceso_id, form)
+        return update_proceso_productivo(proceso_id, form, current_user.id if current_user.is_authenticated else None)
 
     def eliminar_proceso(self, proceso_id: int):
-        return delete_proceso_productivo(proceso_id)
+        return delete_proceso_productivo(proceso_id, current_user.id if current_user.is_authenticated else None)

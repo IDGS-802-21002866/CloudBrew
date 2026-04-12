@@ -28,6 +28,10 @@
                     <label class="block text-gray-500 text-sm font-bold uppercase">Tipo</label>
                     <p class="text-lg text-gray-700">{{ cliente.tipo.title() }}</p>
                 </div>
+                <div class="mb-4">
+                    <span class="text-gray-500 uppercase text-sm font-bold">Agregado por:</span>
+                    <p class="text-lg text-gray-700">{{ cliente.usuario.nombre }}</p>
+                </div>
                 <div>
                     <label class="block text-gray-500 text-sm font-bold uppercase">Estado</label>
                     <p class="text-lg font-bold {{ 'text-[#4A9062]' if cliente.activo else 'text-[#B85B5B]' }}">
@@ -66,6 +70,7 @@
                     </div>
                 </div>
             </div>
+            
 
             <div class="flex justify-end space-x-4 border-t border-gray-200 pt-6 mt-6">
                 <a href="{{ url_for('clientes.editar', id=cliente.id) }}" class="px-6 py-2 bg-[#6C9AD0] text-white font-bold rounded-lg shadow-md hover:opacity-90 transition">

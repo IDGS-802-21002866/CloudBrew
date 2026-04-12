@@ -24,6 +24,12 @@
                     <label class="block text-gray-500 text-sm font-bold uppercase">Tipo de Medida</label>
                     <p class="text-lg text-gray-700">{{ unidad.tipo_medida.nombre }}</p>
                 </div>
+                 <div>
+                    <label class="block text-gray-500 text-sm font-bold uppercase">Agregado por:</label>
+                    <p class="text-lg text-gray-700">
+                        {{ unidad.usuario.nombre }}
+                    </p>
+                </div>
                 <div>
                     <label class="block text-gray-500 text-sm font-bold uppercase">¿Valor de Conversión?</label>
                     <p class="text-lg font-bold {{ 'text-[#4A9062]' if unidad.valor_conversion == 1 else 'text-gray-700' }}">

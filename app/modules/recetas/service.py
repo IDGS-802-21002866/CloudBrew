@@ -1,3 +1,4 @@
+from flask_login import current_user
 from app.modules.recetas import repository
 from app.modules.recetas.model import Recetas, RecetaDetalle, ProcesosReceta
 from app.modules.materias_primas.model import MateriaPrima
@@ -49,6 +50,7 @@ class RecetaService:
             ),
             imagen=data.get("imagen"),
             imagen_tipo=data.get("imagen_tipo"),
+            usuario_id=current_user.id if current_user.is_authenticated else None,
         )
         return repository.create_receta(nueva_receta)
 
@@ -76,6 +78,7 @@ class RecetaService:
         if data.get("imagen") is not None:
             receta.imagen = data.get("imagen")
             receta.imagen_tipo = data.get("imagen_tipo")
+        receta.usuario_id = current_user.id if current_user.is_authenticated else receta.usuario_id
         repository.update_db()
         return receta
 
@@ -86,6 +89,7 @@ class RecetaService:
             raise ValueError("Receta no encontrada.")
         if receta.activo:
             receta.activo = False
+            receta.usuario_id = current_user.id if current_user.is_authenticated else receta.usuario_id
             repository.update_db()
         else:
             raise ValidacionNegocioException("La receta ya está desactivada.")

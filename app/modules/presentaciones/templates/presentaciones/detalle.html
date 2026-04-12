@@ -24,6 +24,10 @@
                     <label class="block text-gray-500 text-sm font-bold uppercase">Equivalencia</label>
                     <p class="text-lg text-gray-700">{{ presentacion.cantidad_equivalente }}</p>
                 </div>
+                 <div>
+                    <label class="block text-gray-500 text-sm font-bold uppercase">Agregado por:</label>
+                    <p class="text-lg text-gray-700">{{ presentacion.usuario.nombre }}</p>
+                </div>
                 <div>
                     <label class="block text-gray-500 text-sm font-bold uppercase">Estado</label>
                     <p class="text-lg font-bold {{ 'text-[#4A9062]' if presentacion.activo else 'text-[#B85B5B]' }}">
