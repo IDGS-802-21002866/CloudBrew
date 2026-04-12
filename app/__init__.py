@@ -38,6 +38,7 @@ def create_app():
     from app.modules.recetas import bp as recetas_bp
     from app.modules.lotes import bp as lotes_bp
     from app.modules.produccion import bp as produccion_bp
+    from app.modules.bitacora_login import bp as bitacora_login_bp
 
     from app.modules.inventario_materias_primas import (
         bp as inventario_materias_primas_bp,
@@ -95,6 +96,7 @@ def create_app():
         procesos_produccion_bp,
         ventas_bp,
         costos_bp,
+        bitacora_login_bp
     ]
 
     for bp in blueprints_protegidos:

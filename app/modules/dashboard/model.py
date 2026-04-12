@@ -1,8 +1,12 @@
 from app import db
 
+#anadir a include_object en app/__init__.py para que no se reconozcan las vistas como modelos
+#  if type_ == "table" and object.info.get("is_view", False):
+#       return False
+
 class VentasPorMes(db.Model):
     __tablename__ = 'vw_ventas_por_mes'
-    __table_args__ = {'extend_existing': True}
+    __table_args__ = {'extend_existing': True, 'info': {'is_view': True}}
 
     anio = db.Column(db.Integer, primary_key=True)
     mes = db.Column(db.Integer, primary_key=True)
@@ -11,7 +15,7 @@ class VentasPorMes(db.Model):
 
 class MermasPorMes(db.Model):
     __tablename__ = 'vw_mermas_por_mes'
-    __table_args__ = {'extend_existing': True}
+    __table_args__ = {'extend_existing': True, 'info': {'is_view': True}}
 
     anio = db.Column(db.Integer, primary_key=True)
     mes = db.Column(db.Integer, primary_key=True)
@@ -21,7 +25,7 @@ class MermasPorMes(db.Model):
 
 class ProductoMasVendido(db.Model):
     __tablename__ = 'vw_top_producto_vendido'
-    __table_args__ = {'extend_existing': True}
+    __table_args__ = {'extend_existing': True, 'info': {'is_view': True}}
 
     id = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String(255))
@@ -30,7 +34,7 @@ class ProductoMasVendido(db.Model):
 
 class ProductoMasProducido(db.Model):
     __tablename__ = 'vw_top_producto_producido'
-    __table_args__ = {'extend_existing': True}
+    __table_args__ = {'extend_existing': True, 'info': {'is_view': True}}
 
     id = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String(255))

@@ -9,22 +9,41 @@ from app.modules.auth.forms import (
 )
 from app.modules.auth.service import AuthService
 from app.modules.usuarios.repository import get_usuario_by_email
+from app.modules.bitacora_login.service import BitacoraLoginService
 
 auth_service = AuthService()
+bitacora_service = BitacoraLoginService()
 
 
 @bp.route("/login", methods=["POST", "GET"])
 def login():
     form = LoginForm()
     if request.method == "POST":
+        nombre_usuario = form.correo.data if form.correo.data else "desconocido"
+        
         # Validar captcha primero
         if not captcha.validate():
+            bitacora_service.crear_bitacora_login(
+                nombre_usuario=nombre_usuario,
+                descripcion="Error en captación de Captcha",
+                auth=False
+            )
             flash("Captcha incorrecto. Por favor, intenta nuevamente.", "danger")
         elif form.validate_on_submit():
             try:
                 auth_service.iniciar_sesion(form.correo.data, form.contrasenia.data)
+                bitacora_service.crear_bitacora_login(
+                    nombre_usuario=nombre_usuario,
+                    descripcion="Login correcto",
+                    auth=True
+                )
                 return redirect(url_for("main.index"))
             except ValueError as e:
+                bitacora_service.crear_bitacora_login(
+                    nombre_usuario=nombre_usuario,
+                    descripcion="No autorizado",
+                    auth=False
+                )
                 flash(str(e), "danger")
     return render_template("auth/login.html", form=form)
 
