@@ -1,9 +1,5 @@
 from app import db
 
-#anadir a include_object en app/__init__.py para que no se reconozcan las vistas como modelos
-#  if type_ == "table" and object.info.get("is_view", False):
-#       return False
-
 class VentasPorMes(db.Model):
     __tablename__ = 'vw_ventas_por_mes'
     __table_args__ = {'extend_existing': True, 'info': {'is_view': True}}
@@ -39,3 +35,17 @@ class ProductoMasProducido(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String(255))
     total_producido = db.Column(db.Float)
+
+class UtilidadProducto(db.Model):
+    __tablename__ = "vw_utilidad_producto"
+
+    receta_id = db.Column(db.Integer, primary_key=True)
+    nombre = db.Column(db.String(255))
+
+    costo_total = db.Column(db.Float)
+    precio_venta = db.Column(db.Float)
+
+    unidades_vendidas = db.Column(db.Float)
+    ingresos = db.Column(db.Float)
+    costo_total_vendido = db.Column(db.Float)
+    utilidad = db.Column(db.Float)
