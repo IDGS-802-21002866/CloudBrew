@@ -225,6 +225,7 @@ def crear():
                     "nombre": receta_form.nombre.data,
                     "descripcion": receta_form.descripcion.data,
                     "cantidad_producida": receta_form.cantidad_producida.data,
+                    "precio_venta": receta_form.precio_venta.data,
                     "imagen": imagen_bytes,
                     "imagen_tipo": imagen_tipo,
                 }
@@ -446,6 +447,7 @@ def editar(id):
                         "nombre": receta_form.nombre.data,
                         "descripcion": receta_form.descripcion.data,
                         "cantidad_producida": receta_form.cantidad_producida.data,
+                        "precio_venta": receta_form.precio_venta.data,
                         "imagen": imagen_bytes,
                         "imagen_tipo": imagen_tipo,
                     }
