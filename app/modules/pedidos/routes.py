@@ -7,11 +7,13 @@ from app.modules.clientes.service import ClienteService
 from app.modules.recetas.service import RecetaService
 from app.modules.recetas import repository as receta_repo
 from app.shared.decorators import login_required
+from app.modules.inventario_materias_primas.service import InventarioMateriasPrimasService
 
 # Inicialización de servicios
 pedido_service = PedidoService()
 cliente_service = ClienteService()
 receta_service = RecetaService()
+inventario_service = InventarioMateriasPrimasService()
 
 
 @login_required
@@ -27,7 +29,6 @@ def listar():
         pagination=pagination,
         search_term=search_term,
     )
-
 
 @login_required
 @bp.route("/crear", methods=["GET", "POST"])
@@ -48,7 +49,6 @@ def crear():
     cliente_nombre_default = ""
     if "editando_pedido_id" in session:
         pedido_edit = pedido_service.obtener_por_id(session["editando_pedido_id"])
-        # Si el formulario está vacío (primera carga), le ponemos el ID del cliente
         if not form.cliente_id.data:
             form.cliente_id.data = pedido_edit.cliente_id
         cliente_nombre_default = pedido_edit.cliente.nombre_completo
@@ -59,16 +59,53 @@ def crear():
         if action == "agregar_detalle":
             if detalle_form.validate_on_submit():
                 receta = receta_repo.get_receta_by_id(detalle_form.receta_id.data)
-                detalle = {
-                    "receta_id": receta.id,
-                    "receta_nombre": receta.nombre,
-                    "cantidad_lotes": detalle_form.cantidad_lotes.data,
-                    "total_unidades": detalle_form.cantidad_lotes.data
-                    * receta.cantidad_producida,
-                }
-                session["pedido_detalles"].append(detalle)
+                cantidad_nueva = detalle_form.cantidad_lotes.data
+
+                detalle_existente = next(
+                    (d for d in session["pedido_detalles"] if d["receta_id"] == receta.id),
+                    None
+                )
+
+                cantidad_total = cantidad_nueva
+                if detalle_existente:
+                    cantidad_total += detalle_existente["cantidad_lotes"]
+
+                try:
+                    for detalle in receta.detalle:
+                        cantidad_necesaria = detalle.cantidad * int(cantidad_total)
+
+                        stock_disponible = inventario_service.obtener_stock_actual_materia_prima(
+                            detalle.materia_prima_id
+                        )
+
+                        if stock_disponible < cantidad_necesaria:
+                            raise ValueError(
+                                f"Stock insuficiente para '{detalle.materia_prima.nombre}'. "
+                                f"Necesario: {cantidad_necesaria}, Disponible: {stock_disponible}"
+                            )
+
+                except ValueError as e:
+                    flash(str(e), "danger")
+                    return redirect(url_for("pedidos.crear"))
+
+                if detalle_existente:
+                    detalle_existente["cantidad_lotes"] = cantidad_total
+                    detalle_existente["total_unidades"] = (
+                        cantidad_total * receta.cantidad_producida
+                    )
+                    flash(f"{receta.nombre} actualizado.", "success")
+                else:
+                    detalle = {
+                        "receta_id": receta.id,
+                        "receta_nombre": receta.nombre,
+                        "cantidad_lotes": cantidad_nueva,
+                        "total_unidades": cantidad_nueva
+                        * receta.cantidad_producida,
+                    }
+                    session["pedido_detalles"].append(detalle)
+                    flash(f"{receta.nombre} agregado.", "success")
+
                 session.modified = True
-                flash(f"{receta.nombre} agregado.", "success")
 
         elif action.startswith("quitar_detalle_"):
             idx = int(action.split("_")[-1])
@@ -77,7 +114,6 @@ def crear():
                 session.modified = True
 
         elif action == "crear_pedido":
-            # Validamos que haya cliente y productos
             if form.cliente_id.data and session["pedido_detalles"]:
                 data = {
                     "cliente_id": form.cliente_id.data,
@@ -86,7 +122,6 @@ def crear():
 
                 pedido_id = session.get("editando_pedido_id")
                 if pedido_id:
-                    # Lógica de actualización (Borrar y re-insertar detalles)
                     pedido = pedido_service.obtener_por_id(pedido_id)
                     from app.modules.pedidos.model import PedidoDetalle
                     from app import db
@@ -102,6 +137,7 @@ def crear():
                             total_unidades=d["total_unidades"],
                         )
                         db.session.add(nuevo_d)
+
                     db.session.commit()
                     session.pop("editando_pedido_id", None)
                 else:
