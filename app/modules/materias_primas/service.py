@@ -1,5 +1,6 @@
 from app.modules.materias_primas import repository
 from app.modules.materias_primas.model import MateriaPrima
+from flask_login import current_user
 
 
 class MateriaPrimaService:
@@ -33,6 +34,7 @@ class MateriaPrimaService:
             descripcion=data.get("descripcion"),
             tipo_medida_id=data.get("tipo_medida_id"),
             stock_minimo=stock,
+            usuario_id=current_user.id if current_user.is_authenticated else None,
         )
         return repository.create_materia_prima(nueva)
 
@@ -51,21 +53,20 @@ class MateriaPrimaService:
             raise ValueError("El stock mínimo no puede ser negativo.")
 
         materia.stock_minimo = stock
-        repository.update_db()
-        return materia
+        materia.usuario_id = current_user.id if current_user.is_authenticated else materia.usuario_id
+        return repository.update_materia_prima(materia)
 
     def desactivar_materia(self, id):
         materia = repository.get_materia_prima_by_id(id)
         if materia and materia.activo:
-            materia.activo = False
-            repository.update_db()
+            materia.usuario_id = current_user.id if current_user.is_authenticated else materia.usuario_id
+            return repository.deactivate_materia_prima(materia)
         elif materia and not materia.activo:
             raise ValueError("La materia prima ya está desactivada.")
 
     def activar_materia(self, id):
         materia = repository.get_materia_prima_by_id(id)
         if materia and not materia.activo:
-            materia.activo = True
-            repository.update_db()
+            return repository.activate_materia_prima(materia)
         elif materia and materia.activo:
             raise ValueError("La materia prima ya está activa.")

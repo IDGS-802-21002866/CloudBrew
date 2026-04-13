@@ -30,6 +30,10 @@
         <label class="text-sm font-medium text-gray-700">Dirección</label>
         <p class="text-gray-900 font-medium">{{ proveedor.direccion or 'No registrada' }}</p>
       </div>
+      <div>
+        <label class="text-sm font-medium text-gray-700">Agregado por:</label>
+        <p class="text-gray-900 font-medium">{{ proveedor.usuario.nombre if proveedor.usuario else 'No registrado' }}</p>
+      </div>
     </div>
 
     <div class="bg-gray-50 border-t border-gray-200 px-8 py-6 mt-6 flex gap-2">

@@ -2,98 +2,132 @@
 
 {% block content %}
 <div class="space-y-6">
-  <!-- Header -->
   <div class="flex items-center justify-between">
     <div>
-      <h1 class="text-3xl font-bold text-brew-dark">Listado de Mermas</h1>
-      <p class="text-gray-600 text-sm mt-1">Gestiona y controla las mermas de tu inventario</p>
+      <h1 class="text-3xl font-bold text-brew-dark">Dashboard General</h1>
+      <p class="text-gray-600 text-sm mt-1">Resumen de rendimiento y métricas clave basado en registros</p>
     </div>
-    <button class="flex items-center gap-2 px-4 py-2 bg-brew-beige text-brew-dark rounded-lg hover:opacity-90 transition font-semibold">
-      <i class="fas fa-plus"></i>
-      Agregar Nueva
+    <button onclick="window.location.reload()" class="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-semibold shadow-sm">
+      <i class="fas fa-sync-alt"></i>
+      Actualizar
     </button>
   </div>
 
-  <!-- Filters -->
-  <div class="bg-white rounded-lg shadow p-4 flex items-center gap-4">
-    <div class="flex items-center gap-2 text-gray-600">
-      <i class="fas fa-filter"></i>
-      <span>Filtrar:</span>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="bg-white p-6 rounded-lg shadow-sm border-l-4 border-brew-beige">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-500 uppercase tracking-wider">Producto Más Vendido</p>
+          <h3 class="text-2xl font-bold text-brew-dark mt-1">
+            {% if mas_vendido %}
+              {{ mas_vendido.nombre }}
+            {% else %}
+              <span class="text-gray-400 font-normal italic">Información no encontrada</span>
+            {% endif %}
+          </h3>
+          {% if mas_vendido %}
+            <p class="text-sm text-gray-600 mt-2">
+              Total: <span class="text-green-600 font-semibold">{{ mas_vendido.total_vendido }}</span> unidades
+            </p>
+          {% endif %}
+        </div>
+        <div class="p-3 bg-brew-beige bg-opacity-20 rounded-full text-brew-dark">
+          <i class="fas fa-star fa-2x"></i>
+        </div>
+      </div>
     </div>
-    <input type="text" placeholder="Buscar por folio, elemento, etc..." class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brew-beige">
+
+    <div class="bg-white p-6 rounded-lg shadow-sm border-l-4 border-brew-dark">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-500 uppercase tracking-wider">Producto Más Producido</p>
+          <h3 class="text-2xl font-bold text-brew-dark mt-1">
+            {% if mas_producido %}
+              {{ mas_producido.nombre }}
+            {% else %}
+              <span class="text-gray-400 font-normal italic">Información no encontrada</span>
+            {% endif %}
+          </h3>
+          {% if mas_producido %}
+            <p class="text-sm text-gray-600 mt-2">
+              Total: <span class="text-brew-dark font-semibold">{{ mas_producido.total_producido }}</span> unidades
+            </p>
+          {% endif %}
+        </div>
+        <div class="p-3 bg-brew-dark bg-opacity-10 rounded-full text-brew-dark">
+          <i class="fas fa-industry fa-2x"></i>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <!-- Table -->
-  <div class="bg-white rounded-lg shadow overflow-hidden">
-    <table class="w-full">
-      <thead class="bg-gray-200">
-        <tr>
-          <th class="px-6 py-3 text-left text-sm font-semibold text-gray-800">Folio</th>
-          <th class="px-6 py-3 text-left text-sm font-semibold text-gray-800">Fecha de Registro</th>
-          <th class="px-6 py-3 text-left text-sm font-semibold text-gray-800">Tipo de Merma</th>
-          <th class="px-6 py-3 text-left text-sm font-semibold text-gray-800">Elemento</th>
-          <th class="px-6 py-3 text-left text-sm font-semibold text-gray-800">Lote Relacionado</th>
-          <th class="px-6 py-3 text-left text-sm font-semibold text-gray-800">Cantidad Perdida</th>
-          <th class="px-6 py-3 text-center text-sm font-semibold text-gray-800">Acciones</th>
-        </tr>
-      </thead>
-      <tbody class="divide-y">
-        <tr class="hover:bg-gray-50 transition">
-          <td class="px-6 py-4 text-sm font-medium text-gray-900">M-001</td>
-          <td class="px-6 py-4 text-sm text-gray-600">19/03/2026</td>
-          <td class="px-6 py-4 text-sm text-gray-600">Producto Terminado</td>
-          <td class="px-6 py-4 text-sm text-gray-600">Porter (Lata 355ml)</td>
-          <td class="px-6 py-4 text-sm text-gray-600">L-25412</td>
-          <td class="px-6 py-4 text-sm font-medium text-gray-900">12 Piezas</td>
-          <td class="px-6 py-4 text-center">
-            <button class="text-gray-600 hover:text-brew-beige transition">
-              <i class="fas fa-eye"></i>
-            </button>
-          </td>
-        </tr>
-        <tr class="hover:bg-gray-50 transition">
-          <td class="px-6 py-4 text-sm font-medium text-gray-900">M-002</td>
-          <td class="px-6 py-4 text-sm text-gray-600">20/03/2026</td>
-          <td class="px-6 py-4 text-sm text-gray-600">Materia Prima</td>
-          <td class="px-6 py-4 text-sm text-gray-600">Malta Pale Ale</td>
-          <td class="px-6 py-4 text-sm text-gray-600">N/A (Almacén)</td>
-          <td class="px-6 py-4 text-sm font-medium text-gray-900">5.50 Kg</td>
-          <td class="px-6 py-4 text-center">
-            <button class="text-gray-600 hover:text-brew-beige transition">
-              <i class="fas fa-eye"></i>
-            </button>
-          </td>
-        </tr>
-        <tr class="hover:bg-gray-50 transition">
-          <td class="px-6 py-4 text-sm font-medium text-gray-900">M-003</td>
-          <td class="px-6 py-4 text-sm text-gray-600">20/03/2026</td>
-          <td class="px-6 py-4 text-sm text-gray-600">Pérdida de Lote</td>
-          <td class="px-6 py-4 text-sm text-gray-600">IPA Session</td>
-          <td class="px-6 py-4 text-sm text-gray-600">L-25488</td>
-          <td class="px-6 py-4 text-sm font-medium text-gray-900">Lote Completo</td>
-          <td class="px-6 py-4 text-center">
-            <button class="text-gray-600 hover:text-brew-beige transition">
-              <i class="fas fa-eye"></i>
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- Pagination -->
-  <div class="flex items-center justify-between mt-6">
-    <p class="text-sm text-gray-600">Mostrando 1 a 6 de 300 entradas</p>
-    <div class="flex items-center gap-2">
-      <button class="px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded transition">← Anterior</button>
-      <button class="px-3 py-1 text-sm bg-brew-dark text-brew-beige rounded transition font-semibold">1</button>
-      <button class="px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded transition">2</button>
-      <button class="px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded transition">3</button>
-      <span class="px-2 text-gray-400">...</span>
-      <button class="px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded transition">67</button>
-      <button class="px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded transition">68</button>
-      <button class="px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded transition">Siguiente →</button>
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    
+    <div class="bg-white rounded-lg shadow p-6">
+      <div class="flex items-center justify-between mb-4 border-b pb-2">
+        <h2 class="text-lg font-bold text-brew-dark">Ventas por Mes</h2>
+        <i class="fas fa-calendar-alt text-gray-400"></i>
+      </div>
+      {% if ventas %}
+        <div class="space-y-5">
+          {% for venta in ventas %}
+          <div>
+            <div class="flex justify-between mb-1">
+              <span class="text-gray-700 font-medium">Mes: {{ venta.mes }} / {{ venta.anio }}</span>
+              <span class="text-brew-dark font-bold">{{ venta.total_unidades_vendidas }} unidades</span>
+            </div>
+            <div class="w-full bg-gray-100 rounded-full h-2.5">
+              {# Cálculo simple para la barra: (unidades / un máximo arbitrario o real si lo tienes) #}
+              <div class="bg-brew-beige h-2.5 rounded-full" style="width: 100%"></div>
+            </div>
+            <p class="text-xs text-gray-500 mt-1">{{ venta.total_pedidos }} pedidos registrados</p>
+          </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="flex flex-col items-center justify-center py-10 text-gray-400">
+          <i class="fas fa-chart-line fa-3x mb-3 opacity-20"></i>
+          <p>Información no encontrada</p>
+        </div>
+      {% endif %}
     </div>
+
+    <div class="bg-white rounded-lg shadow p-6">
+      <div class="flex items-center justify-between mb-4 border-b pb-2">
+        <h2 class="text-lg font-bold text-brew-dark">Mermas por Mes</h2>
+        <i class="fas fa-dumpster text-gray-400"></i>
+      </div>
+      {% if mermas %}
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="text-left text-gray-500 border-b">
+                <th class="pb-3 font-semibold uppercase tracking-tighter">Periodo</th>
+                <th class="pb-3 font-semibold text-right uppercase tracking-tighter">Total Merma</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y">
+              {% for merma in mermas %}
+              <tr class="hover:bg-gray-50 transition">
+                <td class="py-4 text-gray-700 font-medium">Mes {{ merma.mes }} - {{ merma.anio }}</td>
+                <td class="py-4 text-right">
+                  <span class="px-3 py-1 bg-red-100 text-red-700 rounded-full font-bold">
+                    {{ merma.costo_total_mermas }}
+                  </span>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="flex flex-col items-center justify-center py-10 text-gray-400">
+          <i class="fas fa-exclamation-triangle fa-3x mb-3 opacity-20"></i>
+          <p>Información no encontrada</p>
+        </div>
+      {% endif %}
+    </div>
+
   </div>
 </div>
 {% endblock %}

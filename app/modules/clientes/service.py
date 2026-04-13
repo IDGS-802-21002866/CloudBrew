@@ -1,5 +1,6 @@
 from app.modules.clientes import repository
 from app.modules.clientes.model import Cliente
+from flask_login import current_user
 
 class ClienteService:
     def listar_clientes(self, incluir_inactivas=True):
@@ -31,7 +32,8 @@ class ClienteService:
             ciudad=data.get("ciudad").strip(),
             estado=data.get("estado").strip(),
             codigo_postal=data.get("codigo_postal").strip(),
-            tipo=data.get("tipo")
+            tipo=data.get("tipo"),
+            usuario_id=current_user.id if current_user.is_authenticated else None,
         )
         return repository.create_cliente(nuevo)
 
@@ -47,7 +49,13 @@ class ClienteService:
         c.estado = data.get("estado").strip()
         c.codigo_postal = data.get("codigo_postal").strip()
         c.tipo = data.get("tipo")
-        repository.update_db()
+        c.usuario_id = current_user.id if current_user.is_authenticated else c.usuario_id
+        repository.update_cliente(c)
+
+    def eliminar_cliente(self, id):
+        c = self.obtener_por_id(id)
+        c.usuario_id = current_user.id if current_user.is_authenticated else c.usuario_id
+        repository.deactivate_cliente(c)
         return c
 
     def desactivar(self, id):

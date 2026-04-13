@@ -13,7 +13,9 @@ class Proveedor(db.Model):
     email: Mapped[str] = mapped_column(String(100), nullable=True)
     direccion: Mapped[str] = mapped_column(String(255), nullable=True)
     activo: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    usuario_id: Mapped[int] = mapped_column(Integer, db.ForeignKey("usuario.id"), nullable=True)
 
+    usuario = relationship("Usuario")
     compras = db.relationship(
         "Compra", back_populates="proveedor", cascade="all, delete-orphan"
     )

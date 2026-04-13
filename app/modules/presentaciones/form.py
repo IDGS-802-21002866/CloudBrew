@@ -17,3 +17,7 @@ class PresentacionForm(FlaskForm):
         "Cantidad Equivalente",
         validators=[DataRequired(message="La cantidad es obligatoria.")],
     )
+    medida = SelectField(
+        "Medida",
+        validators=[DataRequired(message="Debe seleccionar una medida.")],
+    )

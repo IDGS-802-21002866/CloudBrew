@@ -3,17 +3,20 @@ from app.modules.materias_primas.form import MateriaPrimaForm
 from app.modules.materias_primas.service import MateriaPrimaService
 from app.modules.unidades_medida.service import UnidadMedidaService
 from . import bp
+from app.shared.decorators import login_required
 
 servicio = MateriaPrimaService()
 servicio_unidades = UnidadMedidaService()
 
 
+@login_required
 @bp.route("/")
 def listar():
     materias = servicio.listar_materias(True)
     return render_template("materias_primas/listar.html", materias=materias)
 
 
+@login_required
 @bp.route("/crear", methods=["GET", "POST"])
 def crear():
     form = MateriaPrimaForm()
@@ -37,6 +40,7 @@ def crear():
     return render_template("materias_primas/crear.html", form=form)
 
 
+@login_required
 @bp.route("/<int:id>")
 def detalle(id):
     try:
@@ -47,6 +51,7 @@ def detalle(id):
         return redirect(url_for("materias_primas.listar"))
 
 
+@login_required
 @bp.route("/<int:id>/editar", methods=["GET", "POST"])
 def editar(id):
     try:
@@ -76,6 +81,7 @@ def editar(id):
         return redirect(url_for("materias_primas.listar"))
 
 
+@login_required
 @bp.route("/<int:id>/desactivar", methods=["POST"])
 def desactivar(id):
     try:
@@ -86,6 +92,7 @@ def desactivar(id):
     return redirect(url_for("materias_primas.listar"))
 
 
+@login_required
 @bp.route("/<int:id>/activar", methods=["POST"])
 def activar(id):
     try:

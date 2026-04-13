@@ -23,7 +23,7 @@ def get_usuario_by_id(id):
     return usuario
 
 
-def crear_usuario(form):
+def crear_usuario(form, usuario_actual):
     try:
         existente = Usuario.query.filter(Usuario.email == form.email.data).first()
         if existente:
@@ -35,6 +35,7 @@ def crear_usuario(form):
             password=generate_password_hash(form.password.data),
             rol_id=form.rol.data,
             activo=form.activo.data if hasattr(form, "activo") else True,
+            actualizado_por=usuario_actual,
         )
         db.session.add(nuevo_usuario)
         db.session.commit()
@@ -47,7 +48,7 @@ def crear_usuario(form):
         raise ValueError("Error inesperado al insertar usuario")
 
 
-def actualizar_usuario(id_usuario, form):
+def actualizar_usuario(id_usuario, form, usuario_actual):
     try:
         usuario = Usuario.query.get(id_usuario)
 
@@ -64,6 +65,7 @@ def actualizar_usuario(id_usuario, form):
         usuario.nombre = form.nombre.data
         usuario.email = form.email.data
         usuario.rol_id = form.rol.data
+        usuario.actualizado_por = usuario_actual
 
         if form.password.data:
             usuario.password = generate_password_hash(form.password.data)
@@ -81,7 +83,7 @@ def actualizar_usuario(id_usuario, form):
         raise ValueError("Error inesperado al modificar usuario")
 
 
-def eliminar_usuario(id_usuario):
+def eliminar_usuario(id_usuario, usuario_actual):
     try:
         usuario = Usuario.query.get(id_usuario)
 
@@ -92,6 +94,7 @@ def eliminar_usuario(id_usuario):
             raise ValueError(f"El usuario con id {id_usuario} ya está inactivo")
 
         usuario.activo = False
+        usuario.actualizado_por = usuario_actual
         db.session.commit()
 
         return True

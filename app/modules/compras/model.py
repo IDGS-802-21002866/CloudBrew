@@ -15,6 +15,7 @@ class Compra(db.Model):
     proveedor = db.relationship("Proveedor", back_populates="compras")
     usuario_id: Mapped[int] = mapped_column(db.ForeignKey("usuario.id"))
     usuario = db.relationship("Usuario")
+    actualizado_por: Mapped[str] = mapped_column(db.String(100), nullable=True)
     detalles = db.relationship(
         "DetalleCompra", back_populates="compra", cascade="all, delete-orphan"
     )

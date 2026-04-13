@@ -1,3 +1,4 @@
+from flask_login import current_user
 from app.modules.materias_primas.model import MateriaPrima
 from app import db
 
@@ -17,6 +18,24 @@ def create_materia_prima(materia):
     db.session.add(materia)
     db.session.commit()
     return materia
+
+
+def update_materia_prima(materia):
+    db.session.commit()
+    return materia
+
+
+def deactivate_materia_prima(materia):
+    materia.activo = False
+    db.session.commit()
+    return materia
+
+
+def activate_materia_prima(materia):
+    materia.activo = True
+    db.session.commit()
+    return materia
+
 
 def update_db():
     db.session.commit()

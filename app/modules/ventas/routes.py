@@ -3,16 +3,19 @@ from flask import Blueprint, render_template, redirect, url_for, flash
 from app.modules.ventas.service import VentaService
 from app.shared.exceptions import EntidadNoEncontradaError
 from . import bp
+from app.shared.decorators import login_required
 
 venta_service = VentaService()
 
 
+@login_required
 @bp.route("/")
 def listar():
     ventas = venta_service.listar_ventas()
     return render_template("ventas/listar.html", ventas=ventas)
 
 
+@login_required
 @bp.route("/<int:id>")
 def detalle(id):
     try:
@@ -23,6 +26,7 @@ def detalle(id):
     return render_template("ventas/detalle.html", venta=venta)
 
 
+@login_required
 @bp.route("/<int:id>/cancelar", methods=["POST"])
 def cancelar(id):
     try:

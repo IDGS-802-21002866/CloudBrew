@@ -1,6 +1,7 @@
 from app.modules.unidades_medida import repository
 from app.modules.unidades_medida.model import UnidadMedida, TipoMedida
 from app.shared.exceptions import ValidacionNegocioException
+from flask_login import current_user
 
 
 class UnidadMedidaService:
@@ -43,6 +44,7 @@ class UnidadMedidaService:
             abreviatura=abreviatura.strip(),
             tipo_medida_id=tipo_medida_id,
             valor_conversion=float(valor_conversion) if valor_conversion else 1.0,
+            usuario_id=current_user.id if current_user.is_authenticated else None,
         )
         return repository.create_unidad_medida(nueva)
 
@@ -75,8 +77,9 @@ class UnidadMedidaService:
         unidad.abreviatura = abreviatura.strip()
         unidad.tipo_medida_id = tipo_medida_id
         unidad.valor_conversion = float(valor_conversion) if valor_conversion else 1.0
+        unidad.usuario_id = current_user.id if current_user.is_authenticated else unidad.usuario_id
 
-        repository.update_db()
+        repository.update_unidad_medida(unidad)
         return unidad
 
     def eliminar_unidad_medida(self, id):
@@ -88,4 +91,5 @@ class UnidadMedidaService:
         if unidad.es_base_sistema:
             raise ValueError("No se puede eliminar una unidad base del sistema.")
 
-        repository.delete_unidad_medida(unidad)
+        unidad.usuario_id = current_user.id if current_user.is_authenticated else unidad.usuario_id
+        repository.deactivate_unidad_medida(unidad)

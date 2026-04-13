@@ -7,6 +7,7 @@ from app.modules.compras.form import (
     OrdenDeCompraForm,
     OrdenDeCompraDetallesForm,
 )
+from app.shared.decorators import login_required
 from app.modules.proveedores.service import ProveedorService
 from app.modules.materias_primas.service import MateriaPrimaService
 from app.modules.presentaciones.service import PresentacionService
@@ -19,12 +20,14 @@ materias_primas_service = MateriaPrimaService()
 presentaciones_service = PresentacionService()
 
 
+@login_required
 @bp.route("/")
 def listar():
     compras = compras_service.listar_compras()
     return render_template("compras/listar.html", compras=compras)
 
 
+@login_required
 @bp.route("/crear", methods=["GET", "POST"])
 def crear():
     orden_form = OrdenDeCompraForm()
@@ -114,6 +117,7 @@ def crear():
     return _render()
 
 
+@login_required
 @bp.route("/<int:id>/detalle")
 def detalle(id):
     try:
@@ -129,6 +133,7 @@ def detalle(id):
     return render_template("compras/detalle.html", compra=compra)
 
 
+@login_required
 @bp.route("/<int:id>/cancelar", methods=["GET", "POST"])
 def cancelar(id):
     cancelacion_form = OrdenDeCompraConfirmacionForm()
@@ -151,6 +156,7 @@ def cancelar(id):
     )
 
 
+@login_required
 @bp.route("/<int:id>/confirmar_compra", methods=["GET", "POST"])
 def confirmar_compra(id):
     confirmacion_form = OrdenDeCompraConfirmacionForm()

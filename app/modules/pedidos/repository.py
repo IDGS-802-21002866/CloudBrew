@@ -1,3 +1,4 @@
+from flask_login import current_user
 from app import db
 from sqlalchemy import or_
 from app.modules.pedidos.model import Pedido, PedidoDetalle
@@ -29,7 +30,7 @@ def get_paginated_pedidos(page, per_page, search_term=None):
     )
 
 
-def create_pedido(cliente_id, detalles, total=None):
+def create_pedido(cliente_id, detalles, total=None, usuario_id=None):
     """
     Crea un pedido con sus detalles. Solo flush, sin commit.
 
@@ -37,11 +38,16 @@ def create_pedido(cliente_id, detalles, total=None):
         cliente_id: ID del cliente
         detalles: lista de dicts con {receta_id, cantidad_lotes, total_unidades, precio_unitario}
         total: monto total del pedido
+        usuario_id: ID del usuario que crea el pedido
 
     Returns:
         Pedido creado (sin commit)
     """
-    nuevo_pedido = Pedido(cliente_id=cliente_id, total=total)
+    nuevo_pedido = Pedido(
+        cliente_id=cliente_id,
+        total=total,
+        usuario_id=usuario_id,
+    )
     db.session.add(nuevo_pedido)
     db.session.flush()
 
@@ -66,12 +72,16 @@ def create_pedido_produccion(pedido_id, produccion_id):
     db.session.add(pedido_produccion)
 
 
-def update_pedido_estado(pedido, estado):
+def update_pedido_estado(pedido, estado, usuario_id=None):
     pedido.estado = estado
+    if usuario_id is not None:
+        pedido.usuario_id = usuario_id
     db.session.commit()
 
 
 def save(pedido):
+    if current_user.is_authenticated:
+        pedido.actualizado_por = current_user.nombre
     db.session.add(pedido)
     db.session.commit()
     return pedido

@@ -1,3 +1,4 @@
+from sqlalchemy import String
 from app import db
 
 
@@ -10,7 +11,9 @@ class Produccion(db.Model):
     fecha_fin = db.Column(db.Date)
     estado = db.Column(db.String(50))
     cantidad = db.Column(db.Integer, nullable=False, default=1)
+    usuario_id = db.Column(db.Integer, db.ForeignKey("usuario.id"), nullable=True)
 
+    usuario = db.relationship("Usuario")
     receta = db.relationship(
         'Recetas',
         back_populates='produccion'

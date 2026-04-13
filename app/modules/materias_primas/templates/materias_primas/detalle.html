@@ -29,6 +29,10 @@
                     <p class="text-lg text-gray-700">{{ materia.descripcion or 'Sin descripción' }}</p>
                 </div>
                 <div>
+                    <label class="block text-gray-500 text-sm font-bold uppercase">Registrado por</label>
+                    <p class="text-lg text-gray-700">{{ materia.usuario.nombre }}</p>
+                </div>
+                <div>
                     <label class="block text-gray-500 text-sm font-bold uppercase">Estado</label>
                     <p class="text-lg font-bold {{ 'text-[#4A9062]' if materia.activo else 'text-[#B85B5B]' }}">
                         {{ 'Activa' if materia.activo else 'Inactiva' }}

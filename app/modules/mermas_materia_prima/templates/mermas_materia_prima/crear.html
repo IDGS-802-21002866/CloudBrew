@@ -22,6 +22,7 @@
       <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
         {{ campo_nuevo(form.materia_prima_id) }}
         {{ campo_nuevo(form.cantidad) }}
+        {{ campo_nuevo(form.medida) }}
         <div class="md:col-span-2">
           {{ campo_nuevo(form.motivo) }}
         </div>
@@ -35,4 +36,63 @@
     </form>
   </div>
 </div>
+<script>
+const selectMateria = document.getElementById('materia_prima_id');
+const selectMedida = document.getElementById('medida');
+
+const mpTipos = {{ mp_tipos | tojson }};
+const medidaTipos = {{ medida_tipos | tojson }};
+
+// 🔥 1. Inyectar data-tipo en options (SOLUCIÓN AL PROBLEMA WTForms)
+function asignarTiposAMedidas() {
+    const options = selectMedida.querySelectorAll('option');
+
+    options.forEach(option => {
+        const medidaId = option.value;
+
+        if (medidaTipos[medidaId]) {
+            option.dataset.tipo = medidaTipos[medidaId];
+        }
+    });
+}
+
+// 🔥 2. Filtrar
+function filtrarMedidas() {
+    const mpSeleccionada = selectMateria.value;
+
+    if (!mpSeleccionada) return;
+
+    const tipoMP = mpTipos[mpSeleccionada];
+    const options = selectMedida.querySelectorAll('option');
+
+    options.forEach(option => {
+        if (option.value === "") {
+            option.style.display = 'block';
+            return;
+        }
+
+        const tipoMedida = option.dataset.tipo;
+
+        if (tipoMedida === tipoMP) {
+            option.style.display = 'block';
+        } else {
+            option.style.display = 'none';
+        }
+    });
+
+    // Reset si ya no coincide
+    const selected = selectMedida.selectedOptions[0];
+    if (selected && selected.dataset.tipo !== tipoMP) {
+        selectMedida.value = "";
+    }
+}
+
+// Eventos
+selectMateria.addEventListener('change', filtrarMedidas);
+
+document.addEventListener('DOMContentLoaded', () => {
+    asignarTiposAMedidas(); // 🔥 clave
+    filtrarMedidas();       // 🔥 inicial
+});
+</script>
 {% endblock %}

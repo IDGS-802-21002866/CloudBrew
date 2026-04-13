@@ -1,8 +1,10 @@
 from flask import render_template, redirect, url_for, flash
 from app.modules.procesos_produccion import bp, service
 from app.shared.exceptions import ValidacionNegocioException
+from app.shared.decorators import login_required
 
 
+@login_required
 @bp.route("/<int:produccion_id>")
 def listar(produccion_id):
     """
@@ -27,6 +29,7 @@ def listar(produccion_id):
         return redirect(url_for("produccion.listar"))
 
 
+@login_required
 @bp.route("/<int:proceso_id>/completar", methods=["POST"])
 def completar(proceso_id):
     """

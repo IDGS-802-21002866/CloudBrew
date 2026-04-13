@@ -2,10 +2,12 @@ from flask import render_template, request, redirect, url_for, flash
 from app.modules.proveedores.form import ProveedorForm
 from app.modules.proveedores.service import ProveedorService
 from . import bp
+from app.shared.decorators import login_required
 
 servicio = ProveedorService()
 
 
+@login_required
 @bp.route("/")
 def listar():
     try:
@@ -57,6 +59,7 @@ def listar():
         return redirect(url_for("proveedores.listar"))
 
 
+@login_required
 @bp.route("/crear", methods=["GET", "POST"])
 def crear():
     form = ProveedorForm()
@@ -77,6 +80,7 @@ def crear():
     return render_template("proveedores/crear.html", form=form)
 
 
+@login_required
 @bp.route("/<int:id>")
 def detalle(id):
     try:
@@ -87,6 +91,7 @@ def detalle(id):
         return redirect(url_for("proveedores.listar"))
 
 
+@login_required
 @bp.route("/<int:id>/editar", methods=["GET", "POST"])
 def editar(id):
     try:
@@ -113,6 +118,7 @@ def editar(id):
     return render_template("proveedores/crear.html", form=form, proveedor=proveedor)
 
 
+@login_required
 @bp.route("/<int:id>/eliminar", methods=["POST"])
 def eliminar(id):
     try:

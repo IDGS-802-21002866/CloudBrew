@@ -1,6 +1,7 @@
 from app.modules.inventario_materias_primas import repository as inv_repo
 from app.modules.mermas_materia_prima import repository as merma_repo
 from app.modules.mermas_materia_prima.model import MermaMateriaPrima
+from flask_login import current_user
 
 
 class MermaMateriaPrimaService:
@@ -13,7 +14,10 @@ class MermaMateriaPrimaService:
             raise ValueError("Merma no encontrada.")
         return merma
 
-    def registrar_merma(self, data, usuario_id):
+    def registrar_merma(self, data, usuario_id=None):
+        if usuario_id is None:
+            usuario_id = current_user.id if current_user.is_authenticated else None
+            
         mp_id = data.get("materia_prima_id")
         if not mp_id:
             raise ValueError("Debe seleccionar una materia prima.")
@@ -49,6 +53,5 @@ class MermaMateriaPrimaService:
         if not merma or not merma.activo:
             raise ValueError("Merma no encontrada o ya está cancelada.")
 
-        merma.activo = False
-        merma_repo.commit()
-        return merma
+        merma.usuario_id = current_user.id if current_user.is_authenticated else merma.usuario_id
+        return merma_repo.deactivate(merma)
