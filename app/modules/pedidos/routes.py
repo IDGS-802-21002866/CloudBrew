@@ -81,33 +81,36 @@ def crear():
                     "detalles": session["pedido_detalles"],
                 }
 
-                pedido_id = session.get("editando_pedido_id")
-                if pedido_id:
-                    # Lógica de actualización (Borrar y re-insertar detalles)
-                    pedido = pedido_service.obtener_por_id(pedido_id)
-                    from app.modules.pedidos.model import PedidoDetalle
-                    from app import db
+                try:
+                    pedido_id = session.get("editando_pedido_id")
+                    if pedido_id:
+                        # Lógica de actualización (Borrar y re-insertar detalles)
+                        pedido = pedido_service.obtener_por_id(pedido_id)
+                        from app.modules.pedidos.model import PedidoDetalle
+                        from app import db
 
-                    PedidoDetalle.query.filter_by(pedido_id=pedido.id).delete()
+                        PedidoDetalle.query.filter_by(pedido_id=pedido.id).delete()
 
-                    pedido.cliente_id = data["cliente_id"]
-                    for d in data["detalles"]:
-                        nuevo_d = PedidoDetalle(
-                            pedido_id=pedido.id,
-                            receta_id=d["receta_id"],
-                            cantidad_lotes=d["cantidad_lotes"],
-                            total_unidades=d["total_unidades"],
-                        )
-                        db.session.add(nuevo_d)
-                    db.session.commit()
-                    session.pop("editando_pedido_id", None)
-                else:
-                    pedido = pedido_service.crear_pedido(data, current_user.id)
+                        pedido.cliente_id = data["cliente_id"]
+                        for d in data["detalles"]:
+                            nuevo_d = PedidoDetalle(
+                                pedido_id=pedido.id,
+                                receta_id=d["receta_id"],
+                                cantidad_lotes=d["cantidad_lotes"],
+                                total_unidades=d["total_unidades"],
+                            )
+                            db.session.add(nuevo_d)
+                        db.session.commit()
+                        session.pop("editando_pedido_id", None)
+                    else:
+                        pedido = pedido_service.crear_pedido(data, current_user.id)
 
-                session["pedido_detalles"] = []
-                session.modified = True
-                flash("Pedido guardado con éxito.", "success")
-                return redirect(url_for("pedidos.detalle", id=pedido.id))
+                    session["pedido_detalles"] = []
+                    session.modified = True
+                    flash("Pedido guardado con éxito.", "success")
+                    return redirect(url_for("pedidos.detalle", id=pedido.id))
+                except ValueError as e:
+                    flash(str(e), "danger")
 
     return render_template(
         "pedidos/crear.html",
@@ -160,38 +163,41 @@ def crear():
                     "detalles": session["pedido_detalles"],
                 }
 
-                # Si estamos editando uno existente
-                pedido_id = session.get("editando_pedido_id")
-                if pedido_id:
-                    # Lógica para actualizar (borrar detalles viejos y poner nuevos)
-                    pedido = pedido_service.obtener_por_id(pedido_id)
-                    # Limpiamos detalles viejos
-                    from app.modules.pedidos.model import PedidoDetalle
+                try:
+                    # Si estamos editando uno existente
+                    pedido_id = session.get("editando_pedido_id")
+                    if pedido_id:
+                        # Lógica para actualizar (borrar detalles viejos y poner nuevos)
+                        pedido = pedido_service.obtener_por_id(pedido_id)
+                        # Limpiamos detalles viejos
+                        from app.modules.pedidos.model import PedidoDetalle
 
-                    PedidoDetalle.query.filter_by(pedido_id=pedido.id).delete()
+                        PedidoDetalle.query.filter_by(pedido_id=pedido.id).delete()
 
-                    # Actualizamos cabecera
-                    pedido.cliente_id = data["cliente_id"]
-                    # Re-usamos la lógica de guardar detalles del service
-                    for d in data["detalles"]:
-                        nuevo_d = PedidoDetalle(
-                            pedido_id=pedido.id,
-                            receta_id=d["receta_id"],
-                            cantidad_lotes=d["cantidad_lotes"],
-                            total_unidades=d["total_unidades"],
-                        )
-                        from app import db
+                        # Actualizamos cabecera
+                        pedido.cliente_id = data["cliente_id"]
+                        # Re-usamos la lógica de guardar detalles del service
+                        for d in data["detalles"]:
+                            nuevo_d = PedidoDetalle(
+                                pedido_id=pedido.id,
+                                receta_id=d["receta_id"],
+                                cantidad_lotes=d["cantidad_lotes"],
+                                total_unidades=d["total_unidades"],
+                            )
+                            from app import db
 
-                        db.session.add(nuevo_d)
-                    db.session.commit()
-                    session.pop("editando_pedido_id", None)
-                else:
-                    pedido = pedido_service.crear_pedido(data, current_user.id)
+                            db.session.add(nuevo_d)
+                        db.session.commit()
+                        session.pop("editando_pedido_id", None)
+                    else:
+                        pedido = pedido_service.crear_pedido(data, current_user.id)
 
-                session["pedido_detalles"] = []
-                session.modified = True
-                flash("Pedido guardado correctamente.", "success")
-                return redirect(url_for("pedidos.detalle", id=pedido.id))
+                    session["pedido_detalles"] = []
+                    session.modified = True
+                    flash("Pedido guardado correctamente.", "success")
+                    return redirect(url_for("pedidos.detalle", id=pedido.id))
+                except ValueError as e:
+                    flash(str(e), "danger")
 
     return render_template(
         "pedidos/crear.html",
@@ -205,7 +211,11 @@ def crear():
 
 @bp.route("/<int:id>/editar")
 def editar(id):
-    pedido = pedido_service.obtener_por_id(id)
+    try:
+        pedido = pedido_service.obtener_por_id(id)
+    except ValueError as e:
+        flash(str(e), "danger")
+        return redirect(url_for("pedidos.listar"))
     if pedido.estado != "Pendiente":
         flash("Solo se pueden editar pedidos pendientes.", "warning")
         return redirect(url_for("pedidos.detalle", id=id))
@@ -231,7 +241,11 @@ def editar(id):
 
 @bp.route("/<int:id>")
 def detalle(id):
-    pedido = pedido_service.obtener_por_id(id)
+    try:
+        pedido = pedido_service.obtener_por_id(id)
+    except ValueError as e:
+        flash(str(e), "danger")
+        return redirect(url_for("pedidos.listar"))
     return render_template("pedidos/detalle.html", pedido=pedido)
 
 
