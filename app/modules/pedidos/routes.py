@@ -18,7 +18,6 @@ receta_service = RecetaService()
 inventario_service = InventarioMateriasPrimasService()
 
 
-@login_required
 @bp.route("/")
 def listar():
     page = request.args.get("page", 1, type=int)
@@ -33,7 +32,6 @@ def listar():
     )
 
 
-@login_required
 @bp.route("/crear", methods=["GET", "POST"])
 def crear():
     form = PedidoForm()
@@ -167,7 +165,6 @@ def crear():
     )
 
 
-@login_required
 @bp.route("/<int:id>/editar")
 def editar(id):
     try:
@@ -198,7 +195,6 @@ def editar(id):
     return redirect(url_for("pedidos.crear"))
 
 
-@login_required
 @bp.route("/<int:id>")
 def detalle(id):
     try:
@@ -212,7 +208,6 @@ def detalle(id):
 # --- ESTAS SON LAS RUTAS QUE TE FALTABAN PARA QUE EL DETALLE NO TRUENE ---
 
 
-@login_required
 @bp.route("/<int:id>/cancelar", methods=["POST"])
 def cancelar(id):
     try:

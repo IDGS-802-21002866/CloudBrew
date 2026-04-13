@@ -4,12 +4,10 @@ from . import bp
 from app.modules.inventario_materias_primas.service import (
     InventarioMateriasPrimasService,
 )
-from app.shared.decorators import login_required
 
 servicio = InventarioMateriasPrimasService()
 
 
-@login_required
 @bp.route("/")
 def listar():
     inventario = servicio.listar_materias_primas_con_stock()
@@ -18,7 +16,6 @@ def listar():
     )
 
 
-@login_required
 @bp.route("/<int:id>")
 def detalle(id):
     try:

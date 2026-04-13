@@ -1,10 +1,8 @@
 from . import bp
 from flask import flash, redirect, render_template, request, url_for
 from .service import LoteProduccionService
-from app.shared.decorators import login_required
 loteService = LoteProduccionService()
 
-@login_required
 @bp.route('/')
 def listar():
     page = request.args.get("page", 1, type=int)
@@ -23,7 +21,6 @@ def listar():
         "end": min(pag.page * pag.per_page, pag.total),
     }
     return render_template('lista.html', lotes=lotes, pagination=pagination)
-@login_required
 @bp.route('/<int:id>')
 def detalle(id):
     try:

@@ -4,14 +4,12 @@ from . import bp
 from .forms import MermaForm
 from .service import MermaMateriaPrimaService
 from app.modules.inventario_materias_primas import repository as inv_repo
-from app.shared.decorators import login_required
 from app.modules.unidades_medida.service import UnidadMedidaService
 
 medida_service = UnidadMedidaService()
 servicio = MermaMateriaPrimaService()
 
 
-@login_required
 @bp.route("/")
 def listar():
     page = request.args.get("page", 1, type=int)
@@ -24,7 +22,6 @@ def listar():
     )
 
 
-@login_required
 @bp.route("/crear", methods=["GET", "POST"])
 def crear():
     form = MermaForm()
@@ -56,7 +53,6 @@ def crear():
                            medida_tipos=medida_tipos,mp_tipos=mp_tipos)
 
 
-@login_required
 @bp.route("/<int:id>")
 def detalle(id):
     try:
@@ -67,7 +63,6 @@ def detalle(id):
         return redirect(url_for("mermas_materia_prima.listar"))
 
 
-@login_required
 @bp.route("/<int:id>/cancelar", methods=["POST"])
 def cancelar(id):
     try:

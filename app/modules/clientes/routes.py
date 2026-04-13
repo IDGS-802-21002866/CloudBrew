@@ -2,11 +2,9 @@ from flask import render_template, request, redirect, url_for, flash
 from app.modules.clientes.forms import ClienteForm
 from app.modules.clientes.service import ClienteService
 from . import bp
-from app.shared.decorators import login_required
 
 servicio = ClienteService()
 
-@login_required
 @bp.route("/")
 def listar():
     page = request.args.get('page', 1, type=int)
@@ -18,7 +16,6 @@ def listar():
                            pagination=pagination, 
                            search_term=search_term)
 
-@login_required
 @bp.route("/crear", methods=["GET", "POST"])
 def crear():
     form = ClienteForm()
@@ -45,7 +42,6 @@ def crear():
 
     return render_template("clientes/crear.html", form=form)
 
-@login_required
 @bp.route("/<int:id>")
 def detalle(id):
     try:
@@ -55,7 +51,6 @@ def detalle(id):
         flash(str(e), "danger")
         return redirect(url_for("clientes.listar"))
 
-@login_required
 @bp.route("/<int:id>/editar", methods=["GET", "POST"])
 def editar(id):
     try:
@@ -87,7 +82,6 @@ def editar(id):
         flash(str(e), "danger")
         return redirect(url_for("clientes.listar"))
 
-@login_required
 @bp.route("/<int:id>/desactivar", methods=["POST"])
 def desactivar(id):
     try:
@@ -97,7 +91,6 @@ def desactivar(id):
         flash(str(e), "danger")
     return redirect(url_for("clientes.listar"))
 
-@login_required
 @bp.route("/<int:id>/activar", methods=["POST"])
 def activar(id):
     try:
