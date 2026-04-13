@@ -1,9 +1,13 @@
+from decimal import Decimal
+
 from flask_login import current_user
 from app.modules.recetas import repository
 from app.modules.recetas.model import Recetas, RecetaDetalle, ProcesosReceta
 from app.modules.materias_primas.model import MateriaPrima
 from app.modules.proc_prod.model import ProcesoProductivo
+from app.modules.unidades_medida.model import UnidadMedida
 from app.shared.exceptions import ValidacionNegocioException
+from decimal import Decimal, InvalidOperation
 
 
 class RecetaService:
@@ -117,8 +121,8 @@ class RecetaService:
                         "materia_prima_id": item["materia_prima_id"],
                         "materia_prima_nombre": materia_prima.nombre,
                         "cantidad": item["cantidad"],
-                        "tipo_medida": (
-                            materia_prima.tipo_medida.nombre
+                        "unidad": (
+                            materia_prima.tipo_medida.unidad_base
                             if materia_prima.tipo_medida
                             else ""
                         ),
@@ -126,30 +130,50 @@ class RecetaService:
                 )
         return detalles_expandidos
 
-    def agregar_al_carrito_detalles(self, carrito, materia_prima_id, cantidad):
-        """Agrega una materia prima al carrito de detalles."""
+
+
+    def agregar_al_carrito_detalles(self, carrito, materia_prima_id, cantidad, medida_id):
         materia_prima = MateriaPrima.query.get(materia_prima_id)
         if not materia_prima:
             raise ValidacionNegocioException("Materia prima no encontrada.")
 
+        unidad = UnidadMedida.query.get(medida_id)
+        if not unidad:
+            raise ValidacionNegocioException("Unidad de medida no encontrada.")
+
         try:
-            cantidad = float(cantidad)
-        except (ValueError, TypeError):
+            if cantidad is None or str(cantidad).strip() == "":
+                raise ValidacionNegocioException("La cantidad es obligatoria.")
+
+            # 👇 normaliza entrada
+            cantidad_str = str(cantidad).replace(",", ".").strip()
+            cantidad_decimal = Decimal(cantidad_str)
+
+            valor_conversion = Decimal(str(unidad.valor_conversion))
+
+            cantidad_convertida = cantidad_decimal * valor_conversion
+
+        except (InvalidOperation, ValueError, TypeError):
             raise ValidacionNegocioException("La cantidad debe ser un número válido.")
 
-        if cantidad <= 0:
+        if cantidad_convertida <= 0:
             raise ValidacionNegocioException("La cantidad debe ser mayor a 0.")
 
-        # Verificar si ya existe en el carrito
+        # 👇 convertir a float para session
+        cantidad_final = float(cantidad_convertida)
+
         existe = False
         for item in carrito:
             if item["materia_prima_id"] == materia_prima_id:
-                item["cantidad"] += cantidad
+                item["cantidad"] += cantidad_final
                 existe = True
                 break
 
         if not existe:
-            carrito.append({"materia_prima_id": materia_prima_id, "cantidad": cantidad})
+            carrito.append({
+                "materia_prima_id": materia_prima_id,
+                "cantidad": cantidad_final
+            })
 
         return carrito
 

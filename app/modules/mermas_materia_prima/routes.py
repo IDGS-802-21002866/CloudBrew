@@ -5,7 +5,9 @@ from .forms import MermaForm
 from .service import MermaMateriaPrimaService
 from app.modules.inventario_materias_primas import repository as inv_repo
 from app.shared.decorators import login_required
+from app.modules.unidades_medida.service import UnidadMedidaService
 
+medida_service = UnidadMedidaService()
 servicio = MermaMateriaPrimaService()
 
 
@@ -30,12 +32,18 @@ def crear():
     form.materia_prima_id.choices = [
         (mp.id, f"{mp.nombre} - Stock: {mp.stock_actual:.2f}") for mp in materias
     ]
+    medidas=medida_service.listar_unidades_medida()
+    form.medida.choices = [(m.id, m.nombre) for m in medidas]
+    medida_tipos = {str(m.id): str(m.tipo_medida_id) for m in medidas}
+    mp_tipos = {str(mp.id): str(mp.tipo_medida_id) for mp in materias}
 
     if form.validate_on_submit():
         try:
+            medida=medida_service.obtener_unidad_medida(form.medida.data)
+            cantidad_en_unidad_base = form.cantidad.data * medida.valor_conversion
             datos = {
                 "materia_prima_id": form.materia_prima_id.data,
-                "cantidad": form.cantidad.data,
+                "cantidad": cantidad_en_unidad_base,
                 "motivo": form.motivo.data,
             }
             servicio.registrar_merma(datos, current_user.id)
@@ -44,7 +52,8 @@ def crear():
         except ValueError as e:
             flash(str(e), "danger")
 
-    return render_template("mermas_materia_prima/crear.html", form=form)
+    return render_template("mermas_materia_prima/crear.html", form=form, medidas=medidas, 
+                           medida_tipos=medida_tipos,mp_tipos=mp_tipos)
 
 
 @login_required

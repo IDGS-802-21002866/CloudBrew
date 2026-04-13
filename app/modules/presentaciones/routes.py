@@ -7,6 +7,7 @@ from app.shared.decorators import login_required
 
 servicio = PresentacionService()
 servicio_unidades = UnidadMedidaService()
+medidaServicio=UnidadMedidaService()
 
 
 @login_required
@@ -22,13 +23,20 @@ def crear():
     form = PresentacionForm()
     tipos_medida = servicio_unidades.listar_tipos_medida()
     form.tipo_medida_id.choices = [(t.id, t.nombre) for t in tipos_medida]
+    medidas = medidaServicio.listar_unidades_medida()
+    form.medida.choices = [("", "Selecciona una medida")] + [
+            (str(m.id), m.nombre) for m in medidas]
+    medida_tipos = {str(m.id): str(m.tipo_medida_id) for m in medidas}
 
     if form.validate_on_submit():
         try:
+            medida=medidaServicio.obtener_unidad_medida(form.medida.data)
+            cantidad=form.cantidad_equivalente.data
+            cantidad_cal=cantidad * medida.valor_conversion
             data = {
                 "nombre": form.nombre.data,
                 "tipo_medida_id": form.tipo_medida_id.data,
-                "cantidad_equivalente": form.cantidad_equivalente.data,
+                "cantidad_equivalente": cantidad_cal,
             }
             servicio.crear_presentacion(data)
             flash("Presentación creada exitosamente.", "success")
@@ -36,7 +44,7 @@ def crear():
         except ValueError as e:
             flash(str(e), "danger")
 
-    return render_template("presentaciones/crear.html", form=form)
+    return render_template("presentaciones/crear.html", form=form, medidas=medidas,medida_tipos=medida_tipos)
 
 
 @login_required
@@ -59,6 +67,8 @@ def editar(id):
 
         tipos_medida = servicio_unidades.listar_tipos_medida()
         form.tipo_medida_id.choices = [(t.id, t.nombre) for t in tipos_medida]
+        unidades = medidaServicio.listar_unidades_medida()
+        form.medida.choices = [(u.id, u.nombre) for u in unidades]
 
         if form.validate_on_submit():
             try:
