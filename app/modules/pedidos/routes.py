@@ -6,7 +6,6 @@ from .service import PedidoService
 from app.modules.clientes.service import ClienteService
 from app.modules.recetas.service import RecetaService
 from app.modules.recetas import repository as receta_repo
-from app.shared.decorators import login_required
 from app.modules.inventario_materias_primas.service import (
     InventarioMateriasPrimasService,
 )
