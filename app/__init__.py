@@ -101,7 +101,17 @@ def create_app():
         bp.before_request(login_required(lambda: None))
 
     app.register_blueprint(auth_bp)
+
     for bp in blueprints_protegidos:
         app.register_blueprint(bp)
+
+    @app.after_request
+    def no_cache(response):
+        response.headers["Cache-Control"] = (
+            "no-store, no-cache, must-revalidate, post-check=0, pre-check=0, max-age=0"
+        )
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+        return response
 
     return app
