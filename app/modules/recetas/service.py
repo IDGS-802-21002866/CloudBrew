@@ -129,37 +129,27 @@ class RecetaService:
                 )
         return detalles_expandidos
 
-    def agregar_al_carrito_detalles(
-        self, carrito, materia_prima_id, cantidad, medida_id
-    ):
+    def agregar_al_carrito_detalles(self, carrito, materia_prima_id, cantidad):
         materia_prima = MateriaPrima.query.get(materia_prima_id)
         if not materia_prima:
             raise ValidacionNegocioException("Materia prima no encontrada.")
-
-        unidad = UnidadMedida.query.get(medida_id)
-        if not unidad:
-            raise ValidacionNegocioException("Unidad de medida no encontrada.")
 
         try:
             if cantidad is None or str(cantidad).strip() == "":
                 raise ValidacionNegocioException("La cantidad es obligatoria.")
 
-            # 👇 normaliza entrada
+            # 👇 normaliza entrada (cantidad ya en unidad base)
             cantidad_str = str(cantidad).replace(",", ".").strip()
             cantidad_decimal = Decimal(cantidad_str)
-
-            valor_conversion = Decimal(str(unidad.valor_conversion))
-
-            cantidad_convertida = cantidad_decimal * valor_conversion
 
         except (InvalidOperation, ValueError, TypeError):
             raise ValidacionNegocioException("La cantidad debe ser un número válido.")
 
-        if cantidad_convertida <= 0:
+        if cantidad_decimal <= 0:
             raise ValidacionNegocioException("La cantidad debe ser mayor a 0.")
 
-        # 👇 convertir a float para session
-        cantidad_final = float(cantidad_convertida)
+        # 👇 convertir a float para session (ya en unidad base)
+        cantidad_final = float(cantidad_decimal)
 
         existe = False
         for item in carrito:

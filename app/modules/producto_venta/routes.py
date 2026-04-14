@@ -14,7 +14,11 @@ presentacion_service = PresentacionService()
 
 def _poblar_choices(form):
     recetas = receta_service.listar_recetas(incluir_inactivas=False)
-    presentaciones = presentacion_service.listar_presentaciones(incluir_inactivas=False)
+    presentaciones = [
+        p
+        for p in presentacion_service.listar_presentaciones(incluir_inactivas=False)
+        if p.uso == "comercial"
+    ]
     form.receta_id.choices = [(r.id, r.nombre) for r in recetas]
     form.presentacion_id.choices = [(p.id, p.nombre) for p in presentaciones]
     return presentaciones

@@ -25,6 +25,7 @@ class PresentacionService:
             nombre=nombre,
             tipo_medida_id=data.get("tipo_medida_id"),
             cantidad_equivalente=float(data.get("cantidad_equivalente")),
+            uso=data.get("uso", "comercial"),
             usuario_id=current_user.id if current_user.is_authenticated else None,
         )
         return repository.create_presentacion(nueva)
@@ -34,12 +35,17 @@ class PresentacionService:
         p.nombre = data.get("nombre").strip().capitalize()
         p.tipo_medida_id = data.get("tipo_medida_id")
         p.cantidad_equivalente = float(data.get("cantidad_equivalente"))
-        p.usuario_id = current_user.id if current_user.is_authenticated else p.usuario_id
+        p.uso = data.get("uso", p.uso)
+        p.usuario_id = (
+            current_user.id if current_user.is_authenticated else p.usuario_id
+        )
         return repository.update_presentacion(p)
 
     def desactivar(self, id):
         p = self.obtener_por_id(id)
-        p.usuario_id = current_user.id if current_user.is_authenticated else p.usuario_id
+        p.usuario_id = (
+            current_user.id if current_user.is_authenticated else p.usuario_id
+        )
         return repository.deactivate_presentacion(p)
 
     def activar(self, id):

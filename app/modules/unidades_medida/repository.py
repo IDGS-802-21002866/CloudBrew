@@ -22,6 +22,12 @@ def get_unidades_by_tipo_medida_id(tipo_medida_id):
     return UnidadMedida.query.filter_by(tipo_medida_id=tipo_medida_id).all()
 
 
+def get_unidad_base_by_tipo_medida_id(tipo_medida_id):
+    return UnidadMedida.query.filter_by(
+        tipo_medida_id=tipo_medida_id, es_base_sistema=True
+    ).first()
+
+
 def get_all_tipo_medida():
     return TipoMedida.query.all()
 
@@ -49,8 +55,10 @@ def create_tipo_medida(tipo):
 def update_db():
     db.session.commit()
 
+
 def update_unidad_medida(unidad):
     db.session.commit()
+
 
 def deactivate_unidad_medida(unidad):
     unidad.activo = False

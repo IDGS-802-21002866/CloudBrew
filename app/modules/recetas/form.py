@@ -58,10 +58,6 @@ class RecetaDetalleForm(FlaskForm):
         ],
         default=0.1,
     )
-    medida = SelectField(
-        "Medida",
-        validators=[DataRequired(message="Debe seleccionar una medida.")],
-    )
     submit = SubmitField("Agregar")
 
 

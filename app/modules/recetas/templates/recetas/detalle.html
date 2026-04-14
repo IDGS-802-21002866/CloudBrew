@@ -88,7 +88,7 @@
                 <tr class="border-b border-gray-200 hover:bg-gray-50">
                   <td class="px-6 py-3 text-sm text-gray-900">{{ detalle.materia_prima.nombre }}</td>
                   <td class="px-6 py-3 text-center text-sm text-gray-900">{{ detalle.cantidad }}</td>
-                  <td class="px-6 py-3 text-center text-sm text-gray-900">{{ detalle.materia_prima.tipo_medida.nombre }}</td>
+                  <td class="px-6 py-3 text-center text-sm text-gray-900">{{ detalle.materia_prima.tipo_medida.unidad_base }}</td>
                 </tr>
                 {% endfor %}
               {% else %}

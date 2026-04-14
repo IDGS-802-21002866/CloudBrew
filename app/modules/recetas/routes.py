@@ -16,12 +16,10 @@ from app.modules.materias_primas.service import MateriaPrimaService
 from app.modules.proc_prod.service import ProcesoProductivoService
 from app.modules.costos import repository as costos_repo
 from app.shared.exceptions import ValidacionNegocioException
-from app.modules.unidades_medida.service import UnidadMedidaService
 
 receta_service = RecetaService()
 materias_primas_service = MateriaPrimaService()
 proceso_productivo_service = ProcesoProductivoService()
-UnidadMedidaService = UnidadMedidaService()
 
 
 @bp.route("/")
@@ -43,7 +41,6 @@ def crear():
     detalle_form = RecetaDetalleForm()
     proceso_form = ProcesoRecetaForm()
 
-    medidas = UnidadMedidaService.listar_unidades_medida()
     materias_primas = materias_primas_service.listar_materias(incluir_inactivas=False)
     pag_procesos = proceso_productivo_service.listar_procesos()
     procesos = pag_procesos.items if hasattr(pag_procesos, "items") else pag_procesos
@@ -51,9 +48,7 @@ def crear():
     detalle_form.materia_prima_id.choices = [
         (str(mp.id), mp.nombre) for mp in materias_primas
     ]
-    detalle_form.medida.choices = [("", "Selecciona una medida")] + [
-        (str(m.id), m.nombre) for m in medidas
-    ]
+
     proceso_form.proceso_productivo_id.choices = [
         (str(p.id), p.nombre) for p in procesos
     ]
@@ -112,8 +107,10 @@ def crear():
 
         nombre_receta = form_data.get("nombre", "")
 
-        mp_tipos = {mp.id: mp.tipo_medida_id for mp in materias_primas}
-        medida_tipos = {m.id: m.tipo_medida_id for m in medidas}
+        mp_tipos = {
+            mp.id: (mp.tipo_medida.unidad_base if mp.tipo_medida else "")
+            for mp in materias_primas
+        }
 
         return render_template(
             "recetas/crear.html",
@@ -122,14 +119,12 @@ def crear():
             proceso_form=proceso_form,
             materias_primas=materias_primas,
             procesos=procesos,
-            medidas=medidas,
             detalles_carrito=detalles_carrito,
             procesos_carrito=procesos_carrito,
             costo_ingredientes=costo_ingredientes,
             mp_sin_costo=mp_sin_costo,
             nombre_receta=nombre_receta,
             mp_tipos=mp_tipos,
-            medida_tipos=medida_tipos,
         )
 
     if request.method == "POST":
@@ -140,12 +135,10 @@ def crear():
                 return _render()
             try:
                 carrito = session["receta_carrito_detalles"]
-                medida_id = int(detalle_form.medida.data)
                 carrito = receta_service.agregar_al_carrito_detalles(
                     carrito,
                     int(detalle_form.materia_prima_id.data),
                     detalle_form.cantidad.data,
-                    medida_id,
                 )
                 session["receta_carrito_detalles"] = carrito
                 session.modified = True
@@ -277,17 +270,12 @@ def editar(id):
         materias_primas = materias_primas_service.listar_materias(
             incluir_inactivas=False
         )
-        medidas = UnidadMedidaService.listar_unidades_medida()
         pag_procesos = proceso_productivo_service.listar_procesos()
         procesos = (
             pag_procesos.items if hasattr(pag_procesos, "items") else pag_procesos
         )
         detalle_form.materia_prima_id.choices = [
             (str(mp.id), mp.nombre) for mp in materias_primas
-        ]
-
-        detalle_form.medida.choices = [("", "Selecciona una medida")] + [
-            (str(m.id), m.nombre) for m in medidas
         ]
 
         proceso_form.proceso_productivo_id.choices = [
@@ -348,8 +336,10 @@ def editar(id):
                         mp["materia_prima_nombre"] if mp else "Desconocida"
                     )
                 costo_ingredientes += costo_mp * item["cantidad"]
-            mp_tipos = {mp.id: mp.tipo_medida_id for mp in materias_primas}
-            medida_tipos = {m.id: m.tipo_medida_id for m in medidas}
+            mp_tipos = {
+                mp.id: (mp.tipo_medida.unidad_base if mp.tipo_medida else "")
+                for mp in materias_primas
+            }
             return render_template(
                 "recetas/editar.html",
                 receta=receta,
@@ -363,8 +353,6 @@ def editar(id):
                 costo_ingredientes=costo_ingredientes,
                 mp_sin_costo=mp_sin_costo,
                 mp_tipos=mp_tipos,
-                medida_tipos=medida_tipos,
-                medidas=medidas,
             )
 
         if request.method == "POST":
@@ -375,12 +363,10 @@ def editar(id):
                     return _render()
                 try:
                     carrito = session["receta_carrito_detalles"]
-                    medida_id = int(detalle_form.medida.data)
                     carrito = receta_service.agregar_al_carrito_detalles(
                         carrito,
                         int(detalle_form.materia_prima_id.data),
                         detalle_form.cantidad.data,
-                        medida_id,
                     )
                     session["receta_carrito_detalles"] = carrito
                     session.modified = True

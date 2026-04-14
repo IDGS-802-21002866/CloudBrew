@@ -63,6 +63,10 @@ def create_app():
     captcha.init_app(app)
     app.jinja_env.globals.update(captcha=captcha)
 
+    from flask_wtf.csrf import generate_csrf
+
+    app.jinja_env.globals["csrf_token"] = generate_csrf
+
     migrate.init_app(app, db)
     mail.init_app(app)
 
