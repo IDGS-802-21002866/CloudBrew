@@ -1,6 +1,7 @@
 from app.modules.dashboard.model import (
     ProductoMasVendido,
     ProductoMasProducido,
+    UtilidadProducto,
     VentasPorMes,
     MermasPorMes,
 )
@@ -30,3 +31,10 @@ def obtener_mermas_por_mes():
         MermasPorMes.anio.desc(),
         MermasPorMes.mes.desc()
     ).all()
+    
+def  query_utilidad_productos():
+        return (
+            UtilidadProducto.query
+            .order_by(UtilidadProducto.utilidad.desc())
+            .all()
+        )

@@ -16,11 +16,13 @@ def dashboard():
     mas_producido = dashboard_service.get_producto_mas_producido()
     ventas = dashboard_service.get_ventas_por_mes()
     mermas = dashboard_service.get_mermas_por_mes()
+    utilidad_productos = dashboard_service.get_utilidad_productos(limit=5)
     
     return render_template(
         "main/dashboard.html",
         mas_vendido=mas_vendido,
         mas_producido=mas_producido,
         ventas=ventas,
-        mermas=mermas
+        mermas=mermas,
+        utilidad_productos=utilidad_productos
     )

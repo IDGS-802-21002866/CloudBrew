@@ -127,7 +127,51 @@
         </div>
       {% endif %}
     </div>
+    <div class="bg-white rounded-lg shadow p-6">
+      <div class="flex items-center justify-between mb-4 border-b pb-2">
+        <h2 class="text-lg font-bold text-brew-dark">Utilidad por Producto</h2>
+        <i class="fas fa-dollar-sign text-gray-400"></i>
+      </div>
 
-  </div>
+      {% if utilidad_productos %}
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="text-left text-gray-500 border-b">
+                <th class="pb-3 font-semibold uppercase tracking-tighter">Producto</th>
+                <th class="pb-3 font-semibold text-right uppercase tracking-tighter">Costo</th>
+                <th class="pb-3 font-semibold text-right uppercase tracking-tighter">Utilidad</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y">
+              {% for p in utilidad_productos %}
+              <tr class="hover:bg-gray-50 transition">
+                <td class="py-4 text-gray-700 font-medium">
+                  {{ p.nombre }}
+                </td>
+                <td class="py-4 text-right">
+                  <span class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full font-semibold">
+                    {{ "%.2f"|format(p.costo_total or 0) }}
+                  </span>
+                </td>
+                <td class="py-4 text-right">
+                  <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full font-bold">
+                    {{ "%.2f"|format(p.utilidad or 0) }}
+                  </span>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="flex flex-col items-center justify-center py-10 text-gray-400">
+          <i class="fas fa-coins fa-3x mb-3 opacity-20"></i>
+          <p>Información no encontrada</p>
+        </div>
+      {% endif %}
+        </div>
+
+      </div>
 </div>
 {% endblock %}
