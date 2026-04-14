@@ -13,7 +13,7 @@ class CostoService:
         y el costo unitario por unidad producida.
 
         Returns:
-            dict con costo_total, costo_unitario, precio_venta, margen, ingredientes, advertencias
+            dict con costo_total, costo_unitario, ingredientes, advertencias
         """
         costo_total = 0.0
         advertencias = []
@@ -37,17 +37,9 @@ class CostoService:
         cantidad_producida = receta.cantidad_producida or 1
         costo_unitario = costo_total / cantidad_producida
 
-        margen = None
-        if receta.precio_venta and costo_unitario > 0:
-            margen = (
-                (receta.precio_venta - costo_unitario) / receta.precio_venta
-            ) * 100
-
         return {
             "costo_total": costo_total,
             "costo_unitario": costo_unitario,
-            "precio_venta": receta.precio_venta,
-            "margen": margen,
             "ingredientes": ingredientes,
             "advertencias": advertencias,
         }
@@ -66,8 +58,6 @@ class CostoService:
                     "nombre": receta.nombre,
                     "cantidad_producida": receta.cantidad_producida,
                     "costo_unitario": costo_info["costo_unitario"],
-                    "precio_venta": costo_info["precio_venta"],
-                    "margen": costo_info["margen"],
                     "tiene_advertencias": bool(costo_info["advertencias"]),
                 }
             )

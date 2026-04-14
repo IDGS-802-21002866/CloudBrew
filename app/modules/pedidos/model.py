@@ -15,7 +15,9 @@ class Pedido(db.Model):
     estado: Mapped[str] = mapped_column(String(50), default="Pendiente")
     activo: Mapped[bool] = mapped_column(db.Boolean, default=True)
     total: Mapped[float] = mapped_column(Float, nullable=True)
-    usuario_id: Mapped[int] = mapped_column(Integer, db.ForeignKey("usuario.id"), nullable=True)
+    usuario_id: Mapped[int] = mapped_column(
+        Integer, db.ForeignKey("usuario.id"), nullable=True
+    )
 
     cliente = relationship("Cliente")
     usuario = relationship("Usuario")
@@ -38,12 +40,12 @@ class PedidoDetalle(db.Model):
     pedido_id: Mapped[int] = mapped_column(
         Integer, db.ForeignKey("pedidos.id"), nullable=False
     )
-    receta_id: Mapped[int] = mapped_column(
-        Integer, db.ForeignKey("recetas.id"), nullable=False
+    producto_venta_id: Mapped[int] = mapped_column(
+        Integer, db.ForeignKey("producto_venta.id"), nullable=False
     )
     cantidad_lotes: Mapped[int] = mapped_column(Integer, nullable=False)
     total_unidades: Mapped[float] = mapped_column(Float, nullable=False)
     precio_unitario: Mapped[float] = mapped_column(Float, nullable=True)
 
     pedido = relationship("Pedido", back_populates="detalles")
-    receta = relationship("Recetas")
+    producto_venta = relationship("ProductoVenta")

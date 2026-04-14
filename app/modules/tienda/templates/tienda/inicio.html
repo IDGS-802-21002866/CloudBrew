@@ -1,0 +1,201 @@
+{% extends 'tienda/tienda_base.html' %}
+
+{% block content %}
+<style>
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeInLeft {
+    from { opacity: 0; transform: translateX(-40px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes fadeInRight {
+    from { opacity: 0; transform: translateX(40px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes floatBottle {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-12px); }
+  }
+  .anim-fade-up { animation: fadeInUp 0.7s ease-out both; }
+  .anim-fade-left { animation: fadeInLeft 0.7s ease-out both; }
+  .anim-fade-right { animation: fadeInRight 0.8s ease-out both; }
+  .anim-float { animation: floatBottle 3s ease-in-out infinite; }
+  .anim-delay-1 { animation-delay: 0.15s; }
+  .anim-delay-2 { animation-delay: 0.3s; }
+  .anim-delay-3 { animation-delay: 0.45s; }
+  .anim-delay-4 { animation-delay: 0.6s; }
+  .card-color-0 { background-color: #F5C623; }
+  .card-color-1 { background-color: #F4A261; }
+  .card-color-2 { background-color: #E8836B; }
+  .card-color-0:hover { background-color: #e6b800; }
+  .card-color-1:hover { background-color: #e0923b; }
+  .card-color-2:hover { background-color: #d6725a; }
+</style>
+
+<!-- Hero Section -->
+<section class="relative bg-brew-beige overflow-hidden">
+  <div class="max-w-7xl mx-auto px-6 py-14 lg:py-20">
+    <div class="flex flex-col lg:flex-row items-center gap-8 lg:gap-4">
+
+      <!-- Hero Bottles -->
+      <div class="flex-1 flex justify-center items-end gap-0 relative anim-fade-left">
+        {% if productos|length >= 3 %}
+          <div class="anim-float anim-delay-1 -mr-6 z-10">
+            {% if productos[0].tiene_imagen %}
+              <img src="{{ url_for('recetas.imagen', id=productos[0].receta_id) }}" alt="{{ productos[0].nombre }}" class="h-52 lg:h-72 object-contain drop-shadow-xl">
+            {% else %}
+              <div class="h-52 lg:h-72 w-24 bg-amber-200/50 rounded-xl flex items-center justify-center"><i class="fas fa-beer text-4xl text-amber-400"></i></div>
+            {% endif %}
+          </div>
+          <div class="anim-float z-20">
+            {% if productos[1].tiene_imagen %}
+              <img src="{{ url_for('recetas.imagen', id=productos[1].receta_id) }}" alt="{{ productos[1].nombre }}" class="h-60 lg:h-80 object-contain drop-shadow-2xl">
+            {% else %}
+              <div class="h-60 lg:h-80 w-28 bg-amber-200/50 rounded-xl flex items-center justify-center"><i class="fas fa-beer text-5xl text-amber-400"></i></div>
+            {% endif %}
+          </div>
+          <div class="anim-float anim-delay-2 -ml-6 z-10">
+            {% if productos[2].tiene_imagen %}
+              <img src="{{ url_for('recetas.imagen', id=productos[2].receta_id) }}" alt="{{ productos[2].nombre }}" class="h-52 lg:h-72 object-contain drop-shadow-xl">
+            {% else %}
+              <div class="h-52 lg:h-72 w-24 bg-amber-200/50 rounded-xl flex items-center justify-center"><i class="fas fa-beer text-4xl text-amber-400"></i></div>
+            {% endif %}
+          </div>
+        {% elif productos|length >= 1 %}
+          <div class="anim-float">
+            {% if productos[0].tiene_imagen %}
+              <img src="{{ url_for('recetas.imagen', id=productos[0].receta_id) }}" alt="{{ productos[0].nombre }}" class="h-60 lg:h-80 object-contain drop-shadow-2xl">
+            {% else %}
+              <div class="h-60 lg:h-80 w-28 bg-amber-200/50 rounded-xl flex items-center justify-center"><i class="fas fa-beer text-5xl text-amber-400"></i></div>
+            {% endif %}
+          </div>
+        {% else %}
+          <div class="h-60 lg:h-80 w-48 bg-amber-200/30 rounded-2xl flex items-center justify-center">
+            <i class="fas fa-beer text-6xl text-amber-300"></i>
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Hero Text -->
+      <div class="flex-1 text-center lg:text-left anim-fade-right">
+        <h1 class="text-5xl lg:text-6xl font-black text-brew-dark leading-tight mb-3" style="font-family: 'Georgia', serif;">
+          malta<br>season
+        </h1>
+        <p class="text-gray-500 text-sm lg:text-base mb-4 max-w-md">
+          Descubre nuestra línea de cervezas: sabores intensos, aromas balanceados y carácter artesanal en cada botella.
+          Aprovecha nuestro 12 Pack a precio promocional por tiempo limitado.
+        </p>
+        {% if productos %}
+          <div class="flex items-center gap-3 mb-5 justify-center lg:justify-start">
+            <span class="w-8 h-px bg-gray-400"></span>
+            <p class="text-3xl font-bold text-brew-dark">${{ "%.2f"|format(productos[0].precio_venta) if productos[0].precio_venta else '0.00' }}</p>
+          </div>
+        {% endif %}
+        <a href="{{ url_for('tienda.listar_productos') }}" class="inline-block bg-[#D2691E] text-white font-bold px-10 py-3 rounded-lg hover:bg-[#b5571a] hover:scale-105 active:scale-95 transition-all duration-200 shadow-lg hover:shadow-xl">
+          Comprar Ahora
+        </a>
+      </div>
+    </div>
+
+    <!-- Stats Bar -->
+    <div class="grid grid-cols-3 gap-4 mt-12 max-w-2xl mx-auto anim-fade-up anim-delay-2">
+      <div class="text-center group">
+        <i class="fas fa-flag text-[#D2691E] text-xl mb-2 group-hover:scale-110 transition-transform"></i>
+        <p class="text-sm font-bold text-brew-dark">100% Mexicano</p>
+      </div>
+      <div class="text-center group">
+        <i class="fas fa-beer text-[#D2691E] text-xl mb-2 group-hover:scale-110 transition-transform"></i>
+        <p class="text-sm font-bold text-brew-dark">{{ productos|length }} Variante{{ 's' if productos|length != 1 else '' }}</p>
+      </div>
+      <div class="text-center group">
+        <i class="fas fa-truck text-[#D2691E] text-xl mb-2 group-hover:scale-110 transition-transform"></i>
+        <p class="text-sm font-bold text-brew-dark">Envíos Gratis</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Nuestras Cervezas -->
+<section class="px-6 py-14">
+  <div class="max-w-7xl mx-auto">
+    <h2 class="text-3xl lg:text-4xl font-black text-brew-dark text-center mb-3 anim-fade-up">Nuestras Cervezas</h2>
+    <p class="text-gray-400 text-center text-sm max-w-xl mx-auto mb-8 anim-fade-up anim-delay-1">
+      Nuestra colección incluye estilos para cada paladar: Porter oscura y tostada, Lager ligera y refrescante, IPA aromática y lupulada, y Stout profunda con notas de café y cacao.
+    </p>
+
+    <!-- Filter Tabs -->
+    <div class="flex justify-center gap-2 mb-10 anim-fade-up anim-delay-2 flex-wrap">
+      <button class="px-5 py-2 rounded-full text-sm font-semibold border-2 border-[#D2691E] text-[#D2691E] bg-white hover:bg-[#D2691E] hover:text-white transition-all duration-200">
+        Populares
+      </button>
+      <button class="px-5 py-2 rounded-full text-sm font-semibold border-2 border-gray-200 text-gray-500 bg-white hover:border-[#D2691E] hover:text-[#D2691E] transition-all duration-200">
+        Más Vendidos
+      </button>
+      <button class="px-5 py-2 rounded-full text-sm font-semibold border-2 border-gray-200 text-gray-500 bg-white hover:border-[#D2691E] hover:text-[#D2691E] transition-all duration-200">
+        0 Alcohol
+      </button>
+      <button class="px-5 py-2 rounded-full text-sm font-semibold border-2 border-gray-200 text-gray-500 bg-white hover:border-[#D2691E] hover:text-[#D2691E] transition-all duration-200">
+        Ver Todos
+      </button>
+    </div>
+
+    {% if productos %}
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        {% for producto in productos %}
+        <div class="rounded-2xl overflow-hidden shadow-md hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 group anim-fade-up anim-delay-{{ loop.index0 % 3 + 1 }}">
+          <!-- Card Image Area with color background -->
+          <div class="card-color-{{ loop.index0 % 3 }} transition-colors duration-300 relative h-64 flex items-center justify-center overflow-hidden">
+            {% if producto.tiene_imagen %}
+              <img src="{{ url_for('recetas.imagen', id=producto.receta_id) }}" alt="{{ producto.nombre }}" class="h-52 object-contain drop-shadow-lg group-hover:scale-110 transition-transform duration-500">
+            {% else %}
+              <i class="fas fa-beer text-7xl text-white/40 group-hover:scale-110 transition-transform duration-500"></i>
+            {% endif %}
+          </div>
+          <!-- Card Body -->
+          <div class="bg-white p-5">
+            <!-- Rating Stars -->
+            <div class="flex items-center gap-0.5 mb-1">
+              {% for s in range(5) %}
+                <i class="fas fa-star text-amber-400 text-xs"></i>
+              {% endfor %}
+            </div>
+            <h3 class="text-lg font-bold text-brew-dark mb-1">{{ producto.nombre }}</h3>
+            <p class="text-gray-400 text-xs mb-2 line-clamp-2">{{ producto.descripcion or 'Cerveza artesanal elaborada con ingredientes selectos.' }}</p>
+            <div class="flex items-center justify-between">
+              <p class="text-lg font-bold text-brew-dark">${{ "%.2f"|format(producto.precio_venta) }} <span class="text-xs text-gray-400 font-normal">/ 12 pz</span></p>
+              <div class="flex items-center gap-2">
+                <form action="{{ url_for('tienda.agregar_al_carrito') }}" method="POST">
+                  <input type="hidden" name="producto_venta_id" value="{{ producto.id }}">
+                  <input type="hidden" name="cantidad" value="1">
+                  <button type="submit" class="w-9 h-9 rounded-full bg-[#D2691E] text-white flex items-center justify-center hover:bg-[#b5571a] hover:scale-110 active:scale-95 transition-all duration-200 shadow-md" title="Agregar al carrito">
+                    <i class="fas fa-cart-plus text-sm"></i>
+                  </button>
+                </form>
+                <a href="{{ url_for('tienda.detalle_producto', id=producto.id) }}" class="w-9 h-9 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center hover:bg-gray-200 hover:text-[#D2691E] hover:scale-110 transition-all duration-200" title="Ver detalle">
+                  <i class="fas fa-eye text-sm"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- CTA Ver Todos -->
+      <div class="text-center mt-12 anim-fade-up anim-delay-3">
+        <a href="{{ url_for('tienda.listar_productos') }}" class="inline-block border-2 border-[#D2691E] text-[#D2691E] font-bold px-10 py-3 rounded-lg hover:bg-[#D2691E] hover:text-white transition-all duration-200">
+          Ver Todos los Productos
+        </a>
+      </div>
+    {% else %}
+      <div class="text-center py-20 anim-fade-up">
+        <i class="fas fa-beer text-7xl text-gray-200 mb-6"></i>
+        <p class="text-gray-400 text-lg">No hay productos disponibles por el momento.</p>
+        <p class="text-gray-300 text-sm mt-2">Pronto tendremos nuevas cervezas para ti.</p>
+      </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

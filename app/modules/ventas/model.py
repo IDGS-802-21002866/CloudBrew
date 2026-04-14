@@ -36,8 +36,8 @@ class DetalleVenta(db.Model):
     id_venta: Mapped[int] = mapped_column(
         db.Integer, ForeignKey("venta.id"), nullable=False
     )
-    id_receta: Mapped[int] = mapped_column(
-        db.Integer, ForeignKey("recetas.id"), nullable=False
+    id_producto_venta: Mapped[int] = mapped_column(
+        db.Integer, ForeignKey("producto_venta.id"), nullable=False
     )
     cantidad: Mapped[int] = mapped_column(db.Integer, nullable=False)
     precio_unitario: Mapped[float] = mapped_column(db.Float, nullable=True)
@@ -45,4 +45,4 @@ class DetalleVenta(db.Model):
 
     # Relaciones
     venta = relationship("Venta", back_populates="detallesVenta")
-    receta = relationship("Recetas", foreign_keys=[id_receta])
+    producto_venta = relationship("ProductoVenta", foreign_keys=[id_producto_venta])

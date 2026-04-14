@@ -1,7 +1,7 @@
 from app.modules.pedidos import repository as pedido_repo
 from app.modules.pedidos.model import Pedido, PedidoDetalle
 from app.modules.clientes.service import ClienteService
-from app.modules.recetas.service import RecetaService
+from app.modules.producto_venta.service import ProductoVentaService
 from app.modules.produccion.service import ProduccionService
 from flask_login import current_user
 
@@ -30,32 +30,30 @@ class PedidoService:
         if not detalles_data:
             raise ValueError("Debe agregar al menos un producto al pedido.")
 
-        receta_service = RecetaService()
+        producto_venta_service = ProductoVentaService()
         detalles = []
         total_pedido = 0.0
 
         for detalle in detalles_data:
-            receta_id = detalle.get("receta_id")
+            producto_venta_id = detalle.get("producto_venta_id")
             cantidad_lotes = detalle.get("cantidad_lotes")
 
-            if not receta_id or not cantidad_lotes:
+            if not producto_venta_id or not cantidad_lotes:
                 raise ValueError("Datos de detalle incompletos.")
 
-            receta = receta_service.obtener_receta(receta_id)
-
-            if receta.precio_venta is None:
-                raise ValueError(
-                    f"La receta '{receta.nombre}' no tiene precio de venta definido. "
-                    "Configura el precio antes de crear el pedido."
-                )
+            producto_venta = producto_venta_service.obtener_producto_venta(
+                producto_venta_id
+            )
+            receta = producto_venta.receta
 
             total_unidades = float(cantidad_lotes) * receta.cantidad_producida
-            precio_unitario = float(receta.precio_venta)
+            precio_unitario = float(producto_venta.precio_venta)
             total_pedido += precio_unitario * total_unidades
 
             detalles.append(
                 {
-                    "receta_id": receta_id,
+                    "producto_venta_id": producto_venta_id,
+                    "receta_id": receta.id,
                     "cantidad_lotes": cantidad_lotes,
                     "total_unidades": total_unidades,
                     "precio_unitario": precio_unitario,
@@ -63,7 +61,12 @@ class PedidoService:
             )
 
         # Crear pedido y detalles (flush, sin commit)
-        pedido = pedido_repo.create_pedido(cliente_id, detalles, total_pedido, current_user.id if current_user.is_authenticated else None)
+        pedido = pedido_repo.create_pedido(
+            cliente_id,
+            detalles,
+            total_pedido,
+            current_user.id if current_user.is_authenticated else None,
+        )
 
         # Crear orden de produccion por cada detalle y registrar relacion transaccional
         produccion_service = ProduccionService()
@@ -91,7 +94,13 @@ class PedidoService:
                 pedido_produccion.id_produccion
             )
 
-        pedido.usuario_id = current_user.id if current_user.is_authenticated else pedido.usuario_id
-        pedido_repo.update_pedido_estado(pedido, "Cancelado", current_user.id if current_user.is_authenticated else None)
+        pedido.usuario_id = (
+            current_user.id if current_user.is_authenticated else pedido.usuario_id
+        )
+        pedido_repo.update_pedido_estado(
+            pedido,
+            "Cancelado",
+            current_user.id if current_user.is_authenticated else None,
+        )
         return pedido
         return pedido

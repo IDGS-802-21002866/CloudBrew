@@ -4,8 +4,7 @@ from . import bp
 from .forms import PedidoForm, PedidoDetalleForm
 from .service import PedidoService
 from app.modules.clientes.service import ClienteService
-from app.modules.recetas.service import RecetaService
-from app.modules.recetas import repository as receta_repo
+from app.modules.producto_venta.service import ProductoVentaService
 from app.modules.inventario_materias_primas.service import (
     InventarioMateriasPrimasService,
 )
@@ -13,7 +12,7 @@ from app.modules.inventario_materias_primas.service import (
 # Inicialización de servicios
 pedido_service = PedidoService()
 cliente_service = ClienteService()
-receta_service = RecetaService()
+producto_venta_service = ProductoVentaService()
 inventario_service = InventarioMateriasPrimasService()
 
 
@@ -39,8 +38,8 @@ def crear():
     clientes_retail = [
         c for c in cliente_service.listar_clientes() if c.tipo.lower() == "retail"
     ]
-    recetas = receta_service.listar_recetas(incluir_inactivas=False)
-    detalle_form.receta_id.choices = [(r.id, r.nombre) for r in recetas]
+    productos_venta = producto_venta_service.listar_por_tipo("retail")
+    detalle_form.producto_venta_id.choices = [(p.id, p.nombre) for p in productos_venta]
 
     if "pedido_detalles" not in session:
         session["pedido_detalles"] = []
@@ -58,14 +57,17 @@ def crear():
 
         if action == "agregar_detalle":
             if detalle_form.validate_on_submit():
-                receta = receta_repo.get_receta_by_id(detalle_form.receta_id.data)
+                producto = producto_venta_service.obtener_producto_venta(
+                    detalle_form.producto_venta_id.data
+                )
+                receta = producto.receta
                 cantidad_nueva = detalle_form.cantidad_lotes.data
 
                 detalle_existente = next(
                     (
                         d
                         for d in session["pedido_detalles"]
-                        if d["receta_id"] == receta.id
+                        if d["producto_venta_id"] == producto.id
                     ),
                     None,
                 )
@@ -96,18 +98,18 @@ def crear():
                     detalle_existente["total_unidades"] = (
                         cantidad_total * receta.cantidad_producida
                     )
-                    flash(f"{receta.nombre} actualizado.", "success")
+                    flash(f"{producto.nombre} actualizado.", "success")
                 else:
                     session["pedido_detalles"].append(
                         {
-                            "receta_id": receta.id,
-                            "receta_nombre": receta.nombre,
+                            "producto_venta_id": producto.id,
+                            "producto_venta_nombre": producto.nombre,
                             "cantidad_lotes": cantidad_nueva,
                             "total_unidades": cantidad_nueva
                             * receta.cantidad_producida,
                         }
                     )
-                    flash(f"{receta.nombre} agregado.", "success")
+                    flash(f"{producto.nombre} agregado.", "success")
 
                 session.modified = True
 
@@ -136,7 +138,7 @@ def crear():
                         for d in data["detalles"]:
                             nuevo_d = PedidoDetalle(
                                 pedido_id=pedido.id,
-                                receta_id=d["receta_id"],
+                                producto_venta_id=d["producto_venta_id"],
                                 cantidad_lotes=d["cantidad_lotes"],
                                 total_unidades=d["total_unidades"],
                             )
@@ -158,7 +160,7 @@ def crear():
         form=form,
         detalle_form=detalle_form,
         clientes_retail=clientes_retail,
-        recetas=recetas,
+        productos_venta=productos_venta,
         detalles=session["pedido_detalles"],
         cliente_nombre_default=cliente_nombre_default,
     )
@@ -180,8 +182,8 @@ def editar(id):
     for d in pedido.detalles:
         session["pedido_detalles"].append(
             {
-                "receta_id": d.receta_id,
-                "receta_nombre": d.receta.nombre,
+                "producto_venta_id": d.producto_venta_id,
+                "producto_venta_nombre": d.producto_venta.nombre,
                 "cantidad_lotes": d.cantidad_lotes,
                 "total_unidades": d.total_unidades,
             }

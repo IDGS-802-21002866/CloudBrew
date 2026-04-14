@@ -42,12 +42,12 @@ def crear():
     receta_form = RecetaForm()
     detalle_form = RecetaDetalleForm()
     proceso_form = ProcesoRecetaForm()
-    
-    medidas=UnidadMedidaService.listar_unidades_medida()
+
+    medidas = UnidadMedidaService.listar_unidades_medida()
     materias_primas = materias_primas_service.listar_materias(incluir_inactivas=False)
     pag_procesos = proceso_productivo_service.listar_procesos()
     procesos = pag_procesos.items if hasattr(pag_procesos, "items") else pag_procesos
-    
+
     detalle_form.materia_prima_id.choices = [
         (str(mp.id), mp.nombre) for mp in materias_primas
     ]
@@ -68,7 +68,6 @@ def crear():
             "nombre": request.form.get("h_nombre", ""),
             "cantidad_producida": request.form.get("h_cantidad_producida", ""),
             "descripcion": request.form.get("h_descripcion", ""),
-            "precio_venta": request.form.get("h_precio_venta", ""),
         }
         session.modified = True
 
@@ -110,13 +109,6 @@ def crear():
                     )
             except InvalidOperation:
                 pass
-            try:
-                if form_data.get("precio_venta"):
-                    receta_form.precio_venta.data = Decimal(
-                        str(form_data["precio_venta"])
-                    )
-            except InvalidOperation:
-                pass
 
         nombre_receta = form_data.get("nombre", "")
 
@@ -153,7 +145,7 @@ def crear():
                     carrito,
                     int(detalle_form.materia_prima_id.data),
                     detalle_form.cantidad.data,
-                    medida_id
+                    medida_id,
                 )
                 session["receta_carrito_detalles"] = carrito
                 session.modified = True
@@ -236,9 +228,7 @@ def crear():
                     "nombre": receta_form.nombre.data,
                     "descripcion": receta_form.descripcion.data,
                     "cantidad_producida": receta_form.cantidad_producida.data,
-                    "precio_venta": receta_form.precio_venta.data,
                     "imagen": imagen_bytes,
-                    "precio_venta": receta_form.precio_venta.data,
                     "imagen_tipo": imagen_tipo,
                 }
                 receta = receta_service.crear_receta(data)
@@ -299,7 +289,7 @@ def editar(id):
         detalle_form.medida.choices = [("", "Selecciona una medida")] + [
             (str(m.id), m.nombre) for m in medidas
         ]
-        
+
         proceso_form.proceso_productivo_id.choices = [
             (str(p.id), p.nombre) for p in procesos
         ]
@@ -357,7 +347,7 @@ def editar(id):
                     mp_sin_costo.append(
                         mp["materia_prima_nombre"] if mp else "Desconocida"
                     )
-                costo_ingredientes += costo_mp * item["cantidad"] 
+                costo_ingredientes += costo_mp * item["cantidad"]
             mp_tipos = {mp.id: mp.tipo_medida_id for mp in materias_primas}
             medida_tipos = {m.id: m.tipo_medida_id for m in medidas}
             return render_template(
@@ -390,7 +380,7 @@ def editar(id):
                         carrito,
                         int(detalle_form.materia_prima_id.data),
                         detalle_form.cantidad.data,
-                        medida_id
+                        medida_id,
                     )
                     session["receta_carrito_detalles"] = carrito
                     session.modified = True
@@ -468,9 +458,7 @@ def editar(id):
                         "nombre": receta_form.nombre.data,
                         "descripcion": receta_form.descripcion.data,
                         "cantidad_producida": receta_form.cantidad_producida.data,
-                        "precio_venta": receta_form.precio_venta.data,
                         "imagen": imagen_bytes,
-                        "precio_venta": receta_form.precio_venta.data,
                         "imagen_tipo": imagen_tipo,
                     }
                     receta_service.actualizar_receta(id, data)

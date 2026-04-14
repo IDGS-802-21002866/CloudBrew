@@ -58,12 +58,11 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                     <div>
                         <label class="block text-gray-700 text-xs font-bold uppercase mb-2">Producto / Estilo</label>
-                        <select name="receta_id" id="receta-select"
+                        <select name="producto_venta_id" id="producto-select"
                             class="w-full px-4 py-2 border-2 border-gray-400 rounded-lg focus:border-[#4A9062] outline-none">
                             <option value="">--- Seleccionar ---</option>
-                            {% for receta in recetas %}
-                            <option value="{{ receta.id }}" data-rendimiento="{{ receta.cantidad_producida }}">{{
-                                receta.nombre }}</option>
+                            {% for producto in productos_venta %}
+                            <option value="{{ producto.id }}" data-rendimiento="{{ producto.receta.cantidad_producida }}">{{ producto.nombre }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -101,7 +100,7 @@
                         <tbody class="divide-y divide-gray-200">
                             {% for detalle in detalles %}
                             <tr class="hover:bg-brew-bg hover:bg-opacity-5 transition">
-                                <td class="px-6 py-4 font-bold text-gray-800">{{ detalle.receta_nombre }}</td>
+                                <td class="px-6 py-4 font-bold text-gray-800">{{ detalle.producto_venta_nombre }}</td>
                                 <td class="px-6 py-4 text-center font-black text-[#6C9AD0]">{{ detalle.cantidad_lotes }}
                                 </td>
                                 <td class="px-6 py-4 text-gray-600">{{ '%.0f'|format(detalle.total_unidades) }} unidades
@@ -160,18 +159,18 @@
     clienteSearch.addEventListener('input', actualizarInfoCliente);
 
     // Calculadora
-    const recetaSelect = document.getElementById('receta-select');
+    const productoSelect = document.getElementById('producto-select');
     const cantidadLotes = document.querySelector('input[name="cantidad_lotes"]');
     const totalUnidades = document.getElementById('total-unidades');
 
     function calcular() {
-        const option = recetaSelect.options[recetaSelect.selectedIndex];
+        const option = productoSelect.options[productoSelect.selectedIndex];
         const rend = parseFloat(option.getAttribute('data-rendimiento')) || 0;
         const lotes = parseFloat(cantidadLotes.value) || 0;
         totalUnidades.value = rend > 0 && lotes > 0 ? Math.round(rend * lotes) + " Unidades" : "";
     }
 
-    recetaSelect.addEventListener('change', calcular);
+    productoSelect.addEventListener('change', calcular);
     cantidadLotes.addEventListener('input', calcular);
 
     // Persistencia al recargar (al agregar producto)

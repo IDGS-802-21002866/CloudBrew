@@ -12,12 +12,13 @@ class RecetaForm(FlaskForm):
                 size = field.data.stream.tell()
                 field.data.stream.seek(0)
 
-
             if size > max_size:
                 raise ValidationError(
                     f"La imagen excede el tamaño máximo de {max_size // 1024} KB."
                 )
+
         return _file_size
+
     nombre = StringField(
         "Nombre de la Receta",
         validators=[DataRequired(message="El nombre es obligatorio."), Length(max=255)],
@@ -27,14 +28,6 @@ class RecetaForm(FlaskForm):
         "Cantidad Producida (botellas de 500ml)",
         validators=[DataRequired(message="La cantidad producida es obligatoria.")],
     )
-    precio_venta = DecimalField(
-        "Precio de Venta (por unidad)",
-        validators=[
-            Optional(),
-            NumberRange(min=0.01, message="El precio debe ser mayor a 0."),
-        ],
-        places=2,
-    )
     imagen = FileField(
         "Imagen",
         validators=[
@@ -42,12 +35,10 @@ class RecetaForm(FlaskForm):
             FileAllowed(
                 ["jpg", "jpeg", "png", "webp"], "Solo imágenes (jpg, png, webp)."
             ),
-            file_size_limit(64 * 1024)
+            file_size_limit(64 * 1024),
         ],
     )
     submit = SubmitField("Guardar")
-
-
 
 
 class RecetaDetalleForm(FlaskForm):
@@ -57,8 +48,15 @@ class RecetaDetalleForm(FlaskForm):
     )
     cantidad = DecimalField(
         "Cantidad",
-        validators=[DataRequired(message="La cantidad es obligatoria."),NumberRange(min=0.01,max=100, message="La cantidad debe ser mayor a 0 y menor a 100.")],
-        default=0.1
+        validators=[
+            DataRequired(message="La cantidad es obligatoria."),
+            NumberRange(
+                min=0.01,
+                max=100,
+                message="La cantidad debe ser mayor a 0 y menor a 100.",
+            ),
+        ],
+        default=0.1,
     )
     medida = SelectField(
         "Medida",
@@ -74,6 +72,13 @@ class ProcesoRecetaForm(FlaskForm):
     )
     tiempo_estimado = DecimalField(
         "Tiempo Estimado (minutos)",
-        validators=[DataRequired(message="El tiempo estimado es obligatorio."), NumberRange(min=0.1, max=43800, message="El tiempo debe ser mayor a 0 y menor a 43800 (30 días) minutos.")],
+        validators=[
+            DataRequired(message="El tiempo estimado es obligatorio."),
+            NumberRange(
+                min=0.1,
+                max=43800,
+                message="El tiempo debe ser mayor a 0 y menor a 43800 (30 días) minutos.",
+            ),
+        ],
     )
     submit = SubmitField("Agregar")

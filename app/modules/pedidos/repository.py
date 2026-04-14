@@ -54,7 +54,7 @@ def create_pedido(cliente_id, detalles, total=None, usuario_id=None):
     for detalle in detalles:
         detalle_pedido = PedidoDetalle(
             pedido_id=nuevo_pedido.id,
-            receta_id=detalle["receta_id"],
+            producto_venta_id=detalle["producto_venta_id"],
             cantidad_lotes=detalle["cantidad_lotes"],
             total_unidades=detalle["total_unidades"],
             precio_unitario=detalle.get("precio_unitario"),

@@ -1,0 +1,106 @@
+{% extends 'tienda/tienda_base.html' %}
+
+{% block content %}
+<section class="px-6 py-10">
+  <div class="max-w-5xl mx-auto">
+    <h1 class="text-3xl font-bold text-gray-900 mb-8">Checkout</h1>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <!-- Datos del cliente -->
+      <div class="lg:col-span-2 space-y-6">
+        <!-- Contacto -->
+        <div class="bg-white rounded-xl shadow-md border border-gray-100 p-6">
+          <h2 class="text-lg font-bold text-gray-900 mb-4">Contacto</h2>
+          {% if cliente %}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              <div>
+                <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Nombre</label>
+                <p class="text-gray-900 font-medium">{{ cliente.nombre_completo }}</p>
+              </div>
+              <div>
+                <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Email</label>
+                <p class="text-gray-900">{{ cliente.email }}</p>
+              </div>
+              <div>
+                <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Teléfono</label>
+                <p class="text-gray-900">{{ cliente.telefono or 'N/A' }}</p>
+              </div>
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- Entrega -->
+        <div class="bg-white rounded-xl shadow-md border border-gray-100 p-6">
+          <h2 class="text-lg font-bold text-gray-900 mb-4">Entrega</h2>
+          {% if cliente %}
+            <div class="text-sm">
+              <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Dirección</label>
+              <p class="text-gray-900">{{ cliente.direccion_completa }}</p>
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- Método de pago -->
+        <div class="bg-white rounded-xl shadow-md border border-gray-100 p-6">
+          <h2 class="text-lg font-bold text-gray-900 mb-4">Método de Pago</h2>
+          <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+            <i class="fas fa-money-bill-wave text-green-600 text-xl"></i>
+            <span class="text-sm font-medium text-gray-700">Pago contra entrega</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Resumen de pedido -->
+      <div class="lg:col-span-1">
+        <div class="bg-white rounded-xl shadow-md border border-gray-100 p-6 sticky top-6">
+          <h2 class="text-lg font-bold text-gray-900 mb-4">Resumen</h2>
+
+          <div class="space-y-3 mb-4">
+            {% for item in carrito %}
+            <div class="flex items-center gap-3">
+              <div class="relative h-14 w-14 bg-gray-50 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden border border-gray-200">
+                {% if item.tiene_imagen %}
+                  <img src="{{ url_for('recetas.imagen', id=item.receta_id) }}" alt="{{ item.nombre }}" class="h-12 object-contain">
+                {% else %}
+                  <i class="fas fa-beer text-gray-300"></i>
+                {% endif %}
+                <span class="absolute -top-1 -right-1 bg-gray-700 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">{{ item.cantidad }}</span>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-gray-900 truncate">{{ item.nombre }}</p>
+              </div>
+              <p class="text-sm font-bold text-gray-900">${{ "%.2f"|format(item.precio_unitario * item.cantidad) }}</p>
+            </div>
+            {% endfor %}
+          </div>
+
+          <div class="border-t border-gray-200 pt-4 space-y-2">
+            <div class="flex justify-between text-sm text-gray-500">
+              <span>Subtotal</span>
+              <span>${{ "%.2f"|format(total) }}</span>
+            </div>
+            <div class="flex justify-between text-sm text-gray-500">
+              <span>Envío</span>
+              <span class="text-green-600 font-medium">Gratis</span>
+            </div>
+            <div class="flex justify-between text-lg font-bold text-gray-900 pt-2 border-t border-gray-200">
+              <span>Total</span>
+              <span>${{ "%.2f"|format(total) }}</span>
+            </div>
+          </div>
+
+          <form action="{{ url_for('tienda.checkout') }}" method="POST" class="mt-6">
+            <button type="submit" class="w-full bg-[#D2691E] text-white font-bold py-3 px-6 rounded-lg hover:bg-[#b5571a] transition shadow-md">
+              Registrar pedido
+            </button>
+          </form>
+
+          <a href="{{ url_for('tienda.ver_carrito') }}" class="block text-center text-sm text-gray-500 hover:text-[#D2691E] transition mt-3">
+            <i class="fas fa-arrow-left mr-1"></i> Volver al carrito
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -52,6 +52,8 @@ def create_app():
     from app.modules.procesos_produccion import bp as procesos_produccion_bp
     from app.modules.ventas import bp as ventas_bp
     from app.modules.costos import bp as costos_bp
+    from app.modules.tienda import bp as tienda_bp
+    from app.modules.producto_venta import bp as producto_venta_bp
 
     app = Flask(__name__)
     app.config.from_object(DevelopmentConfig)
@@ -99,12 +101,14 @@ def create_app():
         costos_bp,
         bitacora_login_bp,
         backup_bp,
+        producto_venta_bp,
     ]
 
     for bp in blueprints_protegidos:
         bp.before_request(login_required(lambda: None))
 
     app.register_blueprint(auth_bp)
+    app.register_blueprint(tienda_bp)
 
     for bp in blueprints_protegidos:
         app.register_blueprint(bp)
