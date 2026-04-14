@@ -17,13 +17,16 @@ def _get_conexion():
     DB_PORT = parsed.port or 3306
     DB_NAME = parsed.path.lstrip("/")
 
-    return pymysql.connect(
-        host=DB_HOST,
-        port=DB_PORT,
-        user=DB_USER,
-        password=DB_PASSWORD,
-        database=DB_NAME,
-        charset="utf8mb4",
+    return (
+        pymysql.connect(
+            host=DB_HOST,
+            port=DB_PORT,
+            user=DB_USER,
+            password=DB_PASSWORD,
+            database=DB_NAME,
+            charset="utf8mb4",
+        ),
+        DB_NAME,
     )
 
 
