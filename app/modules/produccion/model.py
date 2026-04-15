@@ -14,6 +14,11 @@ class Produccion(db.Model):
     usuario_id = db.Column(db.Integer, db.ForeignKey("usuario.id"), nullable=True)
 
     usuario = db.relationship("Usuario")
+    es_retail = db.Column(db.Boolean, default=False, nullable=False)
+    id_solicitud_compra = db.Column(
+        db.Integer, db.ForeignKey("solicitud_compra.id"), nullable=True
+    )
+    solicitud_compra = db.relationship("SolicitudCompra", foreign_keys=[id_solicitud_compra])
     receta = db.relationship("Recetas", back_populates="producciones")
 
     procesos = db.relationship(

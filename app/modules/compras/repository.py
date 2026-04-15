@@ -1,10 +1,50 @@
-from app.modules.compras.model import Compra, DetalleCompra
+from app.modules.compras.model import Compra, DetalleCompra, SolicitudCompra
 from app import db
 
 
 def get_all_compras():
     compras = Compra.query.all()
     return compras
+
+
+def get_pending_solicitudes():
+    return SolicitudCompra.query.filter_by(estado="Pendiente").all()
+
+
+def get_solicitudes_confirmadas_retail():
+    return SolicitudCompra.query.filter(
+        SolicitudCompra.origen == "retail",
+        SolicitudCompra.estado.in_(["En Compra", "Finalizado"]),
+    ).all()
+
+
+def get_confirmed_compras():
+    return Compra.query.filter(Compra.fecha_compra.isnot(None), Compra.cancelada == False).all()
+
+
+def get_solicitud_by_id(solicitud_id):
+    return SolicitudCompra.query.get(solicitud_id)
+
+
+def mark_solicitud_estado(solicitud_id, estado):
+    solicitud = SolicitudCompra.query.get(solicitud_id)
+    if solicitud:
+        solicitud.estado = estado
+        db.session.add(solicitud)
+        db.session.commit()
+
+
+def create_solicitud(materia_prima_id, cantidad, origen="retail", referencia_id=None):
+    solicitud = SolicitudCompra(
+        materia_prima_id=materia_prima_id,
+        cantidad=cantidad,
+        origen=origen,
+        referencia_id=referencia_id,
+        estado="Pendiente",
+    )
+    db.session.add(solicitud)
+    db.session.flush()
+    return solicitud
 
 
 def get_compra_by_id(id):

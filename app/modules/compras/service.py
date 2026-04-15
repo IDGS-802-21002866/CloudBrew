@@ -101,7 +101,26 @@ class ComprasService:
             raise ValidacionNegocioException("Compra no encontrada.")
         return compra
 
-    def confirmar_compra(self, compra_id, detalle_ids, precios):
+    def listar_compras_confirmadas(self):
+        return repository.get_confirmed_compras()
+
+    def listar_solicitudes_pendientes(self):
+        return repository.get_pending_solicitudes()
+
+    def obtener_solicitud(self, id):
+        solicitud = repository.get_solicitud_by_id(id)
+        if not solicitud:
+            raise ValidacionNegocioException("Solicitud de compra no encontrada.")
+        return solicitud
+
+    def listar_solicitudes_confirmadas_retail(self):
+        return repository.get_solicitudes_confirmadas_retail()
+
+    def marcar_solicitud_estado(self, solicitud_id, estado):
+        if solicitud_id:
+            repository.mark_solicitud_estado(int(solicitud_id), estado)
+
+    def confirmar_compra(self, compra_id, detalle_ids, precios, solicitud_id=None):
         if not detalle_ids or not precios:
             raise ValidacionNegocioException(
                 "Debe ingresar los precios de los detalles."

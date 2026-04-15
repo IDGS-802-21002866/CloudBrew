@@ -37,3 +37,31 @@ def detalle(id):
     except ValueError as e:
         flash(str(e), "danger")
         return redirect(url_for("inventario_materias_primas.listar"))
+    
+# Esta ruta es "todoterreno": funciona para /solicitar y para /solicitar/5
+@bp.route("/solicitar", defaults={'id': None}, methods=["GET", "POST"])
+@bp.route("/solicitar/<int:id>", methods=["GET", "POST"])
+def solicitar(id):
+    materia = None
+    materias = []
+    
+    if id:
+        # Caso: venimos de una fila específica (botón de la tabla)
+        materia = servicio.obtener_materia_prima(id)
+    else:
+        # Caso: venimos del botón verde de arriba (general)
+        # Cargamos todas para que el usuario elija en el select
+        materias = servicio.listar_materias_primas_paginadas(per_page=100).items
+
+    if request.method == "POST":
+        materia_id = id or request.form.get("materia_prima_id")
+        cantidad = request.form.get("cantidad")
+        motivo = request.form.get("motivo")
+        
+        # Aquí es donde se conectaría con la lógica de SolicitudCompra
+        # Por ahora el flash para confirmar que funciona
+        nombre_materia = materia.nombre if materia else "Materia"
+        flash(f"Solicitud de {cantidad} para {nombre_materia} enviada a Compras", "success")
+        return redirect(url_for("inventario_materias_primas.listar"))
+        
+    return render_template("inventario_materias_primas/solicitar.html", materia=materia, materias=materias)

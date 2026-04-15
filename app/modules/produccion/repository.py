@@ -2,13 +2,15 @@
 from app import db
 
 
-def insertar_produccion(id_receta, cantidad, usuario_id=None):
+def insertar_produccion(id_receta, cantidad, usuario_id=None, es_retail=False, id_solicitud_compra=None):
     try:
         produccion = Produccion(
             id_receta=id_receta,
             cantidad=cantidad,
             estado="pendiente",
             usuario_id=usuario_id,
+            es_retail=es_retail,
+            id_solicitud_compra=id_solicitud_compra,
         )
 
         db.session.add(produccion)
@@ -33,15 +35,18 @@ def modificar_produccion(id_produccion, id_receta, cantidad, estado, usuario_id=
         if usuario_id is not None:
             produccion.usuario_id = usuario_id
 
-        db.session.commit()
+        if not db.session.in_transaction():
+            db.session.commit()
 
         return produccion
 
     except ValueError as ve:
-        db.session.rollback()
+        if not db.session.in_transaction():
+            db.session.rollback()
         return ve
     except Exception:
-        db.session.rollback()
+        if not db.session.in_transaction():
+            db.session.rollback()
         return ValueError("Ocurrio un error al modificar la produccion.")
 
 
