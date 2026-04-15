@@ -37,7 +37,7 @@ def crear():
         (r.id, r.nombre) for r in recetas
     ]
     lotes_por_receta = {}
-    lotes_choices = [("", "Seleccione un lote")]
+    lotes_choices = [(None, "Seleccione un lote")]
 
     for l in lotes_raw:
         es_activo = getattr(l, "activo", True)
