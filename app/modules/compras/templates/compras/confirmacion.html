@@ -133,6 +133,9 @@
         <!-- Botón confirmar (solo si está pendiente) -->
         {% if not compra.fecha_compra %}
         <div class="flex justify-end">
+            {% if solicitud_id %}
+            <input type="hidden" name="solicitud_id" value="{{ solicitud_id }}">
+            {% endif %}
             <button type="submit" class="px-6 py-3 bg-[#4A9062] hover:bg-[#2D6A3E] text-white font-bold rounded-xl transition">
                 <i class="fa-solid fa-check mr-2"></i>Confirmar Compra
             </button>

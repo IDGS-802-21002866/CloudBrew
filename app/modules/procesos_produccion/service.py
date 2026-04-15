@@ -1,6 +1,7 @@
 from app.modules.procesos_produccion import repository
 from app.modules.produccion.model import Produccion
 from app.shared.exceptions import ValidacionNegocioException
+from flask_login import current_user
 from app import db
 from datetime import date
 
@@ -61,12 +62,22 @@ def completar_proceso(id_produccion_proceso):
         proceso_completado = repository.completar_proceso(id_produccion_proceso)
 
         # Si es el primer proceso (orden == 1), actualizar fecha_inicio y estado de producción
-        if proceso_completado.orden == 1:
-            produccion = Produccion.query.get(proceso_completado.id_produccion)
-            if produccion:
-                produccion.fecha_inicio = date.today()
-                produccion.estado = "en proceso"
-                db.session.add(produccion)
+        produccion = Produccion.query.get(proceso_completado.id_produccion)
+        if proceso_completado.orden == 1 and produccion:
+            produccion.fecha_inicio = date.today()
+            produccion.estado = "en proceso"
+            db.session.add(produccion)
+
+        # Si no hay procesos pendientes, cerrar orden de pedido retail relacionada
+        siguiente_proceso = repository.obtener_proceso_siguiente(proceso_completado.id_produccion)
+        if not siguiente_proceso and produccion and produccion.pedidos:
+            for pedido_rel in produccion.pedidos:
+                if pedido_rel.pedido and pedido_rel.pedido.estado != "Terminado":
+                    # Cerrar el pedido retail vinculado cuando se completa el último proceso
+                    pedido_rel.pedido.estado = "Terminado"
+                    if current_user.is_authenticated:
+                        pedido_rel.pedido.usuario_id = current_user.id
+                    db.session.add(pedido_rel.pedido)
 
         db.session.commit()
 

@@ -7,7 +7,7 @@
   <div class="mb-6 flex items-center justify-between">
     <div>
       <h1 class="text-3xl font-bold text-gray-800">Compras</h1>
-      <p class="text-sm text-gray-600 mt-1">Panel de solicitudes pendientes y compras confirmadas.</p>
+      <p class="text-sm text-gray-600 mt-1">Panel de solicitudes pendientes y órdenes de compra.</p>
     </div>
     {% if search_term %}
       <a href="{{ url_for('compras.listar') }}" class="text-sm text-[#B85B5B] font-bold hover:underline">
@@ -61,8 +61,8 @@
     <section class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
       <div class="mb-4 flex items-center justify-between">
         <div>
-          <h2 class="text-xl font-semibold text-gray-800">Compras Confirmadas</h2>
-          <p class="text-sm text-gray-500">Historial de compras que ya han sido confirmadas.</p>
+          <h2 class="text-xl font-semibold text-gray-800">Órdenes de Compra</h2>
+          <p class="text-sm text-gray-500">Historial de órdenes con estados Pendiente, Cancelada o Confirmada.</p>
         </div>
       </div>
 
@@ -79,22 +79,28 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-200 bg-white">
-            {% if compras_confirmadas %}
-              {% for compra in compras_confirmadas %}
+            {% if ordenes_compra %}
+              {% for compra in ordenes_compra %}
               <tr class="hover:bg-gray-50">
                 <td class="px-5 py-4 font-semibold text-gray-900">#{{ compra.id }}</td>
                 <td class="px-5 py-4 text-gray-600">{{ compra.proveedor.nombre if compra.proveedor else 'N/A' }}</td>
-                <td class="px-5 py-4 text-gray-600">{{ compra.fecha_compra.strftime('%d/%m/%Y') }}</td>
+                <td class="px-5 py-4 text-gray-600">{{ compra.fecha_compra.strftime('%d/%m/%Y') if compra.fecha_compra else 'N/A' }}</td>
                 <td class="px-5 py-4 text-gray-600">{{ compra.fecha_registro.strftime('%d/%m/%Y %H:%M') if compra.fecha_registro else 'N/A' }}</td>
                 <td class="px-5 py-4 text-gray-600">{{ compra.usuario.nombre if compra.usuario else 'N/A' }}</td>
                 <td class="px-5 py-4">
+                  {% if compra.cancelada %}
+                  <span class="inline-flex rounded-full bg-[#B85B5B] bg-opacity-15 px-3 py-1 text-xs font-semibold text-[#7a3636] border border-[#B85B5B]">Cancelada</span>
+                  {% elif not compra.fecha_compra %}
+                  <span class="inline-flex rounded-full bg-[#E8A946] bg-opacity-15 px-3 py-1 text-xs font-semibold text-[#B8860B] border border-[#E8A946]">Pendiente</span>
+                  {% else %}
                   <span class="inline-flex rounded-full bg-[#4A9062] bg-opacity-15 px-3 py-1 text-xs font-semibold text-[#2D6A3E] border border-[#4A9062]">Confirmada</span>
+                  {% endif %}
                 </td>
               </tr>
               {% endfor %}
             {% else %}
               <tr>
-                <td colspan="6" class="px-5 py-8 text-center text-gray-500">No hay compras confirmadas aún.</td>
+                <td colspan="6" class="px-5 py-8 text-center text-gray-500">No hay órdenes de compra registradas aún.</td>
               </tr>
             {% endif %}
           </tbody>

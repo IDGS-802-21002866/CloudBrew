@@ -33,7 +33,14 @@ def get_pending_solicitudes():
 def get_solicitudes_confirmadas_retail():
     return SolicitudCompra.query.filter(
         SolicitudCompra.origen == "retail",
-        SolicitudCompra.estado.in_(["En Compra", "Finalizado"]),
+        SolicitudCompra.estado == "Surtida",
+    ).all()
+
+
+def get_solicitudes_surtidas_retail():
+    return SolicitudCompra.query.filter(
+        SolicitudCompra.origen == "retail",
+        SolicitudCompra.estado == "Surtida",
     ).all()
 
 
