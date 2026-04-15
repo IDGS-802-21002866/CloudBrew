@@ -1,15 +1,13 @@
 import random
 import secrets
-import threading
 import uuid
 from datetime import datetime, timedelta, timezone
 
 from flask import current_app, render_template, session, url_for
 from flask_login import login_user, logout_user
-from flask_mail import Message
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from app import mail
+from app.shared.email import enviar_correo
 from app.modules.producto_venta.model import ProductoVenta
 from app.modules.inventario_producto_terminado.service import (
     InventarioProductoTerminadoService,
@@ -28,15 +26,6 @@ inventario_service = InventarioProductoTerminadoService()
 
 # Tiempo que dura una reserva de stock desde que se agrega al carrito
 RESERVA_TTL_MINUTOS = 30
-
-
-def _enviar_correo(app, msg):
-    """Envía un correo en segundo plano con el contexto de la app."""
-    try:
-        with app.app_context():
-            mail.send(msg)
-    except Exception:
-        pass
 
 
 def _get_session_id():
@@ -86,17 +75,15 @@ class TiendaAuthService:
         ).isoformat()
         session["usuario_2fa_id"] = usuario.id
 
-        msg = Message(
-            subject="Código de verificación - CloudBrew",
-            recipients=[usuario.email],
+        enviar_correo(
+            destinatario=usuario.email,
+            asunto="Código de verificación - CloudBrew",
             html=render_template(
                 "tienda/correo_2fa.html",
                 nombre=usuario.nombre,
                 codigo=codigo,
             ),
         )
-        app = current_app._get_current_object()
-        threading.Thread(target=lambda: _enviar_correo(app, msg)).start()
 
         return True
 
@@ -140,17 +127,15 @@ class TiendaAuthService:
         guardar_token_recuperacion(usuario, token, expiry)
 
         enlace = url_for("tienda.restablecer_contrasena", token=token, _external=True)
-        msg = Message(
-            subject="Recuperar contraseña - CloudBrew",
-            recipients=[usuario.email],
+        enviar_correo(
+            destinatario=usuario.email,
+            asunto="Recuperar contraseña - CloudBrew",
             html=render_template(
                 "auth/correo_recuperacion.html",
                 enlace=enlace,
                 nombre=usuario.nombre,
             ),
         )
-        app = current_app._get_current_object()
-        threading.Thread(target=lambda: _enviar_correo(app, msg)).start()
 
     def restablecer_contrasena(self, token, nueva_contrasenia):
         usuario = get_usuario_by_reset_token(token)

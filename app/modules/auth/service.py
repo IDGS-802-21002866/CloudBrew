@@ -1,13 +1,11 @@
 import secrets
-import threading
 from datetime import datetime, timedelta, timezone
 
 from flask import current_app, render_template, url_for
 from flask_login import login_user, logout_user
-from flask_mail import Message
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from app import mail
+from app.shared.email import enviar_correo
 from app.modules.usuarios.repository import (
     get_usuario_by_reset_token,
     get_usuario_by_email,
@@ -18,14 +16,6 @@ from app.modules.usuarios.repository import (
 from app.modules.usuarios.service import UsuarioService
 
 usuarios_service = UsuarioService()
-
-
-def _enviar_correo(app, msg):
-    try:
-        with app.app_context():
-            mail.send(msg)
-    except Exception:
-        pass
 
 
 class AuthService:
@@ -61,15 +51,13 @@ class AuthService:
         guardar_token_recuperacion(usuario, token, expiry)
 
         enlace = url_for("auth.restablecer_contrasena", token=token, _external=True)
-        msg = Message(
-            subject="Recuperar contraseña - CloudBrew",
-            recipients=[usuario.email],
+        enviar_correo(
+            destinatario=usuario.email,
+            asunto="Recuperar contraseña - CloudBrew",
             html=render_template(
                 "auth/correo_recuperacion.html", enlace=enlace, nombre=usuario.nombre
             ),
         )
-        app = current_app._get_current_object()
-        threading.Thread(target=lambda: _enviar_correo(app, msg)).start()
 
     def restablecer_contrasena(self, token, nueva_contrasenia):
         usuario = get_usuario_by_reset_token(token)
