@@ -7,13 +7,12 @@ load_dotenv()
 
 
 class Config(object):
-    """Configuración base compartida por todos los ambientes"""
-
     SECRET_KEY = os.environ.get("SECRET_KEY")
-    SESSION_COOKIE_HTTPONLY = True
-    SESSION_COOKIE_SAMESITE = "Lax"
+    SESSION_COOKIE_SECURE = False
     SESSION_PERMANENT = True
     PERMANENT_SESSION_LIFETIME = timedelta(minutes=30)
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = "Lax"
     CAPTCHA_ENABLE = True
     CAPTCHA_LENGTH = 5
     CAPTCHA_WIDTH = 200
@@ -25,10 +24,7 @@ class Config(object):
 
 
 class DevelopmentConfig(Config):
-    """Configuración para desarrollo local"""
-
     DEBUG = True
-    SESSION_COOKIE_SECURE = False
     SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     MAIL_SERVER = os.environ.get("MAIL_SERVER", "smtp.gmail.com")
@@ -38,36 +34,3 @@ class DevelopmentConfig(Config):
     MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
     MAIL_DEFAULT_SENDER = os.environ.get("MAIL_DEFAULT_SENDER")
     BASE_URL = os.environ.get("BASE_URL", "http://localhost:5000")
-
-
-class ProductionConfig(Config):
-    """Configuración para producción en Railway"""
-
-    DEBUG = False
-    SESSION_COOKIE_SECURE = True  # Solo HTTPS
-
-    # Railway expone variables individuales de MySQL
-    # Construir DATABASE_URI a partir de componentes si MYSQL_URL no existe
-    _mysql_url = os.environ.get("MYSQL_URL")
-    if not _mysql_url:
-        # Construir desde componentes individuales de Railway
-        _host = os.environ.get("MYSQLHOST")
-        _user = os.environ.get("MYSQLUSER")
-        _password = os.environ.get("MYSQLPASSWORD")
-        _database = os.environ.get("MYSQL_DATABASE")
-        _port = os.environ.get("MYSQLPORT", "3306")
-
-        if _host and _user and _password and _database:
-            _mysql_url = (
-                f"mysql+pymysql://{_user}:{_password}@{_host}:{_port}/{_database}"
-            )
-
-    SQLALCHEMY_DATABASE_URI = _mysql_url or os.environ.get("DATABASE_URL")
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
-    MAIL_SERVER = os.environ.get("MAIL_SERVER", "smtp.gmail.com")
-    MAIL_PORT = int(os.environ.get("MAIL_PORT", 587))
-    MAIL_USE_TLS = os.environ.get("MAIL_USE_TLS", "True") == "True"
-    MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
-    MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
-    MAIL_DEFAULT_SENDER = os.environ.get("MAIL_DEFAULT_SENDER")
-    BASE_URL = os.environ.get("BASE_URL")  # Debe estar seteado en Railway

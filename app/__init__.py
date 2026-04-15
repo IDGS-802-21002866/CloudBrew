@@ -6,9 +6,8 @@ from flask_login import LoginManager, login_required
 from flask_mail import Mail
 from flask_session import Session
 from flask_session_captcha import FlaskSessionCaptcha
-import os
 
-from app.core.config import DevelopmentConfig, ProductionConfig
+from app.core.config import DevelopmentConfig
 
 
 class Base(DeclarativeBase):
@@ -58,29 +57,7 @@ def create_app():
     from app.modules.producto_venta import bp as producto_venta_bp
 
     app = Flask(__name__)
-
-    # Detectar ambiente:
-    # Production si existe MYSQL_URL, MYSQLHOST, o si FLASK_ENV=production
-    # Development en caso contrario
-    is_production = (
-        os.environ.get("MYSQL_URL")
-        or os.environ.get("MYSQLHOST")
-        or os.environ.get("FLASK_ENV") == "production"
-    )
-
-    if is_production:
-        app.config.from_object(ProductionConfig)
-    else:
-        app.config.from_object(DevelopmentConfig)
-
-    # Validar que la base de datos esté configurada
-    if not app.config.get("SQLALCHEMY_DATABASE_URI"):
-        raise RuntimeError(
-            "SQLALCHEMY_DATABASE_URI no configurada. "
-            "En Railway: verifica que las variables MySQL estén disponibles (MYSQLHOST, MYSQLUSER, MYSQLPASSWORD, MYSQL_DATABASE). "
-            "En desarrollo local: verifica que DATABASE_URL esté en .env"
-        )
-
+    app.config.from_object(DevelopmentConfig)
     db.init_app(app)
     app.config["SESSION_SQLALCHEMY"] = db
     Session(app)
