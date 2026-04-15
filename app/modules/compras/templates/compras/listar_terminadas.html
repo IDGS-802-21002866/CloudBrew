@@ -1,14 +1,15 @@
 {% extends 'base.html' %}
 
-{% block title %}Compras{% endblock %}
+{% block title %}Histórico de Compras{% endblock %}
 
 {% block content %}
 <div class="container mx-auto px-4 py-8">
 
   <div class="flex justify-between items-center mb-6">
-    <h1 class="text-3xl font-bold text-gray-800">Pedidos de Compra Terminados</h1>
-    <a href="{{ url_for('compras.crear') }}" class="bg-[#4A9062] hover:opacity-90 text-white font-bold py-2 px-4 rounded flex items-center shadow-md transition">
-      <i class="fa-solid fa-plus mr-2"></i> Nueva Compra
+    <h1 class="text-3xl font-bold text-gray-800">Histórico de Compras</h1>
+    <a href="{{ url_for('compras.listar') }}"
+       class="bg-[#6C9AD0] hover:opacity-90 text-white font-bold py-2 px-4 rounded shadow-md transition flex items-center">
+      <i class="fa-solid fa-arrow-left mr-2"></i> Ver Pendientes
     </a>
   </div>
 
@@ -32,7 +33,7 @@
           <th class="px-6 py-3 text-left text-xs font-medium text-brew-beige uppercase tracking-wider">Folio</th>
           <th class="px-6 py-3 text-left text-xs font-medium text-brew-beige uppercase tracking-wider">Proveedor</th>
           <th class="px-6 py-3 text-left text-xs font-medium text-brew-beige uppercase tracking-wider">Fecha de Compra</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-brew-beige uppercase tracking-wider">Fecha de Registro</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-brew-beige uppercase tracking-wider">Registro</th>
           <th class="px-6 py-3 text-left text-xs font-medium text-brew-beige uppercase tracking-wider">Usuario</th>
           <th class="px-6 py-3 text-left text-xs font-medium text-brew-beige uppercase tracking-wider">Estado</th>
           <th class="px-6 py-3 text-center text-xs font-medium text-brew-beige uppercase tracking-wider">Acciones</th>
@@ -58,14 +59,12 @@
             <td class="px-6 py-4 whitespace-nowrap text-sm">
               {% if compra.cancelada %}
                 <span class="px-3 py-1 text-xs font-bold rounded-full bg-red-100 text-red-700 border border-red-200">Cancelada</span>
-              {% elif compra.fecha_compra %}
-                <span class="px-3 py-1 text-xs font-bold rounded-full bg-green-100 text-green-700 border border-green-200">Pagado</span>
               {% else %}
-                <span class="px-3 py-1 text-xs font-bold rounded-full bg-yellow-100 text-yellow-700 border border-yellow-200">Pendiente</span>
+                <span class="px-3 py-1 text-xs font-bold rounded-full bg-green-100 text-green-700 border border-green-200">Confirmada</span>
               {% endif %}
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-              <a href="{{ url_for('compras.detalle', id=compra.id) }}"
+              <a href="{{ url_for('compras.detalle', id=compra.id) }}?origen=historico"
                  class="text-white font-bold py-1.5 px-4 rounded-lg inline-flex items-center shadow-sm hover:opacity-90 transition bg-[#6C9AD0]">
                 <i class="fa-solid fa-eye mr-2"></i> Ver Detalle
               </a>
@@ -75,7 +74,7 @@
         {% else %}
           <tr>
             <td colspan="7" class="px-6 py-10 text-center text-gray-500">
-              No se encontraron registros de compras.
+              No se encontraron compras confirmadas.
             </td>
           </tr>
         {% endif %}
@@ -83,9 +82,10 @@
     </table>
   </div>
 
+  {% if pagination.pages > 1 %}
   <div class="flex justify-center items-center mt-6 space-x-4">
     {% if pagination.has_prev %}
-    <a href="{{ url_for('compras.listar', page=pagination.prev_num) }}"
+    <a href="{{ url_for('compras.listar_terminadas', page=pagination.prev_num) }}"
        class="px-4 py-2 bg-[#4A9062] text-white font-bold rounded-lg hover:opacity-90 transition shadow-sm">
       <i class="fa-solid fa-chevron-left mr-2"></i> Anterior
     </a>
@@ -100,7 +100,7 @@
     </span>
 
     {% if pagination.has_next %}
-    <a href="{{ url_for('compras.listar', page=pagination.next_num) }}"
+    <a href="{{ url_for('compras.listar_terminadas', page=pagination.next_num) }}"
        class="px-4 py-2 bg-[#4A9062] text-white font-bold rounded-lg hover:opacity-90 transition shadow-sm">
       Siguiente <i class="fa-solid fa-chevron-right ml-2"></i>
     </a>
@@ -110,6 +110,7 @@
     </span>
     {% endif %}
   </div>
+  {% endif %}
 </div>
 
 <script src="{{ url_for('static', filename='js/busqueda_tabla.js') }}"></script>

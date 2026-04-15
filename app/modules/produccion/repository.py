@@ -2,7 +2,9 @@
 from app import db
 
 
-def insertar_produccion(id_receta, cantidad, usuario_id=None, es_retail=False, id_solicitud_compra=None):
+def insertar_produccion(
+    id_receta, cantidad, usuario_id=None, es_retail=False, id_solicitud_compra=None
+):
     try:
         produccion = Produccion(
             id_receta=id_receta,
@@ -35,18 +37,15 @@ def modificar_produccion(id_produccion, id_receta, cantidad, estado, usuario_id=
         if usuario_id is not None:
             produccion.usuario_id = usuario_id
 
-        if not db.session.in_transaction():
-            db.session.commit()
+        db.session.commit()
 
         return produccion
 
     except ValueError as ve:
-        if not db.session.in_transaction():
-            db.session.rollback()
+        db.session.rollback()
         return ve
     except Exception:
-        if not db.session.in_transaction():
-            db.session.rollback()
+        db.session.rollback()
         return ValueError("Ocurrio un error al modificar la produccion.")
 
 
@@ -142,33 +141,38 @@ def get_procesos_por_produccion(id_produccion):
     except Exception:
         return ValueError("Ocurrio un error al obtener los Procesos de produccion.")
 
-def get_produccion(): 
-    try: 
-        return Produccion.query.filter(Produccion.estado!='completado').all() 
-    except Exception: 
+
+def get_produccion():
+    try:
+        return Produccion.query.filter(Produccion.estado != "completado").all()
+    except Exception:
         return ValueError("Ocurrio un error al obtener los registros de produccion.")
+
 
 def get_produccion_paginada(page, per_page):
     try:
-        return Produccion.query.filter(
-            Produccion.estado != 'completado'
-        ).order_by(Produccion.id_produccion.desc()).paginate(
-            page=page,
-            per_page=per_page
+        return (
+            Produccion.query.filter(Produccion.estado != "completado")
+            .order_by(Produccion.id_produccion.desc())
+            .paginate(page=page, per_page=per_page)
         )
     except Exception as e:
-        raise ValueError("Ocurrió un error al obtener los registros de producción.") from e
+        raise ValueError(
+            "Ocurrió un error al obtener los registros de producción."
+        ) from e
+
 
 def get_produccion_completadas(page, per_page):
     try:
-        return Produccion.query.filter(
-            Produccion.estado == 'completado'
-        ).order_by(Produccion.id_produccion.desc()).paginate(
-            page=page,
-            per_page=per_page
+        return (
+            Produccion.query.filter(Produccion.estado == "completado")
+            .order_by(Produccion.id_produccion.desc())
+            .paginate(page=page, per_page=per_page)
         )
     except Exception as e:
-        raise ValueError("Ocurrió un error al obtener los registros de producción.") from e
+        raise ValueError(
+            "Ocurrió un error al obtener los registros de producción."
+        ) from e
 
 
 def get_produccion_by_id(id):
@@ -182,5 +186,3 @@ def get_pedido_produccion_por_produccion(id_produccion):
     from app.modules.sol_prod.model import PedidoProduccion
 
     return PedidoProduccion.query.filter_by(id_produccion=id_produccion).first()
-
-

@@ -5,6 +5,13 @@ from app.modules.compras.service import ComprasService
 from app.modules.inventario_materias_primas.service import (
     InventarioMateriasPrimasService,
 )
+from app.shared.decorators import verificar_rol_o_denegar
+
+
+@bp.before_request
+def verificar_acceso():
+    return verificar_rol_o_denegar("admin", "almacen", "compras")
+
 
 servicio = InventarioMateriasPrimasService()
 compras_service = ComprasService()
@@ -12,15 +19,17 @@ compras_service = ComprasService()
 
 @bp.route("/")
 def listar():
-    page = request.args.get('page', 1, type=int)
-    search_term = request.args.get('q', '')
-    
-    pagination = servicio.listar_materias_primas_paginadas(page=page, per_page=10, search_term=search_term)
-    
+    page = request.args.get("page", 1, type=int)
+    search_term = request.args.get("q", "")
+
+    pagination = servicio.listar_materias_primas_paginadas(
+        page=page, per_page=10, search_term=search_term
+    )
+
     return render_template(
-        "inventario_materias_primas/listar.html", 
+        "inventario_materias_primas/listar.html",
         pagination=pagination,
-        search_term=search_term
+        search_term=search_term,
     )
 
 
@@ -39,35 +48,33 @@ def detalle(id):
     except ValueError as e:
         flash(str(e), "danger")
         return redirect(url_for("inventario_materias_primas.listar"))
-    
+
+
 # app/modules/inventario_materias_primas/routes.py
 
-@bp.route("/solicitar", defaults={'id': None}, methods=["GET", "POST"])
-@bp.route("/solicitar/<int:id>", methods=["GET", "POST"])
-def solicitar(id):
-    materia = None
-    materias = []
-    
-    if id:
-        materia = servicio.obtener_materia_prima(id)
-    else:
-        # Cargamos materias para el select
-        materias = servicio.listar_materias_primas_paginadas(per_page=100).items
 
-    if request.method == "POST":
-        materia_id = id or request.form.get("materia_prima_id")
-        cantidad = request.form.get("cantidad")
-        motivo = request.form.get("motivo")
-        
-        try:
-            # Quitamos el flash de aquí. El servicio se encarga.
-            compras_service.crear_solicitud_compra(
-                materia_prima_id=materia_id,
-                cantidad=float(cantidad),
-                origen="almacen",
-            )
-            return redirect(url_for("inventario_materias_primas.listar"))
-        except ValueError as e:
-            flash(str(e), "danger")
+@bp.route("/solicitar")
+def solicitar():
+    page = request.args.get("page", 1, type=int)
+    materias_bajo_stock = servicio.listar_materias_primas_bajo_stock_pag(
+        page, per_page=10
+    )
+    return render_template(
+        "inventario_materias_primas/solicitar.html",
+        pagination=materias_bajo_stock,
+    )
 
-    return render_template("inventario_materias_primas/solicitar.html", materia=materia, materias=materias)
+
+@bp.route("/solicitar/<int:id>", methods=["POST"])
+def crear_solicitud(id):
+    cantidad = request.form.get("cantidad", type=float)
+    try:
+        compras_service.crear_solicitud_compra(
+            materia_prima_id=id,
+            cantidad=cantidad,
+            origen="almacen",
+        )
+        flash("Solicitud de compra creada exitosamente.", "success")
+    except ValueError as e:
+        flash(str(e), "danger")
+    return redirect(url_for("inventario_materias_primas.solicitar"))

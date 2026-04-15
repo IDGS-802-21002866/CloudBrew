@@ -5,6 +5,13 @@ from .forms import MermaForm
 from .service import MermaMateriaPrimaService
 from app.modules.inventario_materias_primas import repository as inv_repo
 from app.modules.unidades_medida.service import UnidadMedidaService
+from app.shared.decorators import verificar_rol_o_denegar
+
+
+@bp.before_request
+def verificar_acceso():
+    return verificar_rol_o_denegar("admin", "almacen")
+
 
 medida_service = UnidadMedidaService()
 servicio = MermaMateriaPrimaService()
@@ -27,7 +34,7 @@ def listar():
 @bp.route("/crear", methods=["GET", "POST"])
 def crear():
     form = MermaForm()
-    materias = inv_repo.get_all_materias_primas_con_stock()
+    materias = inv_repo.get_all_materias_primas_con_stock_lista()
     form.materia_prima_id.choices = [
         (mp.id, f"{mp.nombre} - Stock: {mp.stock_actual:.2f}") for mp in materias
     ]

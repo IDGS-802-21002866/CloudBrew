@@ -1,11 +1,9 @@
 {% extends 'base.html' %}
-{% from '_macros.html' import mostrar_flashes %}
 
 {% block title %}Inventario de Materias Primas{% endblock %}
 
 {% block content %}
 <div class="container mx-auto px-4 py-8">
-    {{ mostrar_flashes() }}
 
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-3xl font-bold text-gray-800">Inventario de Materias Primas</h1>
@@ -52,13 +50,13 @@
 
     <div class="bg-white shadow-md rounded-lg overflow-hidden border border-gray-200">
         <table class="min-w-full table-auto" id="tablaInventario">
-            <thead class="bg-gray-50 border-b border-gray-200">
+            <thead class="bg-brew-bg">
                 <tr>
-                    <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Materia Prima</th>
-                    <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-center">Stock Actual</th>
-                    <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-center">Mínimo (2 Lotes)</th>
-                    <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-center">Estado</th>
-                    <th class="px-6 py-4 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-brew-beige uppercase tracking-wider">Materia Prima</th>
+                    <th class="px-6 py-3 text-center text-xs font-medium text-brew-beige uppercase tracking-wider">Stock Actual</th>
+                    <th class="px-6 py-3 text-center text-xs font-medium text-brew-beige uppercase tracking-wider">Mínimo (2 Lotes)</th>
+                    <th class="px-6 py-3 text-center text-xs font-medium text-brew-beige uppercase tracking-wider">Estado</th>
+                    <th class="px-6 py-3 text-center text-xs font-medium text-brew-beige uppercase tracking-wider">Acciones</th>
                 </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
@@ -88,15 +86,16 @@
                     <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                         <div class="flex justify-center gap-2">
                             <a href="{{ url_for('inventario_materias_primas.detalle', id=item.id) }}"
-                                class="text-white font-bold py-1.5 px-4 rounded-lg shadow-sm hover:opacity-90 transition text-xs"
-                                style="background-color: #6C9AD0;">
-                                Ver Detalle
+                                class="text-white font-bold py-1.5 px-4 rounded-lg shadow-sm hover:opacity-90 transition text-xs bg-[#6C9AD0]">
+                                <i class="fa-solid fa-eye mr-1"></i> Ver Detalle
                             </a>
 
-                            <a href="{{ url_for('inventario_materias_primas.solicitar', id=item.id) }}"
+                            {% if item.estado_stock != 'disponible' %}
+                            <a href="{{ url_for('inventario_materias_primas.solicitar') }}"
                                 class="bg-[#4A9062] text-white font-bold py-1.5 px-4 rounded-lg shadow-sm hover:opacity-90 transition text-xs">
-                                Solicitar
+                                <i class="fa-solid fa-cart-plus mr-1"></i> Solicitar
                             </a>
+                            {% endif %}
                         </div>
                     </td>
                 </tr>
@@ -111,6 +110,10 @@
             class="px-4 py-2 bg-[#4A9062] text-white font-bold rounded-lg hover:opacity-90 transition shadow-sm">
             <i class="fa-solid fa-chevron-left mr-2"></i> Anterior
         </a>
+        {% else %}
+        <span class="px-4 py-2 bg-gray-200 text-gray-400 font-bold rounded-lg cursor-not-allowed">
+            <i class="fa-solid fa-chevron-left mr-2"></i> Anterior
+        </span>
         {% endif %}
 
         <span class="text-gray-600 font-medium bg-white px-4 py-2 rounded-lg border border-gray-200">
@@ -122,6 +125,10 @@
             class="px-4 py-2 bg-[#4A9062] text-white font-bold rounded-lg hover:opacity-90 transition shadow-sm">
             Siguiente <i class="fa-solid fa-chevron-right ml-2"></i>
         </a>
+        {% else %}
+        <span class="px-4 py-2 bg-gray-200 text-gray-400 font-bold rounded-lg cursor-not-allowed">
+            Siguiente <i class="fa-solid fa-chevron-right ml-2"></i>
+        </span>
         {% endif %}
     </div>
 </div>
