@@ -3,13 +3,11 @@ from app.modules.materias_primas.form import MateriaPrimaForm
 from app.modules.materias_primas.service import MateriaPrimaService
 from app.modules.unidades_medida.service import UnidadMedidaService
 from . import bp
-from app.shared.decorators import login_required
 
 servicio = MateriaPrimaService()
 servicio_unidades = UnidadMedidaService()
 
 
-@login_required
 @bp.route("/")
 def listar():
     page=request.args.get("page", 1, type=int)
@@ -17,12 +15,12 @@ def listar():
     return render_template("materias_primas/listar.html", pagination=pagination)
 
 
-@login_required
 @bp.route("/crear", methods=["GET", "POST"])
 def crear():
     form = MateriaPrimaForm()
     tipos_medida = servicio_unidades.listar_tipos_medida()
     form.tipo_medida_id.choices = [(t.id, t.nombre) for t in tipos_medida]
+    tipo_unidades = {str(t.id): t.unidad_base for t in tipos_medida}
 
     if form.validate_on_submit():
         try:
@@ -38,10 +36,11 @@ def crear():
         except ValueError as e:
             flash(str(e), "danger")
 
-    return render_template("materias_primas/crear.html", form=form)
+    return render_template(
+        "materias_primas/crear.html", form=form, tipo_unidades=tipo_unidades
+    )
 
 
-@login_required
 @bp.route("/<int:id>")
 def detalle(id):
     try:
@@ -52,7 +51,6 @@ def detalle(id):
         return redirect(url_for("materias_primas.listar"))
 
 
-@login_required
 @bp.route("/<int:id>/editar", methods=["GET", "POST"])
 def editar(id):
     try:
@@ -61,6 +59,7 @@ def editar(id):
 
         tipos_medida = servicio_unidades.listar_tipos_medida()
         form.tipo_medida_id.choices = [(t.id, t.nombre) for t in tipos_medida]
+        tipo_unidades = {str(t.id): t.unidad_base for t in tipos_medida}
 
         if form.validate_on_submit():
             try:
@@ -76,13 +75,17 @@ def editar(id):
             except ValueError as e:
                 flash(str(e), "danger")
 
-        return render_template("materias_primas/crear.html", form=form, materia=materia)
+        return render_template(
+            "materias_primas/crear.html",
+            form=form,
+            materia=materia,
+            tipo_unidades=tipo_unidades,
+        )
     except ValueError as e:
         flash(str(e), "danger")
         return redirect(url_for("materias_primas.listar"))
 
 
-@login_required
 @bp.route("/<int:id>/desactivar", methods=["POST"])
 def desactivar(id):
     try:
@@ -93,7 +96,6 @@ def desactivar(id):
     return redirect(url_for("materias_primas.listar"))
 
 
-@login_required
 @bp.route("/<int:id>/activar", methods=["POST"])
 def activar(id):
     try:

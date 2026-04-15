@@ -24,6 +24,17 @@ with app.app_context():
     else:
         print("Rol admin ya existe")
 
+    # Verificar si el rol cliente existe
+    rol_cliente = Rol.query.filter_by(name="cliente").first()
+
+    if not rol_cliente:
+        rol_cliente = Rol(name="cliente", description="Cliente del portal web")
+        db.session.add(rol_cliente)
+        db.session.commit()
+        print("Rol cliente creado")
+    else:
+        print("Rol cliente ya existe")
+
     # Verificar si el usuario de prueba existe
     usuario_test = Usuario.query.filter_by(email="test@test.com").first()
 

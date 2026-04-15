@@ -25,18 +25,28 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
                 <div class="relative">
                     <label class="block text-gray-500 text-xs font-black uppercase mb-2">Buscar Cliente Retail</label>
-                    <input type="text" id="cliente-search" list="clientes-list"
+                    <input type="text" id="cliente-search"
                         value="{{ cliente_nombre_default if cliente_nombre_default else request.form.get('cliente_nombre_hidden', '') }}"
                         class="w-full px-4 py-3 border-2 border-gray-400 rounded-xl focus:border-[#6C9AD0] outline-none"
-                        placeholder="Nombre del cliente..." autocomplete="off">
+                        placeholder="Nombre del cliente..." autocomplete="off" spellcheck="false">
 
-                    <datalist id="clientes-list">
+                    <div id="cliente-dropdown"
+                        class="absolute z-20 mt-2 w-full rounded-xl border border-gray-300 bg-white shadow-lg hidden max-h-64 overflow-y-auto">
                         {% for cliente in clientes_retail %}
-                        <option value="{{ cliente.nombre_completo }}" data-id="{{ cliente.id }}"
-                            data-email="{{ cliente.email }}" data-telefono="{{ cliente.telefono }}"
+                        <button type="button"
+                            class="cliente-option w-full text-left px-4 py-3 hover:bg-[#E8F1FB] transition text-sm text-gray-700"
+                            data-id="{{ cliente.id }}"
+                            data-nombre="{{ cliente.nombre_completo }}"
+                            data-email="{{ cliente.email }}"
+                            data-telefono="{{ cliente.telefono }}"
                             data-dir="{{ cliente.calle_numero }}, {{ cliente.colonia }}">
-                            {% endfor %}
-                    </datalist>
+                            {{ cliente.nombre_completo }}
+                        </button>
+                        {% endfor %}
+                        {% if not clientes_retail %}
+                        <div class="px-4 py-3 text-sm text-gray-500">No hay clientes disponibles.</div>
+                        {% endif %}
+                    </div>
 
                     <input type="hidden" name="cliente_id" id="cliente_id" value="{{ form.cliente_id.data or '' }}">
                     <input type="hidden" name="cliente_nombre_hidden" id="cliente_nombre_hidden"
@@ -55,22 +65,31 @@
 
             <div class="bg-gray-50 border-2 border-gray-200 rounded-2xl p-6 mb-10">
                 <h3 class="text-sm font-black text-gray-400 uppercase mb-6 border-b pb-2">Configurar Producto</h3>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+                    <div>
+                        <label class="block text-gray-700 text-xs font-bold uppercase mb-2">Receta / Estilo</label>
+                        <select name="receta_id" id="receta-select"
+                            class="w-full px-4 py-2 border-2 border-gray-400 rounded-lg focus:border-[#6C9AD0] outline-none">
+                            <option value="">--- Seleccionar receta ---</option>
+                            {% for receta in recetas %}
+                            <option value="{{ receta.id }}">{{ receta.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
                     <div>
                         <label class="block text-gray-700 text-xs font-bold uppercase mb-2">Producto / Estilo</label>
-                        <select name="receta_id" id="receta-select"
+                        <select name="producto_venta_id" id="producto-select"
                             class="w-full px-4 py-2 border-2 border-gray-400 rounded-lg focus:border-[#4A9062] outline-none">
                             <option value="">--- Seleccionar ---</option>
-                            {% for receta in recetas %}
-                            <option value="{{ receta.id }}" data-rendimiento="{{ receta.cantidad_producida }}">{{
-                                receta.nombre }}</option>
+                            {% for producto in productos_venta %}
+                            <option value="{{ producto.id }}" data-receta-id="{{ producto.receta_id }}" data-rendimiento="{{ producto.receta.cantidad_producida }}">{{ producto.nombre }}</option>
                             {% endfor %}
                         </select>
                     </div>
                     <div>
                         <label class="block text-gray-700 text-xs font-bold uppercase mb-2">Cantidad de Lotes</label>
                         {{ detalle_form.cantidad_lotes(class="w-full px-4 py-2 border-2 border-gray-400 rounded-lg",
-                        placeholder="Ej. 1") }}
+                        placeholder="Ej. 1", required=False) }}
                     </div>
                     <div>
                         <label class="block text-gray-700 text-xs font-bold uppercase mb-2">Total Botellas
@@ -100,8 +119,8 @@
                         </thead>
                         <tbody class="divide-y divide-gray-200">
                             {% for detalle in detalles %}
-                            <tr class="hover:bg-brew-bg hover:bg-opacity-5 transition">
-                                <td class="px-6 py-4 font-bold text-gray-800">{{ detalle.receta_nombre }}</td>
+                            <tr class="hover:bg-brew-bg hover:bg-opacity-5 transition" data-producto-id="{{ detalle.producto_venta_id }}">
+                                <td class="px-6 py-4 font-bold text-gray-800">{{ detalle.producto_venta_nombre }}</td>
                                 <td class="px-6 py-4 text-center font-black text-[#6C9AD0]">{{ detalle.cantidad_lotes }}
                                 </td>
                                 <td class="px-6 py-4 text-gray-600">{{ '%.0f'|format(detalle.total_unidades) }} unidades
@@ -127,9 +146,9 @@
             </div>
 
             <div class="flex justify-end border-t pt-8">
-                <button type="submit" name="action" value="crear_pedido"
+                <button type="submit" name="action" value="crear_pedido" formnovalidate
                     class="px-12 py-4 bg-[#4A9062] text-white font-black rounded-2xl hover:bg-green-800 transition shadow-xl uppercase tracking-tighter">
-                    Actualizar
+                    Generar Orden de Pedido
                 </button>
             </div>
         </form>
@@ -141,40 +160,143 @@
     const clienteIdInput = document.getElementById('cliente_id');
     const clienteNombreHidden = document.getElementById('cliente_nombre_hidden');
     const infoBox = document.getElementById('cliente-info-box');
+    const clienteDropdown = document.getElementById('cliente-dropdown');
 
-    function actualizarInfoCliente() {
-        const option = document.querySelector(`#clientes-list option[value="${clienteSearch.value}"]`);
+    function actualizarDropdown() {
+        const texto = clienteSearch.value.toLowerCase().trim();
+        let coincidencias = 0;
+        Array.from(clienteDropdown.querySelectorAll('.cliente-option')).forEach(button => {
+            const nombre = button.dataset.nombre.toLowerCase();
+            const visible = nombre.includes(texto);
+            button.classList.toggle('hidden', !visible);
+            if (visible) {
+                coincidencias += 1;
+            }
+        });
+        clienteDropdown.classList.toggle('hidden', coincidencias === 0);
+    }
+
+    function seleccionarCliente(button) {
+        clienteSearch.value = button.dataset.nombre;
+        document.getElementById('info-email').textContent = button.dataset.email;
+        document.getElementById('info-tel').textContent = button.dataset.telefono;
+        document.getElementById('info-dir').textContent = button.dataset.dir;
+        clienteIdInput.value = button.dataset.id;
+        clienteNombreHidden.value = button.dataset.nombre;
+        infoBox.classList.remove('hidden');
+        clienteDropdown.classList.add('hidden');
+    }
+
+    clienteSearch.addEventListener('input', function () {
+        actualizarDropdown();
+    });
+
+    clienteSearch.addEventListener('focus', function () {
+        actualizarDropdown();
+    });
+
+    clienteDropdown.addEventListener('click', function (event) {
+        const option = event.target.closest('.cliente-option');
         if (option) {
-            document.getElementById('info-email').textContent = option.getAttribute('data-email');
-            document.getElementById('info-tel').textContent = option.getAttribute('data-telefono');
-            document.getElementById('info-dir').textContent = option.getAttribute('data-dir');
-            clienteIdInput.value = option.getAttribute('data-id');
-            clienteNombreHidden.value = clienteSearch.value;
-            infoBox.classList.remove('hidden');
-        } else {
-            infoBox.classList.add('hidden');
-            clienteIdInput.value = '';
+            seleccionarCliente(option);
+        }
+    });
+
+    document.addEventListener('click', function (event) {
+        if (!event.target.closest('#cliente-search') && !event.target.closest('#cliente-dropdown')) {
+            clienteDropdown.classList.add('hidden');
+        }
+    });
+
+    // Calculadora y filtrado por receta
+    const recetaSelect = document.getElementById('receta-select');
+    const productoSelect = document.getElementById('producto-select');
+    const cantidadLotes = document.querySelector('input[name="cantidad_lotes"]');
+    const totalUnidades = document.getElementById('total-unidades');
+    const formPedido = document.getElementById('form-pedido');
+    const detalleAgregado = {{ 'true' if detalle_agregado else 'false' }};
+
+    const productoOpciones = Array.from(productoSelect.options).map(option => ({
+        value: option.value,
+        text: option.textContent,
+        recetaId: option.dataset.recetaId || '',
+        rendimiento: option.dataset.rendimiento || '',
+    }));
+
+    function limpiarFormulario() {
+        productoSelect.value = '';
+        cantidadLotes.value = '';
+        totalUnidades.value = '';
+    }
+
+    function estaEnLista(productoId) {
+        if (!productoId) {
+            return false;
+        }
+        return Array.from(document.querySelectorAll('tbody tr[data-producto-id]')).some(
+            (tr) => tr.dataset.productoId === productoId
+        );
+    }
+
+    function actualizarListaProductos() {
+        const recetaId = recetaSelect.value;
+        productoSelect.innerHTML = '<option value="">--- Seleccionar ---</option>';
+
+        productoOpciones.forEach(optionData => {
+            if (!optionData.value) return;
+            if (!recetaId || optionData.recetaId === recetaId) {
+                const option = document.createElement('option');
+                option.value = optionData.value;
+                option.textContent = optionData.text;
+                option.dataset.rendimiento = optionData.rendimiento;
+                option.dataset.recetaId = optionData.recetaId;
+                productoSelect.appendChild(option);
+            }
+        });
+
+        if (!Array.from(productoSelect.options).some(opt => opt.value === productoSelect.value)) {
+            productoSelect.value = '';
+            totalUnidades.value = '';
         }
     }
 
-    clienteSearch.addEventListener('input', actualizarInfoCliente);
-
-    // Calculadora
-    const recetaSelect = document.getElementById('receta-select');
-    const cantidadLotes = document.querySelector('input[name="cantidad_lotes"]');
-    const totalUnidades = document.getElementById('total-unidades');
+    formPedido.addEventListener('submit', function (event) {
+        const action = event.submitter ? event.submitter.value : null;
+        if (action === 'agregar_detalle') {
+            const productoId = productoSelect.value;
+            if (estaEnLista(productoId)) {
+                alert('El producto ya está en la lista.');
+                event.preventDefault();
+                return;
+            }
+        }
+    });
 
     function calcular() {
-        const option = recetaSelect.options[recetaSelect.selectedIndex];
+        const option = productoSelect.options[productoSelect.selectedIndex];
         const rend = parseFloat(option.getAttribute('data-rendimiento')) || 0;
         const lotes = parseFloat(cantidadLotes.value) || 0;
         totalUnidades.value = rend > 0 && lotes > 0 ? Math.round(rend * lotes) + " Unidades" : "";
     }
 
-    recetaSelect.addEventListener('change', calcular);
+    recetaSelect.addEventListener('change', actualizarListaProductos);
+    productoSelect.addEventListener('change', calcular);
     cantidadLotes.addEventListener('input', calcular);
 
     // Persistencia al recargar (al agregar producto)
-    window.onload = () => { if (clienteSearch.value) actualizarInfoCliente(); };
+    window.onload = () => {
+        if (clienteSearch.value) {
+            const option = Array.from(document.querySelectorAll('.cliente-option')).find(
+                btn => btn.dataset.nombre.toLowerCase() === clienteSearch.value.toLowerCase()
+            );
+            if (option) {
+                seleccionarCliente(option);
+            }
+        }
+        if (detalleAgregado) {
+            limpiarFormulario();
+        }
+        actualizarListaProductos();
+    };
 </script>
 {% endblock %}

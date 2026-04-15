@@ -76,9 +76,9 @@ BEGIN
 
                 SET v_venta_id = LAST_INSERT_ID();
 
-                INSERT INTO detalle_venta (id_venta, id_receta, cantidad, precio_unitario, subtotal)
+                INSERT INTO detalle_venta (id_venta, id_producto_venta, cantidad, precio_unitario, subtotal)
                 SELECT v_venta_id,
-                       receta_id,
+                       producto_venta_id,
                        CAST(total_unidades AS SIGNED),
                        precio_unitario,
                        CAST(total_unidades AS SIGNED) * COALESCE(precio_unitario, 0)

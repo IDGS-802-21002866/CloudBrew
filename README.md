@@ -7,7 +7,7 @@ Sistema de gestion de producción de cervezas artesanales
 - Una vez clonado el repositorio crea el entorno virtual con el siguiente comando:`py -m venv env`
 - Activate tu entorno virtual con el comando `env\Script\activate`
 - Instala las dependencias necesarias con el comando `pip install -r requirements.txt`
-- Corre el proyecto con el comando `flask --app main --debug run`
+- Corre el proyecto con el comando `flask --app main --debug run` 
 
 ## Pasos para compilar los estilos de tailwind
 

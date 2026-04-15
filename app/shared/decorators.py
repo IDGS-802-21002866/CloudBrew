@@ -47,25 +47,6 @@ def require_role(*roles):
     return decorator
 
 
-def login_required(f):
-    """
-    Decorador que requiere que el usuario esté autenticado.
-
-    Uso:
-        @bp.route("/")
-        @login_required
-        def index():
-            return "Página protegida"
-    """
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if not current_user.is_authenticated:
-            flash("Debes iniciar sesión", "warning")
-            return redirect(url_for('auth.login'))
-        return f(*args, **kwargs)
-    return decorated_function
-
-
 def has_role(role_name):
     """
     Función para verificar si el usuario actual tiene un rol específico.

@@ -7,14 +7,21 @@ from app.modules.presentaciones import Presentacion
 from app.modules.proc_prod.model import ProcesoProductivo
 from app.modules.inventario_materias_primas import MovimientosMateriaPrima
 from app.modules.inventario_producto_terminado import MovimientosReceta
+from app.modules.mermas_producto_terminado import MermaProductoTerminado
 from app.modules.recetas import Recetas, RecetaDetalle, ProcesosReceta
 from app.modules.sol_prod.model import PedidoProduccion
 from app.modules.lotes.model import LoteProduccion
 from app.modules.produccion.model import Produccion, ProduccionProceso
 from app.modules.pedidos import Pedido, PedidoDetalle
 from app.modules.ventas.model import Venta, DetalleVenta
-from app.modules.dashboard.model import VentasPorMes,MermasPorMes,ProductoMasProducido,ProductoMasVendido
+from app.modules.dashboard.model import (
+    VentasPorMes,
+    MermasPorMes,
+    ProductoMasProducido,
+    ProductoMasVendido,
+)
 from app.modules.bitacora_login import BitacoraLogin
+from app.modules.tienda.model import ReservaStock
 
 #  Agregar nuevos modelos aquí y luego importarlos en __all__ para que estén disponibles en toda la aplicación
 __all__ = [
@@ -30,6 +37,7 @@ __all__ = [
     "ProcesoProductivo",
     "MovimientosMateriaPrima",
     "MovimientosReceta",
+    "MermaProductoTerminado",
     "Recetas",
     "RecetaDetalle",
     "ProcesosReceta",
@@ -43,8 +51,10 @@ __all__ = [
     "PedidoDetalle",
     "Venta",
     "DetalleVenta",
-    "VentasPorMes","MermasPorMes",
+    "VentasPorMes",
+    "MermasPorMes",
     "ProductoMasProducido",
     "ProductoMasVendido",
-    "BitacoraLogin"
+    "BitacoraLogin",
+    "ReservaStock",
 ]

@@ -2,12 +2,10 @@ from flask import flash, render_template, request, redirect, url_for
 from app.modules.proc_prod.form import ProcesoProductivoForm
 from app.modules.proc_prod.service import ProcesoProductivoService
 from . import bp
-from app.shared.decorators import login_required
 
 servicio = ProcesoProductivoService()
 
 
-@login_required
 @bp.route("/")
 def listar():
     try:
@@ -22,7 +20,6 @@ def listar():
         return render_template("procesos_productivos/listar.html", procesos=[])
 
 
-@login_required
 @bp.route("/crear", methods=["GET", "POST"])
 def crear():
     form = ProcesoProductivoForm()
@@ -36,7 +33,6 @@ def crear():
     return render_template("procesos_productivos/crear.html", form=form)
 
 
-@login_required
 @bp.route("/<int:id>")
 def detalle(id):
     try:
@@ -50,7 +46,6 @@ def detalle(id):
         return redirect(url_for("proc_prod.listar"))
 
 
-@login_required
 @bp.route("/<int:id>/editar", methods=["GET", "POST"])
 def editar(id):
     try:
@@ -71,7 +66,6 @@ def editar(id):
         return redirect(url_for("proc_prod.listar"))
 
 
-@login_required
 @bp.route("/<int:id>/eliminar", methods=["POST"])
 def eliminar(id):
     try:

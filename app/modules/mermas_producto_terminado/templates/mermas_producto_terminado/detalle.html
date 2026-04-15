@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import mostrar_flashes %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto py-8 px-4">
+
+    <a href="{{ url_for('mermas_producto_terminado.listar') }}" class="flex items-center text-2xl font-bold mb-6">
+        <i class="fa-solid fa-chevron-left mr-3"></i> Detalle de la Merma
+    </a>
+
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
+        <div class="bg-gray-100 px-6 py-4 border-b border-gray-200">
+            <span class="font-bold text-gray-700"><i class="fa-solid fa-clipboard-list mr-2"></i> Datos de la Merma</span>
+        </div>
+
+        <div class="p-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                <div>
+                    <label class="block text-gray-500 text-sm font-bold uppercase">Folio</label>
+                    <p class="text-xl font-bold text-gray-800">{{ merma.folio }}</p>
+                </div>
+                <div>
+                    <label class="block text-gray-500 text-sm font-bold uppercase">Fecha de Registro</label>
+                    <p class="text-lg text-gray-700">{{ merma.fecha_registro.strftime('%d/%m/%Y %H:%M') }}</p>
+                </div>
+                <div>
+                    <label class="block text-gray-500 text-sm font-bold uppercase">Producto</label>
+                    <p class="text-lg text-gray-700">{{ merma.receta.nombre }}</p>
+                </div>
+                <div>
+                    <label class="block text-gray-500 text-sm font-bold uppercase">Cantidad</label>
+                    <p class="text-lg text-gray-700">{{ '%.2f'|format(merma.cantidad) }}</p>
+                </div>
+                <div>
+                    <label class="block text-gray-500 text-sm font-bold uppercase">Estado</label>
+                    <p class="text-lg font-bold {{ 'text-[#4A9062]' if merma.activo else 'text-[#B85B5B]' }}">
+                        {{ 'Registrada' if merma.activo else 'Cancelada / Anulada' }}
+                    </p>
+                </div>
+            </div>
+
+            <div class="bg-gray-50 border-t border-gray-200 pt-6">
+                <div class="px-4 py-6 bg-white rounded-xl border-2 border-gray-200">
+                    <div class="mb-2">
+                        <span class="text-gray-500 uppercase text-xs font-bold">Descripción / Motivo del Incidente</span>
+                        <p class="text-lg text-gray-700 italic">"{{ merma.motivo }}"</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-end space-x-4 border-t border-gray-200 pt-6 mt-6">
+                {% if merma.activo and current_user.rol_id == 1 %}
+                <form action="{{ url_for('mermas_producto_terminado.cancelar', id=merma.id) }}" method="POST" onsubmit="return confirm('¿Seguro que deseas cancelar esta merma? Se ajustará el inventario.');">
+                    <button type="submit" class="px-6 py-2 bg-[#B85B5B] text-white font-bold rounded-lg shadow-md hover:opacity-90 transition">
+                        <i class="fa-solid fa-ban mr-2"></i> Cancelar Merma
+                    </button>
+                </form>
+                {% elif not merma.activo %}
+                <div class="rounded-lg bg-red-50 border border-red-200 px-6 py-2">
+                    <p class="text-[#B85B5B] font-bold">Registro Anulado</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

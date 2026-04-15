@@ -1,0 +1,181 @@
+{% extends 'tienda/tienda_base.html' %}
+
+{% block content_full %}
+
+{% set categorias = productos|groupby('receta_nombre')|list %}
+
+<!-- Hero Carousel -->
+<section class="relative w-full overflow-hidden bg-brew-beige">
+  <div id="carousel-track" class="flex transition-transform duration-500 ease-in-out">
+    {% for receta_nombre, grupo in categorias %}
+    {% set primer_producto = grupo[0] %}
+    <div class="flex-none w-full">
+      <div class="max-w-7xl mx-auto px-6 py-14 lg:py-20 flex flex-col lg:flex-row items-center justify-center gap-6 lg:gap-12">
+        <!-- Imagen -->
+        <div class="flex-shrink-0 flex justify-center items-center">
+          {% if primer_producto.tiene_imagen %}
+            <img src="{{ url_for('recetas.imagen', id=primer_producto.receta_id) }}" alt="{{ receta_nombre }}" class="h-60 lg:h-96 object-contain drop-shadow-2xl animate-float">
+          {% else %}
+            <div class="h-60 lg:h-96 w-40 bg-amber-200/30 rounded-2xl flex items-center justify-center">
+              <i class="fas fa-beer text-7xl text-amber-300"></i>
+            </div>
+          {% endif %}
+        </div>
+        <!-- Texto -->
+        <div class="flex-1 max-w-xl text-center lg:text-left">
+          <span class="inline-block px-4 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-[#D2691E]/10 text-[#D2691E] mb-4">
+            Cerveza Artesanal
+          </span>
+          <h2 class="text-4xl lg:text-6xl font-black text-brew-dark leading-tight mb-4">
+            {{ receta_nombre }}
+          </h2>
+          <p class="text-gray-500 text-sm lg:text-base mb-3 max-w-md mx-auto lg:mx-0">
+            {{ primer_producto.descripcion or 'Sabores intensos, aromas balanceados y carácter artesanal en cada botella.' }}
+          </p>
+          {% if primer_producto.precio_venta %}
+            <div class="flex items-center gap-3 mb-6 justify-center lg:justify-start">
+              <span class="w-8 h-px bg-gray-400"></span>
+              <p class="text-3xl font-bold text-brew-dark">Desde ${{ "%.2f"|format(primer_producto.precio_venta) }}</p>
+            </div>
+          {% endif %}
+          <a href="{{ url_for('tienda.detalle_receta', id=primer_producto.receta_id) }}" class="inline-block bg-[#D2691E] text-white font-bold px-10 py-3 rounded-lg hover:bg-[#b5571a] hover:scale-105 active:scale-95 transition-all duration-200 shadow-lg hover:shadow-xl">
+            Comprar Ahora
+          </a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Controles prev / next -->
+  {% if categorias|length > 1 %}
+  <button id="carousel-prev" type="button" class="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/80 text-brew-dark flex items-center justify-center shadow-md hover:bg-white hover:scale-110 transition-all duration-200 z-10">
+    <i class="fas fa-chevron-left"></i>
+  </button>
+  <button id="carousel-next" type="button" class="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/80 text-brew-dark flex items-center justify-center shadow-md hover:bg-white hover:scale-110 transition-all duration-200 z-10">
+    <i class="fas fa-chevron-right"></i>
+  </button>
+  {% endif %}
+
+  <!-- Dots -->
+  {% if categorias|length > 1 %}
+  <div class="absolute bottom-5 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+    {% for _ in categorias %}
+    <button class="carousel-dot w-2.5 h-2.5 rounded-full bg-gray-300 transition-all duration-200" data-index="{{ loop.index0 }}"></button>
+    {% endfor %}
+  </div>
+  {% endif %}
+</section>
+{% endblock %}
+
+{% block content %}
+<!-- Nuestras Cervezas -->
+<section class="px-6 py-14">
+  <h2 class="text-3xl lg:text-4xl font-black text-brew-dark text-center mb-3">Nuestras Cervezas</h2>
+  <p class="text-gray-400 text-center text-sm max-w-xl mx-auto mb-10">
+    Nuestra colección incluye estilos para cada paladar, elaborados con ingredientes selectos.
+  </p>
+
+  {% if productos %}
+    {% set recetas_vistas = namespace(ids=[]) %}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+      {% for producto in productos %}
+        {% if producto.receta_id not in recetas_vistas.ids %}
+          {% set _ = recetas_vistas.ids.append(producto.receta_id) %}
+          {% set idx = loop.index0 % 3 %}
+          <div class="rounded-2xl overflow-hidden shadow-md hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 group">
+            <a href="{{ url_for('tienda.detalle_receta', id=producto.receta_id) }}" class="block">
+              <div class="{{ 'bg-amber-300' if idx == 0 else ('bg-orange-300' if idx == 1 else 'bg-rose-300') }} relative h-64 flex items-center justify-center overflow-hidden">
+                {% if producto.tiene_imagen %}
+                  <img src="{{ url_for('recetas.imagen', id=producto.receta_id) }}" alt="{{ producto.receta_nombre }}" class="h-52 object-contain drop-shadow-lg group-hover:scale-110 transition-transform duration-500">
+                {% else %}
+                  <i class="fas fa-beer text-7xl text-white/50 group-hover:scale-110 transition-transform duration-500"></i>
+                {% endif %}
+              </div>
+              <div class="bg-white p-5">
+                <h3 class="text-lg font-bold text-brew-dark mb-1">{{ producto.receta_nombre }}</h3>
+                <p class="text-gray-400 text-xs mb-3 line-clamp-2">{{ producto.descripcion or 'Cerveza artesanal elaborada con ingredientes selectos.' }}</p>
+                <div class="flex items-center justify-between">
+                  <p class="text-lg font-bold text-brew-dark">Desde ${{ "%.2f"|format(producto.precio_venta) }}</p>
+                  <span class="w-9 h-9 rounded-full bg-[#D2691E] text-white flex items-center justify-center group-hover:bg-[#b5571a] transition-colors duration-200 shadow-md">
+                    <i class="fas fa-eye text-sm"></i>
+                  </span>
+                </div>
+              </div>
+            </a>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+
+    <div class="text-center mt-12">
+      <a href="{{ url_for('tienda.listar_productos') }}" class="inline-block border-2 border-[#D2691E] text-[#D2691E] font-bold px-10 py-3 rounded-lg hover:bg-[#D2691E] hover:text-white transition-all duration-200">
+        Ver Todos los Productos
+      </a>
+    </div>
+  {% else %}
+    <div class="text-center py-20">
+      <i class="fas fa-beer text-7xl text-gray-200 mb-6"></i>
+      <p class="text-gray-400 text-lg">No hay productos disponibles por el momento.</p>
+      <p class="text-gray-300 text-sm mt-2">Pronto tendremos nuevas cervezas para ti.</p>
+    </div>
+  {% endif %}
+</section>
+
+<!-- Carousel JS -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const track = document.getElementById("carousel-track");
+  if (!track) return;
+  const slides = track.querySelectorAll(".flex-none");
+  const total = slides.length;
+  if (total <= 1) return;
+
+  const dots = document.querySelectorAll(".carousel-dot");
+  const prev = document.getElementById("carousel-prev");
+  const next = document.getElementById("carousel-next");
+  let current = 0;
+  let autoTimer = null;
+
+  function goTo(index) {
+    current = ((index % total) + total) % total;
+    track.style.transform = "translateX(-" + (current * 100) + "%)";
+    dots.forEach(function (d, i) {
+      if (i === current) {
+        d.classList.add("bg-[#D2691E]", "scale-125");
+        d.classList.remove("bg-gray-300");
+      } else {
+        d.classList.remove("bg-[#D2691E]", "scale-125");
+        d.classList.add("bg-gray-300");
+      }
+    });
+  }
+
+  function startAuto() {
+    stopAuto();
+    autoTimer = setInterval(function () { goTo(current + 1); }, 5000);
+  }
+
+  function stopAuto() {
+    if (autoTimer) { clearInterval(autoTimer); autoTimer = null; }
+  }
+
+  if (prev) prev.addEventListener("click", function () { goTo(current - 1); startAuto(); });
+  if (next) next.addEventListener("click", function () { goTo(current + 1); startAuto(); });
+  dots.forEach(function (dot) {
+    dot.addEventListener("click", function () { goTo(parseInt(this.dataset.index)); startAuto(); });
+  });
+
+  let startX = 0;
+  track.addEventListener("touchstart", function (e) { startX = e.touches[0].clientX; stopAuto(); }, { passive: true });
+  track.addEventListener("touchend", function (e) {
+    var diff = startX - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 50) { goTo(current + (diff > 0 ? 1 : -1)); }
+    startAuto();
+  }, { passive: true });
+
+  goTo(0);
+  startAuto();
+});
+</script>
+{% endblock %}

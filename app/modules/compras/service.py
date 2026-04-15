@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from app import db
 from app.modules.compras import repository
 from app.modules.materias_primas.service import MateriaPrimaService
 from app.modules.presentaciones.service import PresentacionService
@@ -95,13 +96,56 @@ class ComprasService:
 
         return compra_id
 
+    def crear_solicitud_compra(self, materia_prima_id, cantidad, origen="almacen", referencia_id=None):
+        if not materia_prima_id:
+            raise ValueError("Debe seleccionar una materia prima.")
+        if cantidad is None:
+            raise ValueError("La cantidad es requerida.")
+        try:
+            cantidad = float(cantidad)
+        except (TypeError, ValueError):
+            raise ValueError("La cantidad debe ser un número válido.")
+        if cantidad <= 0:
+            raise ValueError("La cantidad debe ser mayor a cero.")
+
+        solicitud = repository.create_solicitud(
+            materia_prima_id=materia_prima_id,
+            cantidad=cantidad,
+            origen=origen,
+            referencia_id=referencia_id,
+        )
+        db.session.commit()
+        return solicitud
+
+    def listar_ordenes_compra(self):
+        return repository.get_all_compras()
+
     def obtener_compra(self, id):
         compra = repository.get_compra_by_id(id)
         if not compra:
             raise ValidacionNegocioException("Compra no encontrada.")
         return compra
 
-    def confirmar_compra(self, compra_id, detalle_ids, precios):
+    def listar_compras_confirmadas(self):
+        return repository.get_confirmed_compras()
+
+    def listar_solicitudes_pendientes(self):
+        return repository.get_pending_solicitudes()
+
+    def obtener_solicitud(self, id):
+        solicitud = repository.get_solicitud_by_id(id)
+        if not solicitud:
+            raise ValidacionNegocioException("Solicitud de compra no encontrada.")
+        return solicitud
+
+    def listar_solicitudes_surtidas_retail(self):
+        return repository.get_solicitudes_surtidas_retail()
+
+    def marcar_solicitud_estado(self, solicitud_id, estado):
+        if solicitud_id:
+            repository.mark_solicitud_estado(int(solicitud_id), estado)
+
+    def confirmar_compra(self, compra_id, detalle_ids, precios, solicitud_id=None):
         if not detalle_ids or not precios:
             raise ValidacionNegocioException(
                 "Debe ingresar los precios de los detalles."
@@ -125,6 +169,8 @@ class ComprasService:
 
         fecha_compra = datetime.now()
         repository.confirmar_compra(compra_id, detalle_precios, fecha_compra, current_user.nombre)
+        if solicitud_id:
+            repository.mark_solicitud_estado(int(solicitud_id), "Surtida")
 
     def cancelar_compra(self, compra_id):
         compra = self.obtener_compra(compra_id)

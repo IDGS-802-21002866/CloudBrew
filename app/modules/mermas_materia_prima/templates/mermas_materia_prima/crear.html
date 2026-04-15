@@ -1,98 +1,126 @@
 {% extends 'base.html' %}
-{% from '_macros.html' import campo_nuevo, mostrar_flashes %}
+{% from '_macros.html' import mostrar_flashes %}
 
 {% block title %}Registrar Merma{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto py-8 px-4">
-  <a href="{{ url_for('mermas_materia_prima.listar') }}" class="flex items-center text-2xl font-bold mb-6 hover:text-gray-600 transition">
-    <i class="fa-solid fa-chevron-left mr-3"></i>
-    Registrar Merma de Materia Prima
-  </a>
+<div class="p-10 max-w-6xl mx-auto">
+    <a href="{{ url_for('mermas_materia_prima.listar') }}" class="flex items-center text-2xl font-black mb-10 hover:text-gray-600 transition">
+        <i class="fa-solid fa-arrow-left mr-3"></i> Registrar Merma de Materia Prima
+    </a>
 
-  <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
-    <div class="bg-gray-100 px-6 py-4 border-b border-gray-200 flex items-center">
-      <i class="fa-solid fa-circle-info text-gray-500 mr-3"></i>
-      <span class="font-bold text-gray-700">Datos de la Merma</span>
-    </div>
+    {{ mostrar_flashes() }}
 
-    <form method="POST" class="p-8" novalidate>
-      {{ form.hidden_tag() }}
+    <form method="POST" class="bg-white border border-gray-100 rounded-[3rem] shadow-2xl overflow-hidden">
+        {{ form.hidden_tag() }}
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
-        {{ campo_nuevo(form.materia_prima_id) }}
-        {{ campo_nuevo(form.cantidad) }}
-        {{ campo_nuevo(form.medida) }}
-        <div class="md:col-span-2">
-          {{ campo_nuevo(form.motivo) }}
+        <div class="bg-gray-50 px-12 py-8 border-b border-gray-100">
+            <span class="font-black text-gray-700 uppercase tracking-[0.2em] text-xs flex items-center">
+                <i class="fa-solid fa-trash-alt mr-3 text-[#6C9AD0]"></i> Detalles de la Merma
+            </span>
         </div>
-      </div>
 
-      <div class="mt-8 flex justify-end">
-        <button type="submit" class="px-8 py-3 bg-[#4A9062] text-white font-bold rounded-lg hover:opacity-90 transition shadow-md">
-          Registrar Merma
-        </button>
-      </div>
+        <div class="p-12 space-y-12">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                <div class="lg:col-span-2 space-y-4">
+                    <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest ml-2">1. Seleccionar Materia Prima</label>
+                    <select name="materia_prima_id" id="materia_prima_id" class="w-full px-8 py-6 border-2 border-gray-200 rounded-3xl bg-gray-50 focus:border-[#6C9AD0] outline-none transition-all font-bold text-gray-700 shadow-sm">
+                        <option value="">-- Selecciona una materia prima --</option>
+                        {% for value, label in form.materia_prima_id.choices %}
+                        <option value="{{ value }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="lg:col-span-1">
+                    <div class="bg-gradient-to-br from-[#6C9AD0] to-[#4A7BB0] rounded-[2.5rem] p-10 text-white shadow-xl text-center flex flex-col justify-center h-full transform hover:scale-105 transition-transform">
+                        <span class="text-[10px] font-black uppercase tracking-[0.3em] opacity-70 mb-4">Stock en Bodega</span>
+                        <div id="display_stock" class="text-7xl font-black mb-2 tracking-tighter">--</div>
+                        <span id="stock_unidad" class="text-[10px] font-black uppercase opacity-70 mt-2">—</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-12 pt-12 border-t border-gray-100">
+                <div class="lg:col-span-1 space-y-4">
+                    <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest ml-2">2. Cantidad</label>
+                    <div class="relative">
+                        <input type="number" step="0.01" name="cantidad" id="input_cantidad"
+                               class="w-full px-8 py-8 text-6xl font-black border-2 border-gray-200 rounded-[2.5rem] focus:border-[#4A9062] outline-none text-center shadow-inner"
+                               placeholder="0">
+                        <span id="unidad_label" class="absolute right-8 top-1/2 -translate-y-1/2 text-gray-200 font-black text-xs">—</span>
+                    </div>
+                </div>
+                <div class="lg:col-span-2 space-y-4">
+                    <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest ml-2">3. Motivo</label>
+                    <textarea name="motivo" rows="5" id="motivo" class="w-full px-8 py-7 border-2 border-gray-200 rounded-[2.5rem] focus:border-[#4A9062] outline-none resize-none font-medium text-gray-700 bg-gray-50/30" placeholder="Describe por qué se registra esta merma"></textarea>
+                </div>
+            </div>
+
+            <div class="flex justify-end pt-6">
+                <button type="submit" id="btn_confirmar" class="w-full lg:w-auto px-20 py-8 bg-[#4A9062] text-white font-black rounded-3xl hover:bg-[#3d7a52] hover:shadow-2xl hover:-translate-y-1 transition-all shadow-xl uppercase tracking-[0.3em] text-sm">
+                    Confirmar Registro
+                </button>
+            </div>
+        </div>
     </form>
-  </div>
 </div>
+
 <script>
-const selectMateria = document.getElementById('materia_prima_id');
-const selectMedida = document.getElementById('medida');
+    const mpData = JSON.parse('{{ mp_data | tojson | safe }}');
+    const selectMp = document.getElementById('materia_prima_id');
+    const displayStock = document.getElementById('display_stock');
+    const stockUnidad = document.getElementById('stock_unidad');
+    const inputCantidad = document.getElementById('input_cantidad');
+    const unidadLabel = document.getElementById('unidad_label');
+    const btnConfirmar = document.getElementById('btn_confirmar');
 
-const mpTipos = {{ mp_tipos | tojson }};
-const medidaTipos = {{ medida_tipos | tojson }};
-
-// 🔥 1. Inyectar data-tipo en options (SOLUCIÓN AL PROBLEMA WTForms)
-function asignarTiposAMedidas() {
-    const options = selectMedida.querySelectorAll('option');
-
-    options.forEach(option => {
-        const medidaId = option.value;
-
-        if (medidaTipos[medidaId]) {
-            option.dataset.tipo = medidaTipos[medidaId];
-        }
-    });
-}
-
-// 🔥 2. Filtrar
-function filtrarMedidas() {
-    const mpSeleccionada = selectMateria.value;
-
-    if (!mpSeleccionada) return;
-
-    const tipoMP = mpTipos[mpSeleccionada];
-    const options = selectMedida.querySelectorAll('option');
-
-    options.forEach(option => {
-        if (option.value === "") {
-            option.style.display = 'block';
+    function actualizarStockMP() {
+        const selected = selectMp.value;
+        if (selected && mpData[selected]) {
+            const stock = parseFloat(mpData[selected].stock || 0);
+            const unidad = mpData[selected].unidad || 'G';
+            displayStock.textContent = stock.toFixed(2);
+            stockUnidad.textContent = unidad;
+            unidadLabel.textContent = unidad;
+            validarBoton(stock);
             return;
         }
+        displayStock.textContent = '0';
+        stockUnidad.textContent = '—';
+        unidadLabel.textContent = '—';
+        btnConfirmar.disabled = true;
+        btnConfirmar.classList.add('opacity-50', 'cursor-not-allowed');
+    }
 
-        const tipoMedida = option.dataset.tipo;
+    function validarBoton(stock) {
+        const cantidad = parseFloat(inputCantidad.value) || 0;
+        const disable = stock <= 0 || cantidad <= 0 || cantidad > stock;
+        btnConfirmar.disabled = disable;
+        btnConfirmar.classList.toggle('opacity-50', disable);
+        btnConfirmar.classList.toggle('cursor-not-allowed', disable);
+    }
 
-        if (tipoMedida === tipoMP) {
-            option.style.display = 'block';
-        } else {
-            option.style.display = 'none';
-        }
+    selectMp.addEventListener('change', () => {
+        actualizarStockMP();
     });
 
-    // Reset si ya no coincide
-    const selected = selectMedida.selectedOptions[0];
-    if (selected && selected.dataset.tipo !== tipoMP) {
-        selectMedida.value = "";
-    }
-}
+    inputCantidad.addEventListener('input', () => {
+        const selected = selectMp.value;
+        const stock = selected && mpData[selected] ? parseFloat(mpData[selected].stock || 0) : 0;
+        if (inputCantidad.value && parseFloat(inputCantidad.value) < 0) {
+            inputCantidad.value = Math.abs(parseFloat(inputCantidad.value));
+        }
+        validarBoton(stock);
+    });
 
-// Eventos
-selectMateria.addEventListener('change', filtrarMedidas);
-
-document.addEventListener('DOMContentLoaded', () => {
-    asignarTiposAMedidas(); // 🔥 clave
-    filtrarMedidas();       // 🔥 inicial
-});
+    document.addEventListener('DOMContentLoaded', () => {
+        if (selectMp) actualizarStockMP();
+        if (inputCantidad && inputCantidad.value) {
+            const selected = selectMp.value;
+            const stock = selected && mpData[selected] ? parseFloat(mpData[selected].stock || 0) : 0;
+            validarBoton(stock);
+        }
+    });
 </script>
 {% endblock %}

@@ -1,0 +1,185 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import mostrar_flashes %}
+
+{% block content %}
+<div class="p-10 max-w-6xl mx-auto">
+    <a href="{{ url_for('mermas_producto_terminado.listar') }}" class="flex items-center text-2xl font-black mb-10 hover:text-gray-600 transition">
+        <i class="fa-solid fa-arrow-left mr-3"></i> Registrar Merma de Producto Terminado
+    </a>
+
+    {{ mostrar_flashes() }}
+
+    <form method="POST" class="bg-white border border-gray-100 rounded-[3rem] shadow-2xl overflow-hidden">
+        {{ form.csrf_token }}
+        <input type="hidden" name="receta_id" id="js_receta_id">
+
+        <div class="bg-gray-50 px-12 py-8 border-b border-gray-100">
+            <span class="font-black text-gray-700 uppercase tracking-[0.2em] text-xs flex items-center">
+                <i class="fa-solid fa- beer-mug-empty mr-3 text-[#6C9AD0]"></i> Detalles del Desperdicio
+            </span>
+        </div>
+
+        <div class="p-12 space-y-12">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                
+                <div class="lg:col-span-2 space-y-4">
+                    <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest ml-2">1. Seleccionar Cerveza</label>
+                    <input type="text" id="producto_input" name="producto_terminado" 
+                           class="w-full px-8 py-6 text-xl border-2 border-gray-200 rounded-3xl focus:border-[#6C9AD0] focus:ring-[12px] focus:ring-[#6C9AD0]/5 outline-none transition-all font-bold text-gray-700 shadow-sm"
+                           list="productos" placeholder="Busca por nombre..." autocomplete="off">
+                    <datalist id="productos">
+                        {% for r in recetas %}
+                            <option value="{{ r.nombre }}" data-id="{{ r.id }}" data-stock="{{ r.stock_actual }}">
+                        {% endfor %}
+                    </datalist>
+                </div>
+
+                <div class="lg:col-span-1">
+                    <div class="bg-gradient-to-br from-[#6C9AD0] to-[#4A7BB0] rounded-[2.5rem] p-10 text-white shadow-xl text-center flex flex-col justify-center h-full transform hover:scale-105 transition-transform">
+                        <span class="text-[10px] font-black uppercase tracking-[0.3em] opacity-70 mb-4">Stock en Bodega</span>
+                        <div id="display_stock" class="text-7xl font-black mb-2 tracking-tighter">--</div>
+                        <span class="text-[10px] font-black uppercase opacity-70 mt-2">Unidades</span>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-2 space-y-4">
+                    <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest ml-2">2. Lote de Procedencia</label>
+                    <select name="lote_id" id="select_lote" class="w-full px-8 py-6 border-2 border-gray-200 rounded-3xl bg-gray-50 focus:border-[#6C9AD0] outline-none transition-all font-bold text-gray-600 cursor-pointer shadow-sm appearance-none">
+                        <option value="">-- Elige primero la cerveza --</option>
+                    </select>
+                </div>
+
+                <div class="lg:col-span-1 flex items-center p-6 bg-blue-50/50 rounded-3xl border-2 border-dashed border-[#6C9AD0]/20">
+                    <label class="flex items-center cursor-pointer group">
+                        <input type="checkbox" name="es_lote_completo" id="check_lote" class="sr-only">
+                        <div id="track" class="relative inline-flex h-8 w-14 items-center rounded-full bg-gray-300 transition-colors group-hover:bg-gray-400">
+                            <span id="dot" class="inline-block h-6 w-6 transform rounded-full bg-white transition-transform translate-x-1 shadow-md"></span>
+                        </div>
+                        <span class="ml-5 text-gray-600 font-black text-[10px] uppercase tracking-tighter">¿Desechar todo el lote?</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-12 pt-12 border-t border-gray-100">
+                <div class="lg:col-span-1 space-y-4">
+                    <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest ml-2">3. Cantidad</label>
+                    <div class="relative">
+                        <input type="number" step="0.01" name="cantidad" id="input_cantidad" 
+                               class="w-full px-8 py-8 text-6xl font-black border-2 border-gray-200 rounded-[2.5rem] focus:border-[#4A9062] outline-none text-center shadow-inner" placeholder="0">
+                        <span class="absolute right-8 top-1/2 -translate-y-1/2 text-gray-200 font-black text-xs">PZAS</span>
+                    </div>
+                </div>
+                <div class="lg:col-span-2 space-y-4">
+                    <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest ml-2">4. Motivo</label>
+                    <textarea name="motivo" rows="5" class="w-full px-8 py-7 border-2 border-gray-200 rounded-[2.5rem] focus:border-[#4A9062] outline-none resize-none font-medium text-gray-700 bg-gray-50/30" placeholder="¿Qué pasó con el producto?"></textarea>
+                </div>
+            </div>
+
+            <div class="flex justify-end pt-6">
+                <button type="submit" id="btn_confirmar" class="w-full lg:w-auto px-20 py-8 bg-[#4A9062] text-white font-black rounded-3xl hover:bg-[#3d7a52] hover:shadow-2xl hover:-translate-y-1 transition-all shadow-xl uppercase tracking-[0.3em] text-sm">
+                    Confirmar Registro
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+    const lotesData = JSON.parse('{{ lotes_data | tojson | safe }}');
+    const inputP = document.getElementById('producto_input');
+    const datalist = document.getElementById('productos');
+    const hiddenId = document.getElementById('js_receta_id');
+    const selectL = document.getElementById('select_lote');
+    const displayS = document.getElementById('display_stock');
+    const checkL = document.getElementById('check_lote');
+    const inputC = document.getElementById('input_cantidad');
+    const btnConfirmar = document.getElementById('btn_confirmar');
+
+    inputP.addEventListener('input', function() {
+        const val = this.value;
+        const options = datalist.options;
+        let id = null;
+
+        for (let i = 0; i < options.length; i++) {
+            if (options[i].value === val) {
+                id = options[i].getAttribute('data-id');
+                break;
+            }
+        }
+
+        if (id) {
+            hiddenId.value = id;
+            displayS.textContent = '0';
+            selectL.innerHTML = '<option value="">-- Elige el lote --</option>';
+            if (lotesData[id]) {
+                lotesData[id].forEach(l => {
+                    const o = document.createElement('option');
+                    o.value = l.id;
+                    o.textContent = `${l.codigo} (Stock: ${l.cantidad})`;
+                    o.dataset.cant = l.cantidad;
+                    selectL.appendChild(o);
+                });
+            }
+            fetch(`/mermas-producto-terminado/stock/${id}`)
+                .then(response => response.ok ? response.json() : { stock_actual: 0 })
+                .then(data => {
+                    const stock = parseFloat(data.stock_actual);
+                    const stockValue = Number.isFinite(stock) ? stock : 0;
+                    displayS.textContent = stockValue.toFixed(0);
+                    actualizarEstadoBoton(stockValue);
+                })
+                .catch(() => {
+                    displayS.textContent = '0';
+                    actualizarEstadoBoton(0);
+                });
+        } else {
+            hiddenId.value = "";
+            displayS.textContent = '0';
+            selectL.innerHTML = '<option value="">-- Primero selecciona producto --</option>';
+            actualizarEstadoBoton(0);
+        }
+    });
+
+    function actualizarEstadoBoton(stock) {
+        const cantidad = parseFloat(inputC.value) || 0;
+        const disable = !stock || stock <= 0 || cantidad <= 0 || cantidad > stock;
+        btnConfirmar.disabled = disable;
+        btnConfirmar.classList.toggle('opacity-50', disable);
+        btnConfirmar.classList.toggle('cursor-not-allowed', disable);
+    }
+
+    function toggleLote() {
+        const selectedLote = selectL.value;
+        const stock = parseFloat(displayS.textContent) || 0;
+        document.getElementById('track').style.backgroundColor = checkL.checked ? '#4A9062' : '#D1D5DB';
+        document.getElementById('dot').style.transform = checkL.checked ? 'translateX(1.5rem)' : 'translateX(0.25rem)';
+        if (selectedLote) {
+            const loteCantidad = parseFloat(selectL.options[selectL.selectedIndex].dataset.cant) || 0;
+            inputC.value = loteCantidad;
+        }
+        if (checkL.checked) {
+            inputC.readOnly = true;
+            inputC.style.backgroundColor = '#F3F4F6';
+        } else {
+            inputC.readOnly = false;
+            inputC.style.backgroundColor = 'white';
+        }
+        actualizarEstadoBoton(stock);
+    }
+
+    checkL.addEventListener('change', toggleLote);
+    selectL.addEventListener('change', toggleLote);
+    inputC.addEventListener('input', function() {
+        if (inputC.value && parseFloat(inputC.value) < 0) {
+            inputC.value = Math.abs(parseFloat(inputC.value));
+        }
+        const stock = parseFloat(displayS.textContent) || 0;
+        actualizarEstadoBoton(stock);
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const stock = parseFloat(displayS.textContent) || 0;
+        actualizarEstadoBoton(stock);
+    });
+</script>
+{% endblock %}

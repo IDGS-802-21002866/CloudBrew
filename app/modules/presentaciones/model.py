@@ -11,8 +11,11 @@ class Presentacion(db.Model):
         Integer, db.ForeignKey("tipo_medida.id"), nullable=False
     )
     cantidad_equivalente: Mapped[float] = mapped_column(Float, nullable=False)
+    uso: Mapped[str] = mapped_column(String(20), nullable=False, default="comercial")
     activo: Mapped[bool] = mapped_column(Boolean, default=True)
-    usuario_id: Mapped[int] = mapped_column(Integer, db.ForeignKey("usuario.id"), nullable=True)
+    usuario_id: Mapped[int] = mapped_column(
+        Integer, db.ForeignKey("usuario.id"), nullable=True
+    )
 
     tipo_medida = relationship("TipoMedida")
     usuario = relationship("Usuario")

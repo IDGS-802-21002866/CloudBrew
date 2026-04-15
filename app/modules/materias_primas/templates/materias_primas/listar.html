@@ -37,6 +37,27 @@
         </tr>
       </thead>
       <tbody class="bg-white divide-y divide-gray-200">
+        {% for materia in materias %}
+        <tr class="hover:bg-gray-50 transition-colors">
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900 col-nombre">{{ materia.nombre }}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ materia.tipo_medida.unidad_base }}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ materia.stock_minimo }}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+            {% if materia.activo %}
+            <span class="rounded-full px-3 py-1 text-xs font-bold bg-green-100 text-green-800 border border-green-200">Activa</span>
+            {% else %}
+            <span class="rounded-full px-3 py-1 text-xs font-bold bg-red-100 text-red-800 border border-red-200">Inactiva</span>
+            {% endif %}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+            <a href="{{ url_for('materias_primas.detalle', id=materia.id) }}" 
+               class="text-white font-bold py-1.5 px-4 rounded-lg flex items-center shadow-sm hover:opacity-90 transition" 
+               style="background-color: #6C9AD0; width: fit-content;">
+              <i class="fa-solid fa-eye mr-2"></i> Ver Detalle
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
         {% if pagination.items %}
           {% for materia in pagination.items %}
           <tr class="hover:bg-gray-50 transition-colors">

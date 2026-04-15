@@ -1,7 +1,9 @@
 from flask_login import current_user
+from app import db
 from app.modules.inventario_materias_primas.service import (
     InventarioMateriasPrimasService,
 )
+from app.modules.inventario_materias_primas.model import MovimientosMateriaPrima
 from app.modules.produccion.repository import (
     eliminar_produccion_proceso,
     get_pedido_produccion_por_produccion,
@@ -28,7 +30,7 @@ class ProduccionService:
     def listar_produccion(self,page=1, per_page=5):
         return get_produccion_paginada(page, per_page)
 
-    def crear_produccion(self, data: dict):
+    def crear_produccion(self, data: dict, commit=True):
         from app import db
 
         id_receta = data.get("id_receta")
@@ -45,22 +47,28 @@ class ProduccionService:
         if not receta.procesos_receta:
             raise ValueError("La receta no tiene procesos asociados.")
 
-        for detalle in receta.detalle:
-            cantidad_necesaria = detalle.cantidad * int(cantidad)
-            stock_disponible = inventario_service.obtener_stock_actual_materia_prima(
-                detalle.materia_prima_id
-            )
-            if stock_disponible < cantidad_necesaria:
-                raise ValueError(
-                    f"Stock insuficiente para la materia prima '{detalle.materia_prima.nombre}'. "
-                    f"Necesario: {cantidad_necesaria}, Disponible: {stock_disponible}"
+        es_retail = bool(data.get("es_retail"))
+        solicitud_compra_id = data.get("id_solicitud_compra")
+
+        if not es_retail:
+            for detalle in receta.detalle:
+                cantidad_necesaria = detalle.cantidad * int(cantidad)
+                stock_disponible = inventario_service.obtener_stock_actual_materia_prima(
+                    detalle.materia_prima_id
                 )
+                if stock_disponible < cantidad_necesaria:
+                    raise ValueError(
+                        f"Stock insuficiente para la materia prima '{detalle.materia_prima.nombre}'. "
+                        f"Necesario: {cantidad_necesaria}, Disponible: {stock_disponible}"
+                    )
 
         try:
             produccion = insertar_produccion(
                 id_receta,
                 int(cantidad),
                 current_user.id if current_user.is_authenticated else None,
+                es_retail=es_retail,
+                id_solicitud_compra=solicitud_compra_id,
             )
 
             for proceso_receta in receta.procesos_receta:
@@ -71,12 +79,56 @@ class ProduccionService:
                     proceso_receta.tiempo_estimado,
                 )
 
-            db.session.commit()
+            if es_retail:
+                self._registrar_movimientos_virtuales(produccion, receta)
+
+            if commit and not db.session.in_transaction():
+                db.session.commit()
             return produccion
 
         except Exception as e:
-            db.session.rollback()
+            if not db.session.in_transaction():
+                db.session.rollback()
             raise ValueError(f"Error interno al crear producción: {str(e)}")
+
+    def _registrar_movimientos_virtuales(self, produccion, receta):
+        cantidades_por_mp = {}
+        for detalle in receta.detalle:
+            cantidad_necesaria = detalle.cantidad * produccion.cantidad
+            cantidades_por_mp[detalle.materia_prima_id] = (
+                cantidades_por_mp.get(detalle.materia_prima_id, 0) + cantidad_necesaria
+            )
+
+        for materia_prima_id, cantidad in cantidades_por_mp.items():
+            for tipo, motivo in [
+                ("entrada", "Entrada Virtual"),
+                ("salida", "Salida Virtual"),
+            ]:
+                movimiento = MovimientosMateriaPrima(
+                    materia_prima_id=materia_prima_id,
+                    tipo=tipo,
+                    cantidad=cantidad,
+                    motivo=motivo,
+                    usuario_id=current_user.id if current_user.is_authenticated else None,
+                    produccion_id=produccion.id_produccion,
+                )
+                db.session.add(movimiento)
+
+    def _registrar_buffer_finalizacion(self, produccion, receta):
+        for detalle in receta.detalle:
+            cantidad_necesaria = detalle.cantidad * produccion.cantidad
+            buffer = round(cantidad_necesaria * 0.10, 4)
+            if buffer <= 0:
+                continue
+            movimiento = MovimientosMateriaPrima(
+                materia_prima_id=detalle.materia_prima_id,
+                tipo="entrada",
+                cantidad=buffer,
+                motivo="Buffer Retail no utilizado",
+                usuario_id=current_user.id if current_user.is_authenticated else None,
+                produccion_id=produccion.id_produccion,
+            )
+            db.session.add(movimiento)
 
     def actualizar_produccion(self, id_produccion, form: ProduccionForm):
         try:
@@ -84,20 +136,26 @@ class ProduccionService:
             if not receta:
                 raise ValueError("Receta no encontrada")
 
-            for detalle in receta.detalle:
-                cantidad_necesaria = detalle.cantidad * form.cantidad.data
-                stock_disponible = (
-                    inventario_service.obtener_stock_actual_materia_prima(
-                        detalle.materia_prima_id
-                    )
-                )
+            produccion_actual = get_produccion_by_id(id_produccion)
+            if not produccion_actual:
+                raise ValueError("Producción no encontrada.")
 
-                if stock_disponible < cantidad_necesaria:
-                    raise ValueError(
-                        f"Stock insuficiente para la materia prima ID {detalle.materia_prima_id}. "
-                        f"Necesario: {cantidad_necesaria}, Disponible: {stock_disponible}"
+            if not produccion_actual.es_retail:
+                for detalle in receta.detalle:
+                    cantidad_necesaria = detalle.cantidad * form.cantidad.data
+                    stock_disponible = (
+                        inventario_service.obtener_stock_actual_materia_prima(
+                            detalle.materia_prima_id
+                        )
                     )
 
+                    if stock_disponible < cantidad_necesaria:
+                        raise ValueError(
+                            f"Stock insuficiente para la materia prima ID {detalle.materia_prima_id}. "
+                            f"Necesario: {cantidad_necesaria}, Disponible: {stock_disponible}"
+                        )
+
+            estado_anterior = produccion_actual.estado
             produccion = modificar_produccion(
                 id_produccion,
                 form.id_receta.data,
@@ -108,6 +166,17 @@ class ProduccionService:
 
             if isinstance(produccion, ValueError):
                 raise produccion
+
+            if (
+                produccion_actual.es_retail
+                and estado_anterior != "Terminado"
+                and form.estado.data == "Terminado"
+            ):
+                receta_final = receta_service.obtener_receta(produccion_actual.id_receta)
+                if receta_final:
+                    self._registrar_buffer_finalizacion(produccion, receta_final)
+                    if not db.session.in_transaction():
+                        db.session.commit()
 
             procesos_query = get_procesos_por_produccion(id_produccion)
 

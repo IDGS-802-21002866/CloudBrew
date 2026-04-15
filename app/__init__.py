@@ -6,8 +6,9 @@ from flask_login import LoginManager, login_required
 from flask_mail import Mail
 from flask_session import Session
 from flask_session_captcha import FlaskSessionCaptcha
+import os
 
-from app.core.config import DevelopmentConfig
+from app.core.config import DevelopmentConfig, ProductionConfig
 
 
 class Base(DeclarativeBase):
@@ -35,6 +36,7 @@ def create_app():
     from app.modules.clientes import bp as clientes_bp
     from app.modules.proc_prod import bp as proc_prod_bp
     from app.modules.mermas_materia_prima import bp as mermas_materia_prima_bp
+    from app.modules.mermas_producto_terminado import bp as mermas_producto_terminado_bp
     from app.modules.recetas import bp as recetas_bp
     from app.modules.lotes import bp as lotes_bp
     from app.modules.produccion import bp as produccion_bp
@@ -52,14 +54,27 @@ def create_app():
     from app.modules.procesos_produccion import bp as procesos_produccion_bp
     from app.modules.ventas import bp as ventas_bp
     from app.modules.costos import bp as costos_bp
+    from app.modules.tienda import bp as tienda_bp
+    from app.modules.producto_venta import bp as producto_venta_bp
 
     app = Flask(__name__)
-    app.config.from_object(DevelopmentConfig)
+
+    # Seleccionar configuración según FLASK_ENV
+    config_env = os.environ.get("FLASK_ENV", "development").lower()
+    if config_env == "production":
+        app.config.from_object(ProductionConfig)
+    else:
+        app.config.from_object(DevelopmentConfig)
+
     db.init_app(app)
     app.config["SESSION_SQLALCHEMY"] = db
     Session(app)
     captcha.init_app(app)
     app.jinja_env.globals.update(captcha=captcha)
+
+    from flask_wtf.csrf import generate_csrf
+
+    app.jinja_env.globals["csrf_token"] = generate_csrf
 
     migrate.init_app(app, db)
     mail.init_app(app)
@@ -90,6 +105,7 @@ def create_app():
         recetas_bp,
         inventario_materias_primas_bp,
         mermas_materia_prima_bp,
+        mermas_producto_terminado_bp,
         pedidos_bp,
         inventario_producto_terminado_bp,
         lotes_bp,
@@ -99,13 +115,25 @@ def create_app():
         costos_bp,
         bitacora_login_bp,
         backup_bp,
+        producto_venta_bp,
     ]
 
     for bp in blueprints_protegidos:
         bp.before_request(login_required(lambda: None))
 
     app.register_blueprint(auth_bp)
+    app.register_blueprint(tienda_bp)
+
     for bp in blueprints_protegidos:
         app.register_blueprint(bp)
+
+    @app.after_request
+    def no_cache(response):
+        response.headers["Cache-Control"] = (
+            "no-store, no-cache, must-revalidate, post-check=0, pre-check=0, max-age=0"
+        )
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+        return response
 
     return app

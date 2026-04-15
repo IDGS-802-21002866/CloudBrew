@@ -1,11 +1,9 @@
 from flask import flash, render_template, request
 from . import bp
 from .service import BitacoraLoginService
-from app.shared.decorators import login_required
 
 bitacora_service = BitacoraLoginService()
 
-@login_required
 @bp.route("/", methods=["GET"])
 def listar():
     try:

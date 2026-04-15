@@ -57,9 +57,6 @@ class RecetaService:
             descripcion=data.get("descripcion"),
             cantidad_producida=cantidad,
             activo=True,
-            precio_venta=(
-                float(data["precio_venta"]) if data.get("precio_venta") else None
-            ),
             imagen=data.get("imagen"),
             imagen_tipo=data.get("imagen_tipo"),
             usuario_id=current_user.id if current_user.is_authenticated else None,
@@ -85,12 +82,12 @@ class RecetaService:
             )
 
         receta.cantidad_producida = cantidad
-        precio = data.get("precio_venta")
-        receta.precio_venta = float(precio) if precio else None
         if data.get("imagen") is not None:
             receta.imagen = data.get("imagen")
             receta.imagen_tipo = data.get("imagen_tipo")
-        receta.usuario_id = current_user.id if current_user.is_authenticated else receta.usuario_id
+        receta.usuario_id = (
+            current_user.id if current_user.is_authenticated else receta.usuario_id
+        )
         repository.update_db()
         return receta
 
@@ -101,7 +98,9 @@ class RecetaService:
             raise ValueError("Receta no encontrada.")
         if receta.activo:
             receta.activo = False
-            receta.usuario_id = current_user.id if current_user.is_authenticated else receta.usuario_id
+            receta.usuario_id = (
+                current_user.id if current_user.is_authenticated else receta.usuario_id
+            )
             repository.update_db()
         else:
             raise ValidacionNegocioException("La receta ya está desactivada.")
@@ -138,37 +137,27 @@ class RecetaService:
                 )
         return detalles_expandidos
 
-
-
-    def agregar_al_carrito_detalles(self, carrito, materia_prima_id, cantidad, medida_id):
+    def agregar_al_carrito_detalles(self, carrito, materia_prima_id, cantidad):
         materia_prima = MateriaPrima.query.get(materia_prima_id)
         if not materia_prima:
             raise ValidacionNegocioException("Materia prima no encontrada.")
-
-        unidad = UnidadMedida.query.get(medida_id)
-        if not unidad:
-            raise ValidacionNegocioException("Unidad de medida no encontrada.")
 
         try:
             if cantidad is None or str(cantidad).strip() == "":
                 raise ValidacionNegocioException("La cantidad es obligatoria.")
 
-            # 👇 normaliza entrada
+            # 👇 normaliza entrada (cantidad ya en unidad base)
             cantidad_str = str(cantidad).replace(",", ".").strip()
             cantidad_decimal = Decimal(cantidad_str)
-
-            valor_conversion = Decimal(str(unidad.valor_conversion))
-
-            cantidad_convertida = cantidad_decimal * valor_conversion
 
         except (InvalidOperation, ValueError, TypeError):
             raise ValidacionNegocioException("La cantidad debe ser un número válido.")
 
-        if cantidad_convertida <= 0:
+        if cantidad_decimal <= 0:
             raise ValidacionNegocioException("La cantidad debe ser mayor a 0.")
 
-        # 👇 convertir a float para session
-        cantidad_final = float(cantidad_convertida)
+        # 👇 convertir a float para session (ya en unidad base)
+        cantidad_final = float(cantidad_decimal)
 
         existe = False
         for item in carrito:
@@ -178,10 +167,9 @@ class RecetaService:
                 break
 
         if not existe:
-            carrito.append({
-                "materia_prima_id": materia_prima_id,
-                "cantidad": cantidad_final
-            })
+            carrito.append(
+                {"materia_prima_id": materia_prima_id, "cantidad": cantidad_final}
+            )
 
         return carrito
 

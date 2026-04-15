@@ -2,12 +2,10 @@ from flask import flash, render_template, request, redirect, url_for
 from app.modules.usuarios.form import UsuarioForm, UsuarioFormAux
 from app.modules.usuarios.service import UsuarioService
 from . import bp
-from app.shared.decorators import login_required
 
 servicio = UsuarioService()
 
 
-@login_required
 @bp.route("/")
 def listar():
     try:
@@ -23,7 +21,6 @@ def listar():
         return render_template("usuarios/listar.html", usuarios=[])
 
 
-@login_required
 @bp.route("/crear", methods=["GET", "POST"])
 def crear():
     form = UsuarioForm()
@@ -39,7 +36,6 @@ def crear():
     return render_template("usuarios/crear.html", form=form)
 
 
-@login_required
 @bp.route("/<int:id>")
 def detalle(id):
     try:
@@ -51,7 +47,6 @@ def detalle(id):
         return redirect(url_for("usuarios.listar"))
 
 
-@login_required
 @bp.route("/<int:id>/editar", methods=["GET", "POST"])
 def editar(id):
     try:
@@ -72,7 +67,6 @@ def editar(id):
         return redirect(url_for("usuarios.listar"))
 
 
-@login_required
 @bp.route("/<int:id>/eliminar", methods=["POST"])
 def eliminar(id):
     try:

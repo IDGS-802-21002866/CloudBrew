@@ -1,0 +1,156 @@
+{% extends 'layout.html' %}
+{% from '_macros.html' import mostrar_flashes %}
+
+{% block body %}
+<div class="flex flex-col min-h-screen bg-white">
+
+  <!-- Navbar -->
+  <nav class="sticky top-0 z-20 bg-white/95 backdrop-blur-sm px-4 lg:px-8 py-3 flex items-center justify-between shadow-sm">
+    <!-- Left: Hamburger -->
+    <div class="flex items-center">
+      <button id="btn-tienda-menu" type="button" class="w-12 h-12 rounded-xl bg-[#D2691E] text-white flex items-center justify-center hover:bg-[#b5571a] hover:scale-105 active:scale-95 transition-all duration-200 shadow-md">
+        <i class="fas fa-bars text-lg"></i>
+      </button>
+    </div>
+
+    <!-- Center: Logo -->
+    <a href="{{ url_for('tienda.inicio') }}">
+      <img src="{{ url_for('static', filename='img/logo-completo-oscuro.png') }}" alt="CloudBrew" class="h-8 lg:h-10 w-auto">
+    </a>
+
+    <!-- Right: Cart -->
+    <div class="flex items-center">
+      <a href="{{ url_for('tienda.ver_carrito') }}" class="relative w-12 h-12 rounded-xl bg-[#D2691E] text-white flex items-center justify-center hover:bg-[#b5571a] hover:scale-105 active:scale-95 transition-all duration-200 shadow-md">
+        <i class="fas fa-shopping-cart text-lg"></i>
+        {% if cantidad_carrito > 0 %}
+          <span class="absolute -top-1.5 -right-1.5 bg-brew-dark text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">{{ cantidad_carrito }}</span>
+        {% endif %}
+      </a>
+    </div>
+  </nav>
+
+  <!-- Mobile menu overlay -->
+  <div id="tienda-overlay" class="fixed inset-0 bg-black/40 z-30 hidden"></div>
+
+  <!-- Mobile sidebar -->
+  <aside id="tienda-menu-lateral" class="fixed top-0 left-0 h-screen w-72 bg-[#D2691E] text-white shadow-2xl overflow-y-auto z-40 transform -translate-x-full transition-transform duration-300">
+    <div class="p-6 flex flex-col h-full">
+      <!-- Header con logo y cerrar -->
+      <div class="flex items-center justify-between mb-8">
+        <img src="{{ url_for('static', filename='img/logo-completo-claro.png') }}" alt="CloudBrew" class="h-7 w-auto">
+        <button id="btn-cerrar-tienda-menu" type="button" class="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center hover:bg-white/30 transition-all duration-200">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      {% if current_user.is_authenticated %}
+        <!-- User greeting -->
+        <div class="flex items-center gap-3 mb-6 px-2">
+          <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+            <i class="fas fa-user"></i>
+          </div>
+          <div>
+            <p class="text-sm font-bold">Hola, {{ current_user.nombre.split(' ')[0] }}!</p>
+            <p class="text-xs text-white/60">{{ current_user.email }}</p>
+          </div>
+        </div>
+      {% endif %}
+
+      <!-- Navigation -->
+      <nav class="space-y-1 flex-1">
+        <a href="{{ url_for('tienda.inicio') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/20 transition-all duration-200 group">
+          <i class="fas fa-home w-5 text-center group-hover:scale-110 transition-transform"></i>
+          <span class="font-medium">Inicio</span>
+        </a>
+        <a href="{{ url_for('tienda.listar_productos') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/20 transition-all duration-200 group">
+          <i class="fas fa-beer w-5 text-center group-hover:scale-110 transition-transform"></i>
+          <span class="font-medium">Productos</span>
+        </a>
+        <a href="{{ url_for('tienda.ver_carrito') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/20 transition-all duration-200 group">
+          <i class="fas fa-shopping-cart w-5 text-center group-hover:scale-110 transition-transform"></i>
+          <span class="font-medium">Carrito</span>
+          {% if cantidad_carrito > 0 %}
+            <span class="ml-auto bg-white text-[#D2691E] text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">{{ cantidad_carrito }}</span>
+          {% endif %}
+        </a>
+
+        {% if current_user.is_authenticated %}
+          <div class="border-t border-white/20 my-3"></div>
+          <a href="{{ url_for('tienda.mis_compras') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/20 transition-all duration-200 group">
+            <i class="fas fa-clipboard-list w-5 text-center group-hover:scale-110 transition-transform"></i>
+            <span class="font-medium">Mis Pedidos</span>
+          </a>
+          <a href="{{ url_for('tienda.mi_cuenta') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/20 transition-all duration-200 group">
+            <i class="fas fa-user-cog w-5 text-center group-hover:scale-110 transition-transform"></i>
+            <span class="font-medium">Mi Perfil</span>
+          </a>
+        {% endif %}
+      </nav>
+
+      <!-- Bottom actions -->
+      <div class="pt-4 border-t border-white/20 space-y-1">
+        {% if current_user.is_authenticated %}
+          <a href="{{ url_for('tienda.logout') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/20 transition-all duration-200 group">
+            <i class="fas fa-sign-out-alt w-5 text-center group-hover:scale-110 transition-transform"></i>
+            <span class="font-medium">Cerrar Sesión</span>
+          </a>
+        {% else %}
+          <a href="{{ url_for('tienda.login') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/20 transition-all duration-200 group">
+            <i class="fas fa-sign-in-alt w-5 text-center group-hover:scale-110 transition-transform"></i>
+            <span class="font-medium">Iniciar Sesión</span>
+          </a>
+          <a href="{{ url_for('tienda.registrarse') }}" class="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-white text-[#D2691E] font-bold hover:bg-amber-50 transition-all duration-200">
+            <i class="fas fa-user-plus"></i>
+            <span>Registrarse</span>
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="flex-1">
+    {% block content_full %}{% endblock %}
+    <div class="max-w-7xl mx-auto">
+      {{ mostrar_flashes() }}
+      {% block content %}
+      {% endblock %}
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-brew-dark py-10">
+    <div class="max-w-7xl mx-auto px-6 flex flex-col items-center gap-4">
+      <img src="{{ url_for('static', filename='img/logo-solo-claro.png') }}" alt="CloudBrew" class="h-14 w-auto opacity-90">
+      <div class="flex items-center gap-6 text-gray-400 text-sm">
+        <a href="{{ url_for('tienda.inicio') }}" class="hover:text-white transition-colors duration-200">Inicio</a>
+        <a href="{{ url_for('tienda.listar_productos') }}" class="hover:text-white transition-colors duration-200">Productos</a>
+        {% if current_user.is_authenticated %}
+          <a href="{{ url_for('tienda.mis_compras') }}" class="hover:text-white transition-colors duration-200">Mis Pedidos</a>
+        {% endif %}
+      </div>
+      <p class="text-gray-500 text-xs">&copy; 2026 CloudBrew. Cerveza artesanal.</p>
+    </div>
+  </footer>
+</div>
+
+<script>
+  const btnMenu = document.getElementById('btn-tienda-menu');
+  const btnCerrar = document.getElementById('btn-cerrar-tienda-menu');
+  const menuLateral = document.getElementById('tienda-menu-lateral');
+  const overlay = document.getElementById('tienda-overlay');
+
+  function abrirMenu() {
+    menuLateral.classList.remove('-translate-x-full');
+    overlay.classList.remove('hidden');
+  }
+  function cerrarMenu() {
+    menuLateral.classList.add('-translate-x-full');
+    overlay.classList.add('hidden');
+  }
+
+  if (btnMenu) btnMenu.addEventListener('click', abrirMenu);
+  if (btnCerrar) btnCerrar.addEventListener('click', cerrarMenu);
+  if (overlay) overlay.addEventListener('click', cerrarMenu);
+</script>
+{% endblock %}

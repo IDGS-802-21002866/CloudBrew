@@ -1,0 +1,83 @@
+{% extends 'tienda/tienda_base.html' %}
+
+{% block content %}
+<section class="px-6 py-10">
+  <div class="max-w-4xl mx-auto">
+    <h1 class="text-3xl font-bold text-gray-900 mb-8">
+      <i class="fas fa-shopping-cart mr-2 text-[#D2691E]"></i> Carrito
+    </h1>
+
+    {% if carrito %}
+      <div class="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
+        <!-- Items -->
+        <div class="divide-y divide-gray-100">
+          {% for item in carrito %}
+          <div class="flex items-center gap-4 p-4">
+            <div class="h-20 w-20 bg-gray-50 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
+              {% if item.tiene_imagen %}
+                <img src="{{ url_for('recetas.imagen', id=item.receta_id) }}" alt="{{ item.nombre }}" class="h-16 object-contain">
+              {% else %}
+                <i class="fas fa-beer text-2xl text-gray-300"></i>
+              {% endif %}
+            </div>
+
+            <div class="flex-1 min-w-0">
+              <h3 class="font-bold text-gray-900 truncate">{{ item.nombre }}</h3>
+              <p class="text-sm text-gray-500">${{ "%.2f"|format(item.precio_unitario) }} c/u</p>
+            </div>
+
+            <form action="{{ url_for('tienda.actualizar_carrito') }}" method="POST" class="flex items-center gap-2">
+              <input type="hidden" name="producto_venta_id" value="{{ item.producto_venta_id }}">
+              <div class="flex items-center border border-gray-300 rounded-lg overflow-hidden">
+                <button type="submit" name="cantidad" value="{{ item.cantidad - 1 }}" class="px-3 py-1 bg-gray-50 text-gray-700 hover:bg-gray-100 transition text-sm font-bold">-</button>
+                <span class="px-3 py-1 text-sm font-medium">{{ item.cantidad }}</span>
+                <button type="submit" name="cantidad" value="{{ item.cantidad + 1 }}" class="px-3 py-1 bg-gray-50 text-gray-700 hover:bg-gray-100 transition text-sm font-bold">+</button>
+              </div>
+            </form>
+
+            <p class="font-bold text-gray-900 w-24 text-right">${{ "%.2f"|format(item.precio_unitario * item.cantidad) }}</p>
+
+            <form action="{{ url_for('tienda.eliminar_del_carrito', producto_venta_id=item.producto_venta_id) }}" method="POST">
+              <button type="submit" class="text-red-400 hover:text-red-600 transition p-1">
+                <i class="fas fa-times"></i>
+              </button>
+            </form>
+          </div>
+          {% endfor %}
+        </div>
+
+        <!-- Total -->
+        <div class="bg-gray-50 px-6 py-4 flex items-center justify-between border-t border-gray-200">
+          <span class="text-lg font-bold text-gray-900">Total</span>
+          <span class="text-2xl font-bold text-gray-900">${{ "%.2f"|format(total) }}</span>
+        </div>
+      </div>
+
+      <!-- Acciones -->
+      <div class="flex flex-col sm:flex-row gap-4 mt-6">
+        <a href="{{ url_for('tienda.listar_productos') }}" class="flex-1 text-center bg-gray-100 text-gray-700 font-bold py-3 px-6 rounded-lg hover:bg-gray-200 transition">
+          <i class="fas fa-arrow-left mr-2"></i> Seguir Comprando
+        </a>
+        {% if current_user.is_authenticated %}
+          <a href="{{ url_for('tienda.checkout') }}" class="flex-1 text-center bg-[#D2691E] text-white font-bold py-3 px-6 rounded-lg hover:bg-[#b5571a] transition shadow-md">
+            Ir a Pagar <i class="fas fa-arrow-right ml-2"></i>
+          </a>
+        {% else %}
+          <a href="{{ url_for('tienda.login') }}" class="flex-1 text-center bg-[#D2691E] text-white font-bold py-3 px-6 rounded-lg hover:bg-[#b5571a] transition shadow-md">
+            Inicia Sesión para Comprar <i class="fas fa-arrow-right ml-2"></i>
+          </a>
+        {% endif %}
+      </div>
+
+    {% else %}
+      <div class="text-center py-16 bg-white rounded-xl shadow-md border border-gray-100">
+        <i class="fas fa-shopping-cart text-6xl text-gray-300 mb-4"></i>
+        <p class="text-gray-500 text-lg mb-6">Tu carrito está vacío.</p>
+        <a href="{{ url_for('tienda.listar_productos') }}" class="inline-block bg-[#D2691E] text-white font-bold py-3 px-8 rounded-lg hover:bg-[#b5571a] transition shadow-md">
+          Ver Productos
+        </a>
+      </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

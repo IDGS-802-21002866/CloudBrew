@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import mostrar_flashes %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto py-8 px-4">
+  <a href="{{ url_for('producto_venta.listar') }}" class="flex items-center text-2xl font-bold mb-6 hover:text-[#6C9AD0] transition">
+    <i class="fas fa-chevron-left mr-3"></i> Detalle del Producto
+  </a>
+
+  {{ mostrar_flashes() }}
+
+  <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
+    <!-- Header -->
+    <div class="bg-gray-100 px-6 py-4 border-b border-gray-200">
+      <h1 class="font-bold text-gray-700 text-2xl">
+        <i class="fas fa-box mr-2"></i>{{ producto.nombre }}
+      </h1>
+    </div>
+
+    <!-- Content -->
+    <div class="p-8">
+      <!-- First Row: Basic Info -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+        <div>
+          <label class="block text-gray-500 text-sm font-bold uppercase">Receta</label>
+          <p class="text-lg font-semibold text-gray-800">{{ producto.receta.nombre }}</p>
+        </div>
+        <div>
+          <label class="block text-gray-500 text-sm font-bold uppercase">Presentación</label>
+          <p class="text-lg font-semibold text-gray-800">{{ producto.presentacion.nombre }}</p>
+        </div>
+        <div>
+          <label class="block text-gray-500 text-sm font-bold uppercase">Tipo</label>
+          <span class="px-3 py-1 text-sm font-bold rounded-full border inline-block mt-1
+            {% if producto.tipo == 'promocional' %}
+              bg-blue-50 text-blue-700 border-blue-200
+            {% elif producto.tipo == 'pack' %}
+              bg-purple-50 text-purple-700 border-purple-200
+            {% else %}
+              bg-gray-50 text-gray-700 border-gray-200
+            {% endif %}">
+            {{ producto.tipo.title() }}
+          </span>
+        </div>
+        <div>
+          <label class="block text-gray-500 text-sm font-bold uppercase">Estado</label>
+          <span class="px-3 py-1 text-sm font-bold rounded-full border inline-block mt-1
+            {% if producto.activo %}
+              bg-green-100 text-green-800 border-green-200
+            {% else %}
+              bg-red-100 text-red-800 border-red-200
+            {% endif %}">
+            {{ 'Activo' if producto.activo else 'Inactivo' }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Description Section -->
+      <div class="mb-8">
+        <label class="block text-gray-500 text-sm font-bold uppercase mb-2">Descripción</label>
+        <p class="text-gray-700 leading-relaxed">
+          {{ producto.descripcion or 'Sin descripción' }}
+        </p>
+      </div>
+
+      <!-- Related Info -->
+      <div class="mb-8">
+        <h3 class="font-bold text-gray-700 mb-4">
+          <i class="fas fa-link mr-2"></i>Información Relacionada
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <span class="text-gray-500 uppercase text-xs font-bold">Receta Padre</span>
+            <a href="{{ url_for('recetas.listar') }}" class="text-[#6C9AD0] hover:underline block mt-1">
+              Ir a Recetas
+            </a>
+          </div>
+          <div>
+            <span class="text-gray-500 uppercase text-xs font-bold">Presentación</span>
+            <a href="{{ url_for('presentaciones.listar') }}" class="text-[#6C9AD0] hover:underline block mt-1">
+              Ir a Presentaciones
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex justify-end gap-4 border-t border-gray-200 pt-6">
+        <a href="{{ url_for('producto_venta.editar', id=producto.id) }}" class="px-6 py-2 text-white font-bold rounded-lg shadow-md hover:opacity-90 transition" style="background-color: #6C9AD0;">
+          <i class="fas fa-edit mr-2"></i>Modificar
+        </a>
+        {% if producto.activo %}
+          <form action="{{ url_for('producto_venta.desactivar', id=producto.id) }}" method="POST" class="inline" onsubmit="return confirm('¿Estás seguro de desactivar este producto?');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="px-6 py-2 text-white font-bold rounded-lg shadow-md hover:opacity-90 transition" style="background-color: #B85B5B;">
+              <i class="fas fa-ban mr-2"></i>Desactivar
+            </button>
+          </form>
+        {% else %}
+          <form action="{{ url_for('producto_venta.activar', id=producto.id) }}" method="POST" class="inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="px-6 py-2 text-white font-bold rounded-lg shadow-md hover:opacity-90 transition" style="background-color: #4A9062;">
+              <i class="fas fa-check mr-2"></i>Activar
+            </button>
+          </form>
+        {% endif %}
+    
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

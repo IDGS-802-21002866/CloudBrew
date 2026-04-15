@@ -1,7 +1,6 @@
 from flask import flash, redirect, render_template, request, url_for
 
 from . import bp
-from app.shared.decorators import login_required
 from app.modules.inventario_producto_terminado.service import (
     InventarioProductoTerminadoService,
 )
@@ -9,7 +8,6 @@ from app.modules.inventario_producto_terminado.service import (
 servicio = InventarioProductoTerminadoService()
 
 
-@login_required
 @bp.route("/")
 def listar():
     page=request.args.get("page", 1, type=int)
@@ -19,7 +17,6 @@ def listar():
     )
 
 
-@login_required
 @bp.route("/<int:id>")
 def detalle(id):
     try:

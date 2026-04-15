@@ -4,9 +4,18 @@ from wtforms.validators import DataRequired, Optional
 
 
 class PedidoForm(FlaskForm):
-    cliente_id = HiddenField("Cliente ID", validators=[DataRequired(message="Debe seleccionar un cliente.")])
+    cliente_id = HiddenField(
+        "Cliente ID", validators=[DataRequired(message="Debe seleccionar un cliente.")]
+    )
 
 
 class PedidoDetalleForm(FlaskForm):
-    receta_id = SelectField("Receta", coerce=int, validators=[DataRequired(message="Debe seleccionar una receta.")])
-    cantidad_lotes = IntegerField("Cantidad de Lotes", validators=[DataRequired(message="La cantidad de lotes es obligatoria.")])
+    producto_venta_id = SelectField(
+        "Producto",
+        coerce=int,
+        validators=[DataRequired(message="Debe seleccionar un producto.")],
+    )
+    cantidad_lotes = IntegerField(
+        "Cantidad de Lotes",
+        validators=[DataRequired(message="La cantidad de lotes es obligatoria.")],
+    )

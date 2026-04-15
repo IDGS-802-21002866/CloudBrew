@@ -64,17 +64,17 @@
 
             <a href="{{ url_for('recetas.listar') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-brew-bg transition">
               <i class="fas fa-book w-5 flex-shrink-0"></i>
-              <span>Recetas</span>
+              <span class="truncate">Recetas</span>
+            </a>
+
+            <a href="{{ url_for('producto_venta.listar') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-brew-bg transition">
+              <i class="fas fa-tag w-5 flex-shrink-0"></i>
+              <span class="truncate">Productos de Venta</span>
             </a>
             
             <a href="{{ url_for('compras.listar') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-brew-bg transition">
               <i class="fas fa-shopping-cart w-5 flex-shrink-0"></i>
-              <span>Compras Pendientes</span>
-            </a>
-
-            <a href="{{ url_for('compras.listar_terminadas') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-brew-bg transition">
-              <i class="fas fa-check-circle w-5 flex-shrink-0"></i>
-              <span>Compras Terminadas</span>
+              <span>Compras</span>
             </a>
 
             <a href="{{ url_for('inventario_materias_primas.listar') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-brew-bg transition">
@@ -91,6 +91,12 @@
               <i class="fas fa-boxes w-5 flex-shrink-0"></i>
               <span>Inventario PT</span>
             </a> 
+
+            <a href="{{ url_for('mermas_producto_terminado.listar') }}"
+              class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-brew-bg transition">
+              <i class="fas fa-trash w-5 flex-shrink-0"></i>
+              <span>Mermas PT</span>
+            </a>
             
             <a href="{{ url_for('clientes.listar') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-brew-bg transition">
               <i class="fas fa-handshake w-5 flex-shrink-0"></i>
@@ -125,12 +131,7 @@
 
             <a href="{{ url_for('produccion.listar') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-brew-bg transition">
               <i class="fas fa-industry w-5 flex-shrink-0"></i>
-              <span>Peticiones de Producción Pendientes</span>
-            </a>
-
-            <a href="{{ url_for('produccion.listar_terminadas') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-brew-bg transition">
-              <i class="fas fa-check-double w-5 flex-shrink-0"></i>
-              <span>Peticiones de Producción Terminadas</span>
+              <span>Producción</span>
             </a>
 
             <a href="{{ url_for('lotes.listar') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-brew-bg transition">
@@ -142,8 +143,7 @@
               <i class="fas fa-list-ul w-5 flex-shrink-0"></i>
               <span>Bitacora de Accesos</span>
             </a>
-
-            <a href="{{ url_for('bitacora.listar') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-brew-bg transition">
+            <a href="{{ url_for('backup.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-brew-bg transition">
               <i class="fas fa-database w-5 flex-shrink-0"></i>
               <span>Respaldos y Restauración</span>
             </a>

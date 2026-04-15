@@ -21,7 +21,10 @@
                 {{ campo_nuevo(form.nombre) }}
                 {{ campo_nuevo(form.tipo_medida_id) }}
                 {{ campo_nuevo(form.descripcion) }}
-                {{ campo_nuevo(form.stock_minimo) }}
+                <div>
+                    {{ campo_nuevo(form.stock_minimo) }}
+                    <span id="unidad-base-label" class="text-xs text-gray-500 mt-1 block">—</span>
+                </div>
             </div>
 
             <div class="mt-8 flex justify-end space-x-4">
@@ -35,36 +38,22 @@
 </div>
 
 <script>
-    const selectTipo = document.getElementById('tipo_medida_id');
-    const selectUnidad = document.getElementById('id_unidad_base');
+const tipoUnidades = {{ tipo_unidades | tojson }};
 
-    async function cargarUnidades(tipoId) {
-        try {
-            const response = await fetch(`/unidades_medida/api/unidades_por_tipo/${tipoId}`);
-            const unidades = await response.json();
+function actualizarUnidad() {
+    const tipoSelect = document.getElementById('tipo_medida_id');
+    const label = document.getElementById('unidad-base-label');
+    if (!tipoSelect || !label) return;
+    const selectedTipo = tipoSelect.value;
+    label.textContent = (selectedTipo && tipoUnidades[selectedTipo]) ? tipoUnidades[selectedTipo] : '—';
+}
 
-            selectUnidad.innerHTML = '<option value="">--- Selecciona Unidad ---</option>';
-
-            unidades.forEach(([id, nombre]) => {
-                const option = document.createElement('option');
-                option.value = id;
-                option.textContent = nombre;
-                selectUnidad.appendChild(option);
-            });
-        } catch (error) {
-            console.error("Error al cargar unidades:", error);
-        }
+document.addEventListener('DOMContentLoaded', function () {
+    const tipoSelect = document.getElementById('tipo_medida_id');
+    if (tipoSelect) {
+        tipoSelect.addEventListener('change', actualizarUnidad);
+        actualizarUnidad();
     }
-
-    selectTipo.addEventListener('change', function() {
-        if (this.value) {
-            cargarUnidades(this.value);
-        }
-    });
-
-    // Cargar unidades al inicio si hay un tipo seleccionado
-    if (selectTipo.value) {
-        cargarUnidades(selectTipo.value);
-    }
+});
 </script>
 {% endblock %}
