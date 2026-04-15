@@ -1,6 +1,7 @@
 from flask import flash, redirect, render_template, request, session, url_for
 from flask_login import current_user
 
+from app import captcha
 from app.modules.tienda import bp
 from app.modules.tienda.forms import (
     LoginClienteForm,
@@ -52,6 +53,16 @@ def detalle_producto(id):
         return redirect(url_for("tienda.listar_productos"))
 
 
+@bp.route("/receta/<int:id>")
+def detalle_receta(id):
+    try:
+        receta = producto_service.obtener_receta_con_presentaciones(id)
+        return render_template("tienda/producto_detalle.html", receta=receta)
+    except ValueError as e:
+        flash(str(e), "danger")
+        return redirect(url_for("tienda.listar_productos"))
+
+
 # ── Autenticación ───────────────────────────────────────────────────────────
 @bp.route("/registrarse", methods=["GET", "POST"])
 def registrarse():
@@ -59,25 +70,29 @@ def registrarse():
         return redirect(url_for("tienda.inicio"))
 
     form = RegistroClienteForm()
-    if form.validate_on_submit():
-        try:
-            data = {
-                "nombres": form.nombres.data,
-                "apellidos": form.apellidos.data,
-                "email": form.email.data.strip().lower(),
-                "telefono": form.telefono.data,
-                "contrasenia": form.contrasenia.data,
-                "calle_numero": form.calle_numero.data,
-                "colonia": form.colonia.data,
-                "ciudad": form.ciudad.data,
-                "estado": form.estado.data,
-                "codigo_postal": form.codigo_postal.data,
-            }
-            auth_service.registrar_cliente(data)
-            flash("¡Registro exitoso! Ya puedes iniciar sesión.", "success")
-            return redirect(url_for("tienda.login"))
-        except ValueError as e:
-            flash(str(e), "danger")
+    if request.method == "POST":
+        # Validar captcha primero
+        if not captcha.validate():
+            flash("Captcha incorrecto. Por favor, intenta nuevamente.", "danger")
+        elif form.validate_on_submit():
+            try:
+                data = {
+                    "nombres": form.nombres.data,
+                    "apellidos": form.apellidos.data,
+                    "email": form.email.data.strip().lower(),
+                    "telefono": form.telefono.data,
+                    "contrasenia": form.contrasenia.data,
+                    "calle_numero": form.calle_numero.data,
+                    "colonia": form.colonia.data,
+                    "ciudad": form.ciudad.data,
+                    "estado": form.estado.data,
+                    "codigo_postal": form.codigo_postal.data,
+                }
+                auth_service.registrar_cliente(data)
+                flash("¡Registro exitoso! Ya puedes iniciar sesión.", "success")
+                return redirect(url_for("tienda.login"))
+            except ValueError as e:
+                flash(str(e), "danger")
 
     return render_template("tienda/registrarse.html", form=form)
 
@@ -88,13 +103,17 @@ def login():
         return redirect(url_for("tienda.inicio"))
 
     form = LoginClienteForm()
-    if form.validate_on_submit():
-        try:
-            auth_service.iniciar_sesion(form.correo.data, form.contrasenia.data)
-            flash("Te enviamos un código de verificación a tu correo.", "success")
-            return redirect(url_for("tienda.verificar_codigo"))
-        except ValueError as e:
-            flash(str(e), "danger")
+    if request.method == "POST":
+        # Validar captcha primero
+        if not captcha.validate():
+            flash("Captcha incorrecto. Por favor, intenta nuevamente.", "danger")
+        elif form.validate_on_submit():
+            try:
+                auth_service.iniciar_sesion(form.correo.data, form.contrasenia.data)
+                flash("Te enviamos un código de verificación a tu correo.", "success")
+                return redirect(url_for("tienda.verificar_codigo"))
+            except ValueError as e:
+                flash(str(e), "danger")
 
     return render_template("tienda/login.html", form=form)
 

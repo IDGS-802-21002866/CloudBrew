@@ -1,5 +1,6 @@
 import random
 import secrets
+import uuid
 from datetime import datetime, timedelta, timezone
 
 from flask import current_app, render_template, session, url_for
@@ -23,6 +24,17 @@ from app.modules.usuarios.repository import (
 
 
 inventario_service = InventarioProductoTerminadoService()
+
+# Tiempo que dura una reserva de stock desde que se agrega al carrito
+RESERVA_TTL_MINUTOS = 30
+
+
+def _get_session_id():
+    """Devuelve (y crea si no existe) el identificador único de la sesión del carrito."""
+    if "tienda_session_id" not in session:
+        session["tienda_session_id"] = str(uuid.uuid4())
+        session.modified = True
+    return session["tienda_session_id"]
 
 
 class TiendaAuthService:
@@ -143,28 +155,61 @@ class TiendaAuthService:
 
 
 class TiendaProductoService:
+    def _stock_disponible_packs(self, producto, session_id=None):
+        """Packs que otras sesiones NO han reservado.
+        Se usa como base para validar cuánto puede reservar esta sesión en total."""
+        repository.limpiar_reservas_expiradas()
+        stock_receta = float(
+            inventario_service.obtener_stock_actual_receta(producto.receta_id) or 0
+        )
+        reservado = repository.get_unidades_reservadas_por_receta(
+            producto.receta_id, excluir_session_id=session_id
+        )
+        stock_neto = max(stock_receta - reservado, 0)
+        return (
+            int(stock_neto // producto.cantidad_unidades)
+            if producto.cantidad_unidades > 0
+            else 0
+        )
+
+    def _stock_agregable_packs(self, producto, session_id):
+        """Packs que el usuario AÚN puede agregar al carrito.
+        = máximo reservable para esta sesión - lo que ya tiene reservado."""
+        stock_libre_para_sesion = self._stock_disponible_packs(producto, session_id)
+        reserva_propia = repository.get_reserva_by_session_producto(
+            session_id, producto.id
+        )
+        stock_max_para_sesion = stock_libre_para_sesion + (
+            reserva_propia.cantidad_packs if reserva_propia else 0
+        )
+        ya_en_carrito = reserva_propia.cantidad_packs if reserva_propia else 0
+        return max(stock_max_para_sesion - ya_en_carrito, 0)
+
     def listar_productos_disponibles(self):
-        inventario = inventario_service.listar_recetas_con_stock()
-        stock_por_receta = {
-            item["id"]: float(item["stock_actual"] or 0) for item in inventario
-        }
+        session_id = _get_session_id()
+        repository.limpiar_reservas_expiradas()
         productos = []
         for producto in ProductoVenta.query.filter_by(tipo="web", activo=True).all():
-            stock_receta = stock_por_receta.get(producto.receta_id, 0)
-            stock_packs = (
-                int(stock_receta // producto.cantidad_unidades)
-                if producto.cantidad_unidades > 0
-                else 0
+            # Packs que puede agregar AÚN (descontando su propio carrito)
+            stock_agregable = self._stock_agregable_packs(producto, session_id)
+            # Para mostrar en la lista también incluimos lo que ya tiene en carrito
+            reserva_propia = repository.get_reserva_by_session_producto(
+                session_id, producto.id
             )
-            if stock_packs > 0:
+            stock_total_para_usuario = stock_agregable + (
+                reserva_propia.cantidad_packs if reserva_propia else 0
+            )
+            if stock_total_para_usuario > 0:
                 productos.append(
                     {
                         "id": producto.id,
                         "receta_id": producto.receta_id,
+                        "receta_nombre": producto.receta.nombre,
                         "nombre": producto.nombre,
                         "descripcion": producto.descripcion,
                         "precio_venta": float(producto.precio_venta),
-                        "stock_actual": stock_packs,
+                        "stock_actual": stock_total_para_usuario,
+                        "stock_agregable": stock_agregable,
                         "tiene_imagen": producto.receta.imagen is not None,
                     }
                 )
@@ -175,53 +220,187 @@ class TiendaProductoService:
         if not producto or not producto.activo or producto.tipo != "web":
             raise ValueError("Producto no encontrado.")
 
-        stock_receta = float(
-            inventario_service.obtener_stock_actual_receta(producto.receta_id) or 0
+        session_id = _get_session_id()
+        stock_agregable = self._stock_agregable_packs(producto, session_id)
+        reserva_propia = repository.get_reserva_by_session_producto(
+            session_id, producto.id
         )
-        stock_packs = (
-            int(stock_receta // producto.cantidad_unidades)
-            if producto.cantidad_unidades > 0
-            else 0
+        stock_total_para_usuario = stock_agregable + (
+            reserva_propia.cantidad_packs if reserva_propia else 0
         )
 
         return {
             "id": producto.id,
             "receta_id": producto.receta_id,
+            "receta_nombre": producto.receta.nombre,
             "nombre": producto.nombre,
             "descripcion": producto.descripcion,
             "precio_venta": producto.precio_venta,
-            "stock_actual": stock_packs,
+            "stock_actual": stock_total_para_usuario,
+            "stock_agregable": stock_agregable,
             "tiene_imagen": producto.receta.imagen is not None,
+        }
+
+    def obtener_receta_con_presentaciones(self, receta_id):
+        """Obtiene una receta con todas sus presentaciones disponibles (para el detalle)."""
+        session_id = _get_session_id()
+        repository.limpiar_reservas_expiradas()
+        productos_web = ProductoVenta.query.filter_by(
+            receta_id=receta_id, tipo="web", activo=True
+        ).all()
+
+        if not productos_web:
+            raise ValueError("Producto no encontrado.")
+
+        presentaciones = []
+        for producto in productos_web:
+            stock_agregable = self._stock_agregable_packs(producto, session_id)
+            reserva_propia = repository.get_reserva_by_session_producto(
+                session_id, producto.id
+            )
+            stock_total = stock_agregable + (
+                reserva_propia.cantidad_packs if reserva_propia else 0
+            )
+            presentaciones.append(
+                {
+                    "id": producto.id,
+                    "nombre": producto.nombre,
+                    "precio_venta": float(producto.precio_venta),
+                    "cantidad_unidades": producto.cantidad_unidades,
+                    "stock_agregable": stock_agregable,
+                    "stock_total": stock_total,
+                    "presentacion_nombre": (
+                        producto.presentacion.nombre
+                        if producto.presentacion
+                        else producto.nombre
+                    ),
+                }
+            )
+
+        presentaciones_disponibles = [p for p in presentaciones if p["stock_total"] > 0]
+        if not presentaciones_disponibles:
+            raise ValueError("Producto no encontrado.")
+
+        receta = productos_web[0].receta
+        return {
+            "receta_id": receta_id,
+            "receta_nombre": receta.nombre,
+            "descripcion": productos_web[0].descripcion,
+            "tiene_imagen": receta.imagen is not None,
+            "presentaciones": presentaciones_disponibles,
         }
 
 
 class TiendaCarritoService:
     CARRITO_KEY = "tienda_carrito"
+    _producto_service = None
+
+    @property
+    def _svc(self):
+        if self._producto_service is None:
+            self._producto_service = TiendaProductoService()
+        return self._producto_service
 
     def obtener_carrito(self):
         return session.get(self.CARRITO_KEY, [])
 
     def agregar_producto(self, producto_venta_id, cantidad):
+        session_id = _get_session_id()
         carrito = self.obtener_carrito()
-
-        for item in carrito:
-            if item["producto_venta_id"] == producto_venta_id:
-                item["cantidad"] += cantidad
-                session[self.CARRITO_KEY] = carrito
-                session.modified = True
-                return carrito
 
         producto = ProductoVenta.query.get(producto_venta_id)
         if not producto or not producto.activo or producto.tipo != "web":
             raise ValueError("Producto no disponible.")
+
+        # Calcular la nueva cantidad total que el usuario quiere tener en el carrito
+        cantidad_actual_en_carrito = next(
+            (
+                i["cantidad"]
+                for i in carrito
+                if i["producto_venta_id"] == producto_venta_id
+            ),
+            0,
+        )
+        cantidad_total_este_producto = cantidad_actual_en_carrito + cantidad
+
+        # VALIDACIÓN ROBUSTA: Considerar todas las reservas de esta sesión para esta receta
+        # Calcular unidades totales ya reservadas para otros productos de la misma receta
+        repository.limpiar_reservas_expiradas()
+        unidades_reservadas_otros_productos = 0.0
+
+        otros_productos_receta = ProductoVenta.query.filter_by(
+            receta_id=producto.receta_id, tipo="web", activo=True
+        ).all()
+
+        for otro_prod in otros_productos_receta:
+            if otro_prod.id != producto.id:  # No incluir este producto
+                reserva = repository.get_reserva_by_session_producto(
+                    session_id, otro_prod.id
+                )
+                if reserva:
+                    unidades_reservadas_otros_productos += reserva.cantidad_unidades
+
+        # Unidades que este producto intenta reservar
+        unidades_este_producto = (
+            cantidad_total_este_producto * producto.cantidad_unidades
+        )
+
+        # Unidades ya reservadas para ESTE producto (a reemplazar)
+        reserva_actual_este = repository.get_reserva_by_session_producto(
+            session_id, producto.id
+        )
+        unidades_reservadas_este_actual = (
+            reserva_actual_este.cantidad_unidades if reserva_actual_este else 0
+        )
+
+        # Stock total disponible de la receta
+        stock_receta = float(
+            inventario_service.obtener_stock_actual_receta(producto.receta_id) or 0
+        )
+
+        # Calcular el nuevo total si se agrega este producto
+        unidades_totales_con_este_producto = (
+            unidades_reservadas_otros_productos + unidades_este_producto
+        )
+
+        if unidades_totales_con_este_producto > stock_receta:
+            disponible_para_este = max(
+                stock_receta - unidades_reservadas_otros_productos, 0
+            )
+            disponible_packs = int(disponible_para_este // producto.cantidad_unidades)
+            raise ValueError(
+                f"Stock insuficiente para '{producto.nombre}'. "
+                f"Disponible: {disponible_packs} packs ({disponible_para_este:.0f} unidades), "
+                f"Solicitado: {cantidad_total_este_producto} packs ({unidades_este_producto:.0f} unidades)."
+            )
+
+        # Crear o actualizar la reserva en BD
+        expiry = datetime.utcnow() + timedelta(minutes=RESERVA_TTL_MINUTOS)
+        repository.crear_o_actualizar_reserva(
+            session_id=session_id,
+            producto_venta_id=producto.id,
+            receta_id=producto.receta_id,
+            cantidad_packs=cantidad_total_este_producto,
+            cantidad_unidades=unidades_este_producto,
+            expiry=expiry,
+        )
+        repository.commit()
+
+        # Actualizar carrito en sesión
+        for item in carrito:
+            if item["producto_venta_id"] == producto_venta_id:
+                item["cantidad"] = cantidad_total_este_producto
+                session[self.CARRITO_KEY] = carrito
+                session.modified = True
+                return carrito
 
         carrito.append(
             {
                 "producto_venta_id": producto.id,
                 "receta_id": producto.receta_id,
                 "nombre": producto.nombre,
-                "precio_unitario": producto.precio_venta,
-                "cantidad": cantidad,
+                "precio_unitario": float(producto.precio_venta),
+                "cantidad": cantidad_total_este_producto,
                 "tiene_imagen": producto.receta.imagen is not None,
             }
         )
@@ -230,21 +409,86 @@ class TiendaCarritoService:
         return carrito
 
     def actualizar_cantidad(self, producto_venta_id, cantidad):
+        session_id = _get_session_id()
         carrito = self.obtener_carrito()
+
         for item in carrito:
             if item["producto_venta_id"] == producto_venta_id:
                 if cantidad <= 0:
                     carrito.remove(item)
+                    repository.eliminar_reserva(session_id, producto_venta_id)
+                    repository.commit()
                 else:
+                    producto = ProductoVenta.query.get(producto_venta_id)
+                    if not producto:
+                        break
+
+                    # VALIDACIÓN ROBUSTA: Considerar todas las reservas de esta sesión para esta receta
+                    repository.limpiar_reservas_expiradas()
+                    unidades_reservadas_otros_productos = 0.0
+
+                    otros_productos_receta = ProductoVenta.query.filter_by(
+                        receta_id=producto.receta_id, tipo="web", activo=True
+                    ).all()
+
+                    for otro_prod in otros_productos_receta:
+                        if otro_prod.id != producto.id:
+                            reserva = repository.get_reserva_by_session_producto(
+                                session_id, otro_prod.id
+                            )
+                            if reserva:
+                                unidades_reservadas_otros_productos += (
+                                    reserva.cantidad_unidades
+                                )
+
+                    unidades_esta_linea = cantidad * producto.cantidad_unidades
+                    stock_receta = float(
+                        inventario_service.obtener_stock_actual_receta(
+                            producto.receta_id
+                        )
+                        or 0
+                    )
+
+                    unidades_totales = (
+                        unidades_reservadas_otros_productos + unidades_esta_linea
+                    )
+
+                    if unidades_totales > stock_receta:
+                        disponible_para_este = max(
+                            stock_receta - unidades_reservadas_otros_productos, 0
+                        )
+                        disponible_packs = int(
+                            disponible_para_este // producto.cantidad_unidades
+                        )
+                        raise ValueError(
+                            f"Stock insuficiente para '{item['nombre']}'. "
+                            f"Disponible: {disponible_packs} packs ({disponible_para_este:.0f} unidades), "
+                            f"Solicitado: {cantidad} packs ({unidades_esta_linea:.0f} unidades)."
+                        )
+
+                    expiry = datetime.utcnow() + timedelta(minutes=RESERVA_TTL_MINUTOS)
+                    repository.crear_o_actualizar_reserva(
+                        session_id=session_id,
+                        producto_venta_id=producto.id,
+                        receta_id=producto.receta_id,
+                        cantidad_packs=cantidad,
+                        cantidad_unidades=unidades_esta_linea,
+                        expiry=expiry,
+                    )
+                    repository.commit()
                     item["cantidad"] = cantidad
                 break
+
         session[self.CARRITO_KEY] = carrito
         session.modified = True
         return carrito
 
     def eliminar_producto(self, producto_venta_id):
+        session_id = _get_session_id()
         carrito = self.obtener_carrito()
         carrito = [i for i in carrito if i["producto_venta_id"] != producto_venta_id]
+        repository.eliminar_reserva(session_id, producto_venta_id)
+        repository.commit()
         session[self.CARRITO_KEY] = carrito
         session.modified = True
         return carrito
@@ -258,7 +502,12 @@ class TiendaCarritoService:
         return sum(i["cantidad"] for i in carrito)
 
     def limpiar_carrito(self):
+        session_id = session.get("tienda_session_id")
+        if session_id:
+            repository.eliminar_reservas_de_sesion(session_id)
+            repository.commit()
         session.pop(self.CARRITO_KEY, None)
+        session.pop("tienda_session_id", None)
         session.modified = True
 
 
@@ -276,22 +525,44 @@ class TiendaCheckoutService:
 
         total = 0.0
         detalles_validados = []
+        producto_service = TiendaProductoService()
+
+        # Validar stock TOTAL por receta (no por producto individual)
+        # Agrupar por receta_id para validar el total de unidades
+        recetas_totales = {}  # {receta_id: total_unidades}
 
         for item in carrito:
-            stock_receta = float(
-                inventario_service.obtener_stock_actual_receta(item["receta_id"]) or 0
-            )
             producto = ProductoVenta.query.get(item["producto_venta_id"])
-            cantidad_unidades = producto.cantidad_unidades if producto else 1
-            stock_packs = (
-                int(stock_receta // cantidad_unidades) if cantidad_unidades > 0 else 0
-            )
+            if not producto:
+                raise ValueError(f"Producto '{item['nombre']}' ya no está disponible.")
 
-            if stock_packs < item["cantidad"]:
+            # Calcular unidades totales para esta línea del carrito
+            unidades_esta_linea = item["cantidad"] * producto.cantidad_unidades
+
+            # Sumar al total de la receta
+            if producto.receta_id not in recetas_totales:
+                recetas_totales[producto.receta_id] = 0.0
+            recetas_totales[producto.receta_id] += unidades_esta_linea
+
+        # Ahora validar que cada receta tiene suficiente stock
+        for receta_id, unidades_totales in recetas_totales.items():
+            stock_actual = float(
+                inventario_service.obtener_stock_actual_receta(receta_id) or 0
+            )
+            if stock_actual < unidades_totales:
+                # Obtener nombre de la receta para el mensaje
+                from app.modules.recetas.model import Recetas
+
+                receta = Recetas.query.get(receta_id)
+                receta_nombre = receta.nombre if receta else "Producto"
                 raise ValueError(
-                    f"Stock insuficiente para '{item['nombre']}'. "
-                    f"Disponible: {stock_packs}, Solicitado: {item['cantidad']}."
+                    f"Stock insuficiente para '{receta_nombre}'. "
+                    f"Disponible: {stock_actual:.2f} unidades, Solicitado: {unidades_totales:.2f} unidades."
                 )
+
+        # Stock validado, procesar cada línea del carrito
+        for item in carrito:
+            producto = ProductoVenta.query.get(item["producto_venta_id"])
 
             subtotal = item["precio_unitario"] * item["cantidad"]
             total += subtotal
@@ -316,9 +587,19 @@ class TiendaCheckoutService:
                     subtotal=detalle["subtotal"],
                 )
 
+                producto = ProductoVenta.query.get(detalle["producto_venta_id"])
+                unidades_vendidas = detalle["cantidad"] * producto.cantidad_unidades
+                repository.create_movimiento_receta(
+                    receta_id=producto.receta_id,
+                    tipo="salida",
+                    cantidad=unidades_vendidas,
+                    motivo=f"Venta web #{venta.id} - {producto.nombre}",
+                    usuario_id=usuario.id,
+                )
+
             repository.commit()
             carrito_service.limpiar_carrito()
             return venta
-        except Exception:
+        except Exception as e:
             repository.rollback()
-            raise ValueError("Error al procesar la compra.")
+            raise ValueError(f"Error al procesar la compra: {str(e)}")

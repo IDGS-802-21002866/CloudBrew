@@ -1,71 +1,45 @@
 {% extends 'tienda/tienda_base.html' %}
 
 {% block content %}
-<style>
-  @keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(30px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  .anim-fade-up { animation: fadeInUp 0.7s ease-out both; }
-  .anim-delay-1 { animation-delay: 0.15s; }
-  .anim-delay-2 { animation-delay: 0.3s; }
-  .anim-delay-3 { animation-delay: 0.45s; }
-  .card-color-0 { background-color: #F5C623; }
-  .card-color-1 { background-color: #F4A261; }
-  .card-color-2 { background-color: #E8836B; }
-  .card-color-0:hover { background-color: #e6b800; }
-  .card-color-1:hover { background-color: #e0923b; }
-  .card-color-2:hover { background-color: #d6725a; }
-</style>
 
 <section class="px-6 py-10">
   <div class="max-w-7xl mx-auto">
-    <h1 class="text-3xl lg:text-4xl font-black text-brew-dark mb-2 anim-fade-up">Nuestras Cervezas</h1>
-    <p class="text-gray-400 text-sm mb-8 anim-fade-up anim-delay-1">Explora nuestra colección completa de cervezas artesanales.</p>
+    <h1 class="text-3xl lg:text-4xl font-black text-brew-dark mb-2">Nuestras Cervezas</h1>
+    <p class="text-gray-400 text-sm mb-8">Explora nuestra colección completa de cervezas artesanales.</p>
 
     {% if productos %}
+      {% set recetas_vistas = namespace(ids=[]) %}
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
         {% for producto in productos %}
-        <div class="rounded-2xl overflow-hidden shadow-md hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 group anim-fade-up anim-delay-{{ loop.index0 % 3 + 1 }}">
-          <div class="card-color-{{ loop.index0 % 3 }} transition-colors duration-300 relative h-64 flex items-center justify-center overflow-hidden">
-            {% if producto.tiene_imagen %}
-              <img src="{{ url_for('recetas.imagen', id=producto.receta_id) }}" alt="{{ producto.nombre }}" class="h-52 object-contain drop-shadow-lg group-hover:scale-110 transition-transform duration-500">
-            {% else %}
-              <i class="fas fa-beer text-7xl text-white/40 group-hover:scale-110 transition-transform duration-500"></i>
-            {% endif %}
-          </div>
-          <div class="bg-white p-5">
-            <div class="flex items-center gap-0.5 mb-1">
-              {% for s in range(5) %}
-                <i class="fas fa-star text-amber-400 text-xs"></i>
-              {% endfor %}
+          {% if producto.receta_id not in recetas_vistas.ids %}
+            {% set _ = recetas_vistas.ids.append(producto.receta_id) %}
+            {% set idx = loop.index0 % 3 %}
+            <div class="rounded-2xl overflow-hidden shadow-md hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 group">
+              <a href="{{ url_for('tienda.detalle_receta', id=producto.receta_id) }}" class="block">
+                <div class="{{ 'bg-amber-300' if idx == 0 else ('bg-orange-300' if idx == 1 else 'bg-rose-300') }} transition-colors duration-300 relative h-64 flex items-center justify-center overflow-hidden">
+                  {% if producto.tiene_imagen %}
+                    <img src="{{ url_for('recetas.imagen', id=producto.receta_id) }}" alt="{{ producto.receta_nombre }}" class="h-52 object-contain drop-shadow-lg group-hover:scale-110 transition-transform duration-500">
+                  {% else %}
+                    <i class="fas fa-beer text-7xl text-white/50 group-hover:scale-110 transition-transform duration-500"></i>
+                  {% endif %}
+                </div>
+                <div class="bg-white p-5">
+                  <h3 class="text-lg font-bold text-brew-dark mb-1">{{ producto.receta_nombre }}</h3>
+                  <p class="text-gray-400 text-xs mb-3 line-clamp-2">{{ producto.descripcion or 'Cerveza artesanal elaborada con ingredientes selectos.' }}</p>
+                  <div class="flex items-center justify-between">
+                    <p class="text-lg font-bold text-brew-dark">Desde ${{ "%.2f"|format(producto.precio_venta) }}</p>
+                    <span class="w-9 h-9 rounded-full bg-[#D2691E] text-white flex items-center justify-center group-hover:bg-[#b5571a] transition-colors duration-200 shadow-md">
+                      <i class="fas fa-eye text-sm"></i>
+                    </span>
+                  </div>
+                </div>
+              </a>
             </div>
-            <h3 class="text-lg font-bold text-brew-dark mb-1">{{ producto.nombre }}</h3>
-            <p class="text-gray-400 text-xs mb-2 line-clamp-2">{{ producto.descripcion or 'Cerveza artesanal elaborada con ingredientes selectos.' }}</p>
-            <div class="flex items-center justify-between">
-              <div>
-                <p class="text-lg font-bold text-brew-dark">${{ "%.2f"|format(producto.precio_venta) }} <span class="text-xs text-gray-400 font-normal">/ 12 pz</span></p>
-                <p class="text-xs text-green-600 font-medium">{{ producto.stock_actual|int }} disponibles</p>
-              </div>
-              <div class="flex items-center gap-2">
-                <form action="{{ url_for('tienda.agregar_al_carrito') }}" method="POST">
-                  <input type="hidden" name="producto_venta_id" value="{{ producto.id }}">
-                  <input type="hidden" name="cantidad" value="1">
-                  <button type="submit" class="w-9 h-9 rounded-full bg-[#D2691E] text-white flex items-center justify-center hover:bg-[#b5571a] hover:scale-110 active:scale-95 transition-all duration-200 shadow-md" title="Agregar al carrito">
-                    <i class="fas fa-cart-plus text-sm"></i>
-                  </button>
-                </form>
-                <a href="{{ url_for('tienda.detalle_producto', id=producto.id) }}" class="w-9 h-9 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center hover:bg-gray-200 hover:text-[#D2691E] hover:scale-110 transition-all duration-200" title="Ver detalle">
-                  <i class="fas fa-eye text-sm"></i>
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
+          {% endif %}
         {% endfor %}
       </div>
     {% else %}
-      <div class="text-center py-20 anim-fade-up">
+      <div class="text-center py-20">
         <i class="fas fa-beer text-7xl text-gray-200 mb-6"></i>
         <p class="text-gray-400 text-lg">No hay productos disponibles por el momento.</p>
         <p class="text-gray-300 text-sm mt-2">Pronto tendremos nuevas cervezas para ti.</p>

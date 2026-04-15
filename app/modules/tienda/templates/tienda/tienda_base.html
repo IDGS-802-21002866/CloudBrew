@@ -110,6 +110,7 @@
 
   <!-- Main Content -->
   <main class="flex-1">
+    {% block content_full %}{% endblock %}
     <div class="max-w-7xl mx-auto">
       {{ mostrar_flashes() }}
       {% block content %}

@@ -21,6 +21,14 @@
 
       {{ campo_nuevo(form.contrasenia, class="w-full px-4 py-3 rounded border-2 border-brew-beige bg-brew-bg text-brew-beige focus:outline-none focus:ring-0", labelClass="block text-base font-medium mb-3 text-white") }}
 
+      <!-- CAPTCHA -->
+      <div class="flex items-center gap-4 py-6">
+        <div class="rounded overflow-hidden border-2 border-brew-beige">
+          {{ captcha() }}
+        </div>
+        <input type="text" name="captcha" placeholder="Código" class="flex-1 px-4 py-3 rounded border-2 border-brew-beige bg-brew-bg text-brew-beige focus:outline-none focus:ring-0">
+      </div>
+
       <div class="my-6 border-t-4 border-brew-beige"></div>
 
       <div class="text-center py-4">
