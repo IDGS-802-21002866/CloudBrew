@@ -30,6 +30,7 @@ pillow==12.2.0
 pycparser==3.0
 PyMySQL==1.1.2
 python-dotenv==1.2.2
+resend==2.7.0
 SQLAlchemy==2.0.38
 tomli==2.4.1
 typing_extensions==4.15.0

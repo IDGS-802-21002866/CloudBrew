@@ -21,6 +21,8 @@ class Config(object):
     SESSION_SQLALCHEMY_TABLE = "session"
     CAPTCHA_INCLUDE_NUMERIC = True
     CAPTCHA_INCLUDE_ALPHABET = False
+    RESEND_API_KEY = os.environ.get("RESEND_API_KEY")
+    MAIL_DEFAULT_SENDER = os.environ.get("MAIL_DEFAULT_SENDER")
 
 
 class DevelopmentConfig(Config):
@@ -32,7 +34,6 @@ class DevelopmentConfig(Config):
     MAIL_USE_TLS = os.environ.get("MAIL_USE_TLS", "True") == "True"
     MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
     MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
-    MAIL_DEFAULT_SENDER = os.environ.get("MAIL_DEFAULT_SENDER")
     BASE_URL = os.environ.get("BASE_URL", "http://localhost:5000")
 
 
@@ -46,11 +47,4 @@ class ProductionConfig(Config):
         "DATABASE_URL"
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    MAIL_SERVER = os.environ.get("MAIL_SERVER", "smtp.gmail.com")
-    MAIL_PORT = int(os.environ.get("MAIL_PORT", 465))
-    MAIL_USE_TLS = False
-    MAIL_USE_SSL = True
-    MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
-    MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
-    MAIL_DEFAULT_SENDER = os.environ.get("MAIL_DEFAULT_SENDER")
     BASE_URL = os.environ.get("BASE_URL")  # Debe estar seteado en Railway
