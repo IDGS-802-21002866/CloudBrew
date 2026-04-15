@@ -86,12 +86,12 @@
         <div class="overflow-x-auto">
           <table class="w-full">
             <thead>
-              <tr class="bg-gray-100 border-b-2 border-gray-300">
-                <th class="px-6 py-3 text-left font-bold text-gray-700">Materia prima</th>
-                <th class="px-6 py-3 text-center font-bold text-gray-700">Requerido</th>
-                <th class="px-6 py-3 text-center font-bold text-gray-700">Unidad</th>
+              <tr class="bg-brew-bg border-b-2 border-brew-dark">
+                <th class="px-6 py-3 text-left font-bold text-brew-beige">Materia Prima</th>
+                <th class="px-6 py-3 text-center font-bold text-brew-beige">Cantidad</th>
+                <th class="px-6 py-3 text-center font-bold text-brew-beige">Unidad</th>
               </tr>
-            </thead>
+          </thead>
             <tbody>
               {% if receta.detalle %}
                 {% for detalle in receta.detalle %}
@@ -120,11 +120,12 @@
         <div class="overflow-x-auto">
           <table class="w-full">
             <thead>
-              <tr class="bg-gray-100 border-b-2 border-gray-300">
-                <th class="px-6 py-3 text-left font-bold text-gray-700">Proceso</th>
-                <th class="px-6 py-3 text-center font-bold text-gray-700">Tiempo (min)</th>
-              </tr>
-            </thead>
+            <tr class="bg-brew-bg border-b-2 border-brew-dark">
+              <th class="px-6 py-3 text-left font-bold text-brew-beige">Proceso</th>
+              <th class="px-6 py-3 text-center font-bold text-brew-beige">Tiempo Estimado (min)</th>
+              <th class="px-6 py-3 text-center font-bold text-brew-beige">Acciones</th>
+            </tr>
+          </thead>
             <tbody>
               {% if receta.procesos_receta %}
                 {% for proceso in receta.procesos_receta %}
