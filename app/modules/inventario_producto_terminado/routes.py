@@ -59,9 +59,10 @@ def crear_solicitud_produccion(receta_id):
     try:
         receta = servicio.obtener_receta(receta_id)
         stock_actual = servicio.obtener_stock_actual_receta(receta_id)
-        if stock_actual > 0:
+        cantidad_producida = float(receta.cantidad_producida or 0)
+        if cantidad_producida > 0 and stock_actual >= cantidad_producida:
             flash(
-                "Esta receta tiene stock disponible. No se puede solicitar producción.",
+                "Esta receta tiene stock suficiente. No se puede solicitar producción.",
                 "warning",
             )
             return redirect(

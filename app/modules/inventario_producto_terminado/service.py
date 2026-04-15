@@ -8,6 +8,7 @@ class InventarioProductoTerminadoService:
 
         for item in inventario:
             stock_actual = float(item.stock_actual or 0)
+            cantidad_prod = float(item.cantidad_producida or 0)
 
             resultado.append(
                 {
@@ -16,7 +17,9 @@ class InventarioProductoTerminadoService:
                     "descripcion": item.descripcion,
                     "cantidad_producida": item.cantidad_producida,
                     "stock_actual": stock_actual,
-                    "estado_stock": self._obtener_estado_stock(stock_actual),
+                    "estado_stock": self._obtener_estado_stock(
+                        stock_actual, cantidad_prod
+                    ),
                 }
             )
 
@@ -25,10 +28,24 @@ class InventarioProductoTerminadoService:
     def listar_recetas_con_stock_pag(self, page, per_page):
         paginated = repository.get_paginated_recetas_con_stock(page, per_page)
 
-        resultado = []
+        todo_inventario = repository.get_paginated_recetas_con_stock(
+            page=1, per_page=1000
+        ).items
+        bajo_stock_total = 0
+        sin_stock_total = 0
+        for it in todo_inventario:
+            st = float(it.stock_actual or 0)
+            cp = float(it.cantidad_producida or 0)
+            estado = self._obtener_estado_stock(st, cp)
+            if estado == "sin_stock":
+                sin_stock_total += 1
+            elif estado == "bajo_stock":
+                bajo_stock_total += 1
 
+        resultado = []
         for item in paginated.items:
             stock_actual = float(item.stock_actual or 0)
+            cantidad_prod = float(item.cantidad_producida or 0)
 
             resultado.append(
                 {
@@ -37,16 +54,22 @@ class InventarioProductoTerminadoService:
                     "descripcion": item.descripcion,
                     "cantidad_producida": item.cantidad_producida,
                     "stock_actual": stock_actual,
-                    "estado_stock": self._obtener_estado_stock(stock_actual),
+                    "estado_stock": self._obtener_estado_stock(
+                        stock_actual, cantidad_prod
+                    ),
                 }
             )
         paginated.items = resultado
+        paginated.bajo_stock_total = bajo_stock_total
+        paginated.sin_stock_total = sin_stock_total
 
         return paginated
 
-    def _obtener_estado_stock(self, stock_actual):
+    def _obtener_estado_stock(self, stock_actual, cantidad_producida=0):
         if stock_actual <= 0:
             return "sin_stock"
+        if cantidad_producida > 0 and stock_actual < cantidad_producida:
+            return "bajo_stock"
         return "disponible"
 
     def listar_recetas_bajo_stock_pag(self, page=1, per_page=10):
@@ -55,7 +78,9 @@ class InventarioProductoTerminadoService:
         resultado = []
         for item in paginated.items:
             stock_actual = float(item.stock_actual or 0)
-            if stock_actual <= 0:
+            cantidad_prod = float(item.cantidad_producida or 0)
+            estado = self._obtener_estado_stock(stock_actual, cantidad_prod)
+            if estado in ("sin_stock", "bajo_stock"):
                 resultado.append(
                     {
                         "id": item.id,
@@ -63,7 +88,7 @@ class InventarioProductoTerminadoService:
                         "descripcion": item.descripcion,
                         "cantidad_producida": item.cantidad_producida,
                         "stock_actual": stock_actual,
-                        "estado_stock": "sin_stock",
+                        "estado_stock": estado,
                     }
                 )
 

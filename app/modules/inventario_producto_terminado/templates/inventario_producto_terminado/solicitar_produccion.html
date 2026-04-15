@@ -14,7 +14,7 @@
   <div class="mb-6">
     <p class="text-gray-600">
       <i class="fa-solid fa-circle-info mr-2 text-blue-500"></i>
-      Solo se muestran recetas con stock nulo. Seleccione la cantidad de lotes a producir.
+      Solo se muestran recetas con stock bajo o nulo. Seleccione la cantidad de lotes a producir.
     </p>
   </div>
 
@@ -26,6 +26,7 @@
           <th class="px-6 py-3 text-left text-xs font-medium text-brew-beige uppercase tracking-wider">Descripción</th>
           <th class="px-6 py-3 text-center text-xs font-medium text-brew-beige uppercase tracking-wider">Piezas por Lote</th>
           <th class="px-6 py-3 text-center text-xs font-medium text-brew-beige uppercase tracking-wider">Stock Actual</th>
+          <th class="px-6 py-3 text-center text-xs font-medium text-brew-beige uppercase tracking-wider">Estado</th>
           <th class="px-6 py-3 text-center text-xs font-medium text-brew-beige uppercase tracking-wider">Cantidad Lotes</th>
           <th class="px-6 py-3 text-center text-xs font-medium text-brew-beige uppercase tracking-wider">Acciones</th>
         </tr>
@@ -37,8 +38,13 @@
             <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">{{ item.nombre }}</td>
             <td class="px-6 py-4 text-sm text-gray-600">{{ item.descripcion or 'N/A' }}</td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-center font-bold">{{ item.cantidad_producida }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-center font-bold">{{ '%.2f'|format(item.stock_actual) }}</td>
             <td class="px-6 py-4 whitespace-nowrap text-center">
-              <span class="px-3 py-1 text-xs font-bold rounded-full bg-red-100 text-red-800 border border-red-200 uppercase">Sin Stock</span>
+              {% if item.estado_stock == 'sin_stock' %}
+                <span class="px-3 py-1 text-xs font-bold rounded-full bg-red-100 text-red-800 border border-red-200 uppercase">Sin Stock</span>
+              {% else %}
+                <span class="px-3 py-1 text-xs font-bold rounded-full bg-amber-100 text-amber-800 border border-amber-200 uppercase">Bajo Stock</span>
+              {% endif %}
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-center">
               <form method="POST" action="{{ url_for('inventario_producto_terminado.crear_solicitud_produccion', receta_id=item.id) }}" class="flex items-center justify-center gap-2">

@@ -1,72 +1,108 @@
 {% extends 'base.html' %}
+
+{% block title %}Solicitar Materia Prima{% endblock %}
+
 {% block content %}
 <div class="container mx-auto px-4 py-8">
-    <div class="max-w-2xl mx-auto bg-white shadow-md rounded-lg p-8 border border-gray-400">
-        <div class="mb-6">
-            <a href="{{ url_for('inventario_materias_primas.listar') }}" class="flex items-center text-2xl font-bold text-gray-800 hover:text-[#4A9062] transition">
-                <i class="fa-solid fa-chevron-left mr-3"></i> Nueva Solicitud de Compra
-            </a>
-        </div>
-        <form method="POST">
-            <div class="mb-4">
-                <label class="block text-sm font-bold text-gray-700 mb-2">Materia Prima</label>
-                {% if materia %}
-                    <input type="hidden" name="materia_prima_id" id="materia-hidden" value="{{ materia.id }}" data-unidad="{{ unidad_hint }}">
-                    <input type="text" value="{{ materia.nombre }}" class="w-full p-2 border-2 border-gray-400 rounded-lg bg-gray-50" readonly>
-                {% else %}
-                    <select name="materia_prima_id" id="materia-select" class="w-full p-2 border-2 border-gray-400 rounded-lg focus:border-[#6C9AD0] outline-none" required>
-                        <option value="" data-unidad="unidades">-- Selecciona una materia --</option>
-                        {% for m in materias %}
-                            <option value="{{ m.id }}" data-unidad="{{ m.abr }}">{{ m.nombre }} — {{ m.estado_stock | replace('_', ' ') | upper }}</option>
-                        {% endfor %}
-                    </select>
-                {% endif %}
-            </div>
 
-            <div class="mb-4">
-                <label id="cantidad-label" class="block text-sm font-bold text-gray-700 mb-2">Cantidad Necesaria</label>
-                <input type="number" name="cantidad" step="0.01" class="w-full p-2 border-2 border-gray-400 rounded-lg focus:border-[#6C9AD0] outline-none" placeholder="0.00" required>
-            </div>
+  <div class="flex justify-between items-center mb-6">
+    <a href="{{ url_for('inventario_materias_primas.listar') }}" class="flex items-center text-2xl font-bold text-gray-800 hover:text-gray-600 transition">
+      <i class="fa-solid fa-chevron-left mr-3"></i> Solicitar Materia Prima
+    </a>
+  </div>
 
-            <div class="mb-6">
-                <label class="block text-sm font-bold text-gray-700 mb-2">Motivo de la solicitud</label>
-                <textarea name="motivo" class="w-full p-2 border-2 border-gray-400 rounded-lg focus:border-[#6C9AD0] outline-none" rows="3" placeholder="Ej: Stock crítico para fin de semana..."></textarea>
-            </div>
+  <div class="mb-6">
+    <p class="text-gray-600">
+      <i class="fa-solid fa-circle-info mr-2 text-blue-500"></i>
+      Solo se muestran materias primas con stock bajo o nulo. Ingrese la cantidad a solicitar.
+    </p>
+  </div>
 
-            <div class="flex justify-end pt-4 border-t border-gray-100">
-                <button type="submit" class="bg-[#4A9062] text-white font-bold py-2 px-8 rounded shadow-md hover:opacity-90 transition">
-                    Enviar a Compras
+  <div class="bg-white shadow-md rounded-lg overflow-hidden border border-gray-200">
+    <table class="min-w-full table-auto">
+      <thead class="bg-brew-bg">
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium text-brew-beige uppercase tracking-wider">Materia Prima</th>
+          <th class="px-6 py-3 text-center text-xs font-medium text-brew-beige uppercase tracking-wider">Stock Actual</th>
+          <th class="px-6 py-3 text-center text-xs font-medium text-brew-beige uppercase tracking-wider">Mínimo (2 Lotes)</th>
+          <th class="px-6 py-3 text-center text-xs font-medium text-brew-beige uppercase tracking-wider">Estado</th>
+          <th class="px-6 py-3 text-center text-xs font-medium text-brew-beige uppercase tracking-wider">Cantidad</th>
+          <th class="px-6 py-3 text-center text-xs font-medium text-brew-beige uppercase tracking-wider">Acciones</th>
+        </tr>
+      </thead>
+      <tbody class="bg-white divide-y divide-gray-200">
+        {% if pagination.items %}
+          {% for item in pagination.items %}
+          <tr class="hover:bg-gray-50 transition-colors">
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">{{ item.nombre }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
+              {{ "{:,.2f}".format(item.stock_visual) }}
+              <span class="text-xs text-gray-400 uppercase ml-1">{{ item.abr }}</span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-400 italic">
+              {{ "{:,.2f}".format(item.minimo_visual) }} {{ item.abr }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-center">
+              {% if item.estado_stock == 'sin_stock' %}
+                <span class="px-3 py-1 text-xs font-bold rounded-full bg-red-100 text-red-800 border border-red-200 uppercase">Sin Stock</span>
+              {% else %}
+                <span class="px-3 py-1 text-xs font-bold rounded-full bg-amber-100 text-amber-800 border border-amber-200 uppercase">Bajo Stock</span>
+              {% endif %}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-center">
+              <form method="POST" action="{{ url_for('inventario_materias_primas.crear_solicitud', id=item.id) }}" class="flex items-center justify-center gap-2">
+                <input type="number" name="cantidad" value="{{ '{:.2f}'.format(item.sugerencia) }}" step="0.01" min="0.01"
+                       class="w-24 px-2 py-1 border-2 border-gray-400 rounded-lg text-center focus:border-[#6C9AD0] outline-none">
+                <span class="text-xs text-gray-400 uppercase">{{ item.abr }}</span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-center">
+                <button type="submit" class="bg-[#4A9062] text-white font-bold py-1.5 px-4 rounded-lg shadow-sm hover:opacity-90 transition text-xs">
+                  <i class="fa-solid fa-cart-plus mr-1"></i> Solicitar
                 </button>
-            </div>
-        </form>
-    </div>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="6" class="px-6 py-10 text-center text-gray-500">
+              <i class="fa-solid fa-check-circle text-green-500 mr-2"></i>
+              Todas las materias primas tienen stock suficiente. No hay solicitudes pendientes.
+            </td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if pagination.pages > 1 %}
+  <div class="flex justify-center items-center mt-6 space-x-4">
+    {% if pagination.has_prev %}
+    <a href="{{ url_for('inventario_materias_primas.solicitar', page=pagination.prev_num) }}"
+       class="px-4 py-2 bg-[#4A9062] text-white font-bold rounded-lg hover:opacity-90 transition shadow-sm">
+      <i class="fa-solid fa-chevron-left mr-2"></i> Anterior
+    </a>
+    {% else %}
+    <span class="px-4 py-2 bg-gray-200 text-gray-400 font-bold rounded-lg cursor-not-allowed">
+      <i class="fa-solid fa-chevron-left mr-2"></i> Anterior
+    </span>
+    {% endif %}
+
+    <span class="text-gray-600 font-medium bg-white px-4 py-2 rounded-lg border border-gray-200">
+      Página <span class="font-bold text-gray-900">{{ pagination.page }}</span> de <span class="font-bold text-gray-900">{{ pagination.pages }}</span>
+    </span>
+
+    {% if pagination.has_next %}
+    <a href="{{ url_for('inventario_materias_primas.solicitar', page=pagination.next_num) }}"
+       class="px-4 py-2 bg-[#4A9062] text-white font-bold rounded-lg hover:opacity-90 transition shadow-sm">
+      Siguiente <i class="fa-solid fa-chevron-right ml-2"></i>
+    </a>
+    {% else %}
+    <span class="px-4 py-2 bg-gray-200 text-gray-400 font-bold rounded-lg cursor-not-allowed">
+      Siguiente <i class="fa-solid fa-chevron-right ml-2"></i>
+    </span>
+    {% endif %}
+  </div>
+  {% endif %}
 </div>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const select = document.getElementById('materia-select');
-        const hidden = document.getElementById('materia-hidden');
-        const label = document.getElementById('cantidad-label');
-
-        function updateLabel(unidad) {
-            if (label) {
-                const text = unidad ? unidad : 'unidades';
-                label.textContent = `Cantidad Necesaria (${text})`;
-            }
-        }
-
-        if (select) {
-            select.addEventListener('change', function () {
-                const option = this.options[this.selectedIndex];
-                updateLabel(option.getAttribute('data-unidad'));
-            });
-            // Carga inicial
-            if(select.selectedIndex >= 0) {
-                updateLabel(select.options[select.selectedIndex].getAttribute('data-unidad'));
-            }
-        } else if (hidden) {
-            updateLabel(hidden.getAttribute('data-unidad'));
-        }
-    });
-</script>
 {% endblock %}
