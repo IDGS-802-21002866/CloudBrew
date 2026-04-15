@@ -22,11 +22,9 @@
                     <p><strong>Fecha:</strong> {{ solicitud.fecha_creacion.strftime('%d/%m/%Y') }}</p>
                 </div>
             </div>
-
             <form method="POST" class="space-y-8">
                 {{ form.hidden_tag() }}
                 {{ detalles_form.hidden_tag() }}
-
                 <div>
                     <h3 class="text-sm font-black text-gray-700 uppercase mb-4">1. Seleccionar Proveedor</h3>
                     {{ campo_nuevo(form.proveedor_id) }}

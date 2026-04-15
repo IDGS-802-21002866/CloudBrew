@@ -76,7 +76,7 @@
             </div>
 
             <div class="flex justify-end pt-6">
-                <button type="submit" class="w-full lg:w-auto px-20 py-8 bg-[#4A9062] text-white font-black rounded-3xl hover:bg-[#3d7a52] hover:shadow-2xl hover:-translate-y-1 transition-all shadow-xl uppercase tracking-[0.3em] text-sm">
+                <button type="submit" id="btn_confirmar" class="w-full lg:w-auto px-20 py-8 bg-[#4A9062] text-white font-black rounded-3xl hover:bg-[#3d7a52] hover:shadow-2xl hover:-translate-y-1 transition-all shadow-xl uppercase tracking-[0.3em] text-sm">
                     Confirmar Registro
                 </button>
             </div>
@@ -85,7 +85,7 @@
 </div>
 
 <script>
-    const lotesData = {{ lotes_data | tojson | safe }};
+    const lotesData = JSON.parse('{{ lotes_data | tojson | safe }}');
     const inputP = document.getElementById('producto_input');
     const datalist = document.getElementById('productos');
     const hiddenId = document.getElementById('js_receta_id');
@@ -93,49 +93,93 @@
     const displayS = document.getElementById('display_stock');
     const checkL = document.getElementById('check_lote');
     const inputC = document.getElementById('input_cantidad');
+    const btnConfirmar = document.getElementById('btn_confirmar');
 
     inputP.addEventListener('input', function() {
         const val = this.value;
         const options = datalist.options;
-        let id = null; let stock = "--";
+        let id = null;
 
-        for(let i=0; i<options.length; i++){
-            if(options[i].value === val){
+        for (let i = 0; i < options.length; i++) {
+            if (options[i].value === val) {
                 id = options[i].getAttribute('data-id');
-                stock = options[i].getAttribute('data-stock');
                 break;
             }
         }
 
-        if(id){
+        if (id) {
             hiddenId.value = id;
-            displayS.textContent = parseFloat(stock).toFixed(0);
+            displayS.textContent = '0';
             selectL.innerHTML = '<option value="">-- Elige el lote --</option>';
-            if(lotesData[id]){
+            if (lotesData[id]) {
                 lotesData[id].forEach(l => {
-                    let o = document.createElement('option');
-                    o.value = l.id; o.textContent = `${l.codigo} (Stock: ${l.cantidad})`; o.dataset.cant = l.cantidad;
+                    const o = document.createElement('option');
+                    o.value = l.id;
+                    o.textContent = `${l.codigo} (Stock: ${l.cantidad})`;
+                    o.dataset.cant = l.cantidad;
                     selectL.appendChild(o);
                 });
             }
+            fetch(`/mermas-producto-terminado/stock/${id}`)
+                .then(response => response.ok ? response.json() : { stock_actual: 0 })
+                .then(data => {
+                    const stock = parseFloat(data.stock_actual);
+                    const stockValue = Number.isFinite(stock) ? stock : 0;
+                    displayS.textContent = stockValue.toFixed(0);
+                    actualizarEstadoBoton(stockValue);
+                })
+                .catch(() => {
+                    displayS.textContent = '0';
+                    actualizarEstadoBoton(0);
+                });
         } else {
-            hiddenId.value = ""; displayS.textContent = "--";
+            hiddenId.value = "";
+            displayS.textContent = '0';
             selectL.innerHTML = '<option value="">-- Primero selecciona producto --</option>';
+            actualizarEstadoBoton(0);
         }
     });
 
+    function actualizarEstadoBoton(stock) {
+        const cantidad = parseFloat(inputC.value) || 0;
+        const disable = !stock || stock <= 0 || cantidad <= 0 || cantidad > stock;
+        btnConfirmar.disabled = disable;
+        btnConfirmar.classList.toggle('opacity-50', disable);
+        btnConfirmar.classList.toggle('cursor-not-allowed', disable);
+    }
+
     function toggleLote() {
+        const selectedLote = selectL.value;
+        const stock = parseFloat(displayS.textContent) || 0;
         document.getElementById('track').style.backgroundColor = checkL.checked ? '#4A9062' : '#D1D5DB';
         document.getElementById('dot').style.transform = checkL.checked ? 'translateX(1.5rem)' : 'translateX(0.25rem)';
-        if(checkL.checked && selectL.value){
-            inputC.value = selectL.options[selectL.selectedIndex].dataset.cant;
-            inputC.readOnly = true; inputC.style.backgroundColor = '#F3F4F6';
-        } else {
-            inputC.readOnly = false; inputC.style.backgroundColor = 'white';
+        if (selectedLote) {
+            const loteCantidad = parseFloat(selectL.options[selectL.selectedIndex].dataset.cant) || 0;
+            inputC.value = loteCantidad;
         }
+        if (checkL.checked) {
+            inputC.readOnly = true;
+            inputC.style.backgroundColor = '#F3F4F6';
+        } else {
+            inputC.readOnly = false;
+            inputC.style.backgroundColor = 'white';
+        }
+        actualizarEstadoBoton(stock);
     }
 
     checkL.addEventListener('change', toggleLote);
     selectL.addEventListener('change', toggleLote);
+    inputC.addEventListener('input', function() {
+        if (inputC.value && parseFloat(inputC.value) < 0) {
+            inputC.value = Math.abs(parseFloat(inputC.value));
+        }
+        const stock = parseFloat(displayS.textContent) || 0;
+        actualizarEstadoBoton(stock);
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const stock = parseFloat(displayS.textContent) || 0;
+        actualizarEstadoBoton(stock);
+    });
 </script>
 {% endblock %}

@@ -26,6 +26,8 @@ def listar():
     )
 
 
+# app/modules/mermas_producto_terminado/routes.py
+
 @bp.route("/crear", methods=["GET", "POST"])
 def crear():
     form = MermaProductoTerminadoForm()
@@ -34,23 +36,29 @@ def crear():
     
     lotes_por_receta = {}
     for l in lotes_raw:
-        # AGREGAMOS ESTE IF: Solo si el lote está activo, lo metemos a la lista
-        if l.activo: 
+        # Usamos getattr para que si 'activo' no existe, asuma True y no truene
+        es_activo = getattr(l, 'activo', True) 
+        
+        if es_activo: 
             try:
+                # Accedemos al ID de la receta a través de la producción
                 r_id = str(l.produccion.id_receta) 
                 if r_id not in lotes_por_receta: 
                     lotes_por_receta[r_id] = []
+                
                 lotes_por_receta[r_id].append({
                     "id": l.id_lote, 
                     "codigo": l.codigo_lote, 
                     "cantidad": float(l.cantidad_generada)
                 })
-            except: continue
+            except Exception as e:
+                # Si un lote no tiene producción ligada, lo ignoramos
+                continue
 
     if request.method == "POST":
+        # Recolectamos datos del formulario manual para evitar líos de validación
         datos = {
             "receta_id": request.form.get("receta_id"),
-            "producto_terminado": request.form.get("producto_terminado"),
             "cantidad": request.form.get("cantidad"),
             "motivo": request.form.get("motivo"),
             "lote_id": request.form.get("lote_id") or None,
@@ -58,12 +66,15 @@ def crear():
         }
         try:
             servicio.registrar_merma(datos, current_user.id)
-            flash("Merma registrada y stock actualizado.", "success")
+            flash("Merma registrada y stock actualizado correctamente.", "success")
             return redirect(url_for("mermas_producto_terminado.listar"))
         except ValueError as e:
             flash(str(e), "danger")
 
-    return render_template("mermas_producto_terminado/crear.html", form=form, recetas=recetas, lotes_data=lotes_por_receta)
+    return render_template("mermas_producto_terminado/crear.html", 
+                           form=form, 
+                           recetas=recetas, 
+                           lotes_data=lotes_por_receta)
 
 @bp.route("/stock/<int:receta_id>")
 def obtener_stock(receta_id):

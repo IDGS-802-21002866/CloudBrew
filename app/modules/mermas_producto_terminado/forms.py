@@ -23,6 +23,6 @@ class MermaProductoTerminadoForm(FlaskForm):
         "Motivo",
         validators=[
             DataRequired(message="El motivo es obligatorio."),
-            Length(max=255, message="El motivo no puede tener más de 255 caracteres."),
+            Length(min=10, max=255, message="El motivo debe tener entre 10 y 255 caracteres."),
         ],
     )

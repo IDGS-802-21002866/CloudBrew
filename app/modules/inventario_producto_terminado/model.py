@@ -21,8 +21,12 @@ class MovimientosReceta(db.Model):
     usuario_id: Mapped[int] = mapped_column(
         db.Integer, db.ForeignKey("usuario.id"), nullable=False
     )
+    lote_id: Mapped[int] = mapped_column(
+        db.Integer, db.ForeignKey("lotes_produccion.id_lote"), nullable=True
+    )
 
     receta = db.relationship("Recetas", backref="movimientos")
+    lote = db.relationship("LoteProduccion")
     usuario = db.relationship("Usuario", back_populates="movimientos_receta")
 
     # TODO: Agregar relacion con salidas y entradas, tanto con mermas, con produccion y con ventas
