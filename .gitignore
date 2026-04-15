@@ -38,8 +38,6 @@ build/
 *.sqlite3
 *.db
 
-# Archivos compilados/generados
-app/static/dist/
 
 # Sistema
 .DS_Store
