@@ -36,6 +36,43 @@ def get_all_recetas_con_stock():
         .all()
     )
 
+from sqlalchemy import func, case
+
+def get_paginated_recetas_con_stock(page, per_page):
+    stock_expr = func.coalesce(
+        func.sum(
+            case(
+                (MovimientosReceta.tipo == "entrada", MovimientosReceta.cantidad),
+                else_=-MovimientosReceta.cantidad,
+            )
+        ),
+        0,
+    )
+
+    query = (
+        db.session.query(
+            Recetas.id,
+            Recetas.nombre,
+            Recetas.descripcion,
+            Recetas.cantidad_producida,
+            stock_expr.label("stock_actual"),
+        )
+        .outerjoin(MovimientosReceta, MovimientosReceta.receta_id == Recetas.id)
+        .filter(Recetas.activo.is_(True))
+        .group_by(
+            Recetas.id,
+            Recetas.nombre,
+            Recetas.descripcion,
+            Recetas.cantidad_producida,
+        )
+        .order_by(Recetas.nombre.asc())
+    )
+
+    return query.paginate(
+        page=page,
+        per_page=per_page,
+        error_out=False
+    )
 
 def get_all_movimientos_by_receta_id(receta_id):
     return (

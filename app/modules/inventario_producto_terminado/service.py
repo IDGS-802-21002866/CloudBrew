@@ -21,6 +21,27 @@ class InventarioProductoTerminadoService:
             )
 
         return resultado
+    def listar_recetas_con_stock_pag(self, page, per_page):
+        paginated = repository.get_paginated_recetas_con_stock(page, per_page)
+
+        resultado = []
+
+        for item in paginated.items:
+            stock_actual = float(item.stock_actual or 0)
+
+            resultado.append(
+                {
+                    "id": item.id,
+                    "nombre": item.nombre,
+                    "descripcion": item.descripcion,
+                    "cantidad_producida": item.cantidad_producida,
+                    "stock_actual": stock_actual,
+                    "estado_stock": self._obtener_estado_stock(stock_actual),
+                }
+            )
+        paginated.items = resultado
+
+        return paginated
 
     def _obtener_estado_stock(self, stock_actual):
         if stock_actual <= 0:

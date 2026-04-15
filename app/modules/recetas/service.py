@@ -18,6 +18,14 @@ class RecetaService:
         if incluir_inactivas:
             return repository.get_all_recetas_with_inactive()
         return repository.get_all_recetas_activas()
+    
+    def listar_recetas(self, page, per_page, search_term=None, incluir_inactivas=False):
+        return repository.get_paginated_recetas(
+            page=page,
+            per_page=per_page,
+            search_term=search_term,
+            incluir_inactivas=incluir_inactivas
+        )
 
     def obtener_receta(self, id):
         """Obtiene una receta por ID."""

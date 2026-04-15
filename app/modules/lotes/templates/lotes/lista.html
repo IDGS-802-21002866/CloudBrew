@@ -8,44 +8,52 @@
     <h1 class="text-3xl font-bold text-gray-800">Lotes de Producción</h1>
   </div>
 
+  <div class="mb-6 flex items-center space-x-2">
+    <div class="relative w-full md:w-1/3">
+      <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+        <i class="fa-solid fa-magnifying-glass text-gray-400"></i>
+      </span>
+      <input type="text" id="inputBusquedaLotes"
+             data-busqueda-tabla="tablaLotes"
+             data-busqueda-col="col-codigo"
+             class="w-full pl-10 pr-4 py-2 border-2 border-gray-400 rounded-lg focus:outline-none focus:border-[#6C9AD0] transition-colors"
+             placeholder="Filtrar por código de lote...">
+    </div>
+  </div>
+
   <div class="bg-white shadow-md rounded-lg overflow-hidden border border-gray-200">
-    <table class="min-w-full table-auto">
+    <table class="min-w-full table-auto" id="tablaLotes">
       <thead class="bg-brew-bg">
-      <tr>
-        <th class="px-6 py-3 text-left text-xs font-medium text-brew-beige uppercase tracking-wider">Código de Lote</th>
-        <th class="px-6 py-3 text-left text-xs font-medium text-brew-beige uppercase tracking-wider">Receta</th>
-        <th class="px-6 py-3 text-left text-xs font-medium text-brew-beige uppercase tracking-wider">Fecha de Finalización</th>
-        <th class="px-6 py-3 text-left text-xs font-medium text-brew-beige uppercase tracking-wider">Cantidad Generada</th>
-        <th class="px-6 py-3 text-left text-xs font-medium text-brew-beige uppercase tracking-wider">Acciones</th>
-      </tr>
-    </thead>
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium text-brew-beige uppercase tracking-wider">Código de Lote</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-brew-beige uppercase tracking-wider">Receta</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-brew-beige uppercase tracking-wider">Fecha de Finalización</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-brew-beige uppercase tracking-wider">Cantidad Generada</th>
+          <th class="px-6 py-3 text-center text-xs font-medium text-brew-beige uppercase tracking-wider">Acciones</th>
+        </tr>
+      </thead>
       <tbody class="bg-white divide-y divide-gray-200">
-        {% if lotes %}
-          {% for lote in lotes %}
+        {% if pagination.items %}
+          {% for lote in pagination.items %}
           <tr class="hover:bg-gray-50 transition-colors">
             
-            <!-- Código de lote -->
-            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900 col-codigo">
               {{ lote.codigo_lote }}
             </td>
 
-            <!-- Nombre de receta -->
             <td class="px-6 py-4 text-sm text-gray-600">
               {{ lote.produccion.receta.nombre if lote.produccion and lote.produccion.receta else 'N/A' }}
             </td>
 
-            <!-- Fecha -->
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
               {{ lote.fecha_produccion.strftime('%Y-%m-%d') if lote.fecha_produccion else 'N/A' }}
             </td>
 
-            <!-- Cantidad -->
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 font-bold">
               {{ '%.2f'|format(lote.cantidad_generada or 0) }}
             </td>
 
-            <!-- Acciones -->
-            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+            <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
               <a href="{{ url_for('lotes.detalle', id=lote.id_lote) }}"
                  class="text-white font-bold py-1.5 px-4 rounded-lg inline-flex items-center shadow-sm hover:opacity-90 transition bg-[#6C9AD0]">
                 <i class="fa-solid fa-eye mr-2"></i> Ver Detalle
@@ -56,56 +64,45 @@
           {% endfor %}
         {% else %}
           <tr>
-            <td colspan="5" class="px-6 py-4 text-center text-gray-500">
-              No hay lotes de producción registrados.
+            <td colspan="5" class="px-6 py-10 text-center text-gray-500">
+              No se encontraron lotes de producción registrados.
             </td>
           </tr>
         {% endif %}
       </tbody>
     </table>
   </div>
-</div>
-{% if pagination %}
-<div class="flex flex-col md:flex-row md:items-center md:justify-between mt-6 gap-4">
-  
-  <!-- Info -->
-  <p class="text-sm text-gray-600">
-    Mostrando {{ pagination.start }} a {{ pagination.end }} de {{ pagination.total }} registros
-  </p>
 
-  <!-- Controles -->
-  <div class="inline-flex items-center -space-x-px">
-    
-    <!-- Anterior -->
+  {% if pagination.pages > 0 %}
+  <div class="flex justify-center items-center mt-6 space-x-4">
     {% if pagination.has_prev %}
     <a href="{{ url_for('lotes.listar', page=pagination.prev_num) }}"
-       class="px-3 py-2 ml-0 leading-tight text-gray-500 bg-white border border-gray-300 rounded-l-lg hover:bg-gray-100">
-      Anterior
+       class="px-4 py-2 bg-[#4A9062] text-white font-bold rounded-lg hover:opacity-90 transition shadow-sm">
+      <i class="fa-solid fa-chevron-left mr-2"></i> Anterior
     </a>
+    {% else %}
+    <span class="px-4 py-2 bg-gray-200 text-gray-400 font-bold rounded-lg cursor-not-allowed">
+      <i class="fa-solid fa-chevron-left mr-2"></i> Anterior
+    </span>
     {% endif %}
 
-    <!-- Números -->
-    {% for p in pagination.pages %}
-    <a href="{{ url_for('lotes.listar', page=p) }}"
-       class="px-3 py-2 leading-tight border border-gray-300
-       {% if p == pagination.page %}
-         text-blue-600 bg-blue-50
-       {% else %}
-         text-gray-500 bg-white hover:bg-gray-100
-       {% endif %}">
-      {{ p }}
-    </a>
-    {% endfor %}
+    <span class="text-gray-600 font-medium">
+      Página <span class="font-bold text-gray-900">{{ pagination.page }}</span> de <span class="font-bold text-gray-900">{{ pagination.pages }}</span>
+    </span>
 
-    <!-- Siguiente -->
     {% if pagination.has_next %}
     <a href="{{ url_for('lotes.listar', page=pagination.next_num) }}"
-       class="px-3 py-2 leading-tight text-gray-500 bg-white border border-gray-300 rounded-r-lg hover:bg-gray-100">
-      Siguiente
+       class="px-4 py-2 bg-[#4A9062] text-white font-bold rounded-lg hover:opacity-90 transition shadow-sm">
+      Siguiente <i class="fa-solid fa-chevron-right ml-2"></i>
     </a>
+    {% else %}
+    <span class="px-4 py-2 bg-gray-200 text-gray-400 font-bold rounded-lg cursor-not-allowed">
+      Siguiente <i class="fa-solid fa-chevron-right ml-2"></i>
+    </span>
     {% endif %}
-
   </div>
+  {% endif %}
 </div>
-{% endif %}
+
+<script src="{{ url_for('static', filename='js/busqueda_tabla.js') }}"></script>
 {% endblock %}

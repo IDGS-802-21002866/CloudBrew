@@ -36,6 +36,24 @@ def activate_materia_prima(materia):
     db.session.commit()
     return materia
 
+def get_materias_primas(page=None, per_page=None, search_term=None, incluir_inactivas=False):
+    query = MateriaPrima.query
+
+    if not incluir_inactivas:
+        query = query.filter(MateriaPrima.activo.is_(True))
+
+    if search_term:
+        query = query.filter(
+            MateriaPrima.nombre.ilike(f"%{search_term}%")
+        )
+
+    query = query.order_by(MateriaPrima.id.desc())
+
+    if page and per_page:
+        return query.paginate(page=page, per_page=per_page, error_out=False)
+
+    return query.all()
+
 
 def update_db():
     db.session.commit()

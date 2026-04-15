@@ -5,6 +5,23 @@ from app import db
 def get_all_unidad_medida():
     return UnidadMedida.query.filter_by(activo=True).all()
 
+def get_paginated_unidad_medida(page, per_page, search_term=None, incluir_inactivas=False):
+    query = UnidadMedida.query
+
+    if not incluir_inactivas:
+        query = query.filter(UnidadMedida.activo.is_(True))
+
+    if search_term:
+        query = query.filter(
+            UnidadMedida.nombre.ilike(f"%{search_term}%")
+        )
+
+    return query.order_by(UnidadMedida.id.desc()).paginate(
+        page=page,
+        per_page=per_page,
+        error_out=False
+    )
+
 
 def get_unidad_medida_by_id(id):
     return UnidadMedida.query.get(id)
@@ -63,6 +80,7 @@ def update_unidad_medida(unidad):
 def deactivate_unidad_medida(unidad):
     unidad.activo = False
     db.session.commit()
+
 
 
 def delete_unidad_medida(unidad):

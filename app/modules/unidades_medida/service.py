@@ -7,6 +7,14 @@ from flask_login import current_user
 class UnidadMedidaService:
     def listar_unidades_medida(self):
         return repository.get_all_unidad_medida()
+    
+    def listar_unidades_medida(self, page, per_page, search_term=None, incluir_inactivas=False):
+        return repository.get_paginated_unidad_medida(
+        page=page,
+        per_page=per_page,
+        search_term=search_term,
+        incluir_inactivas=incluir_inactivas
+        )
 
     def listar_tipos_medida(self):
         return repository.get_all_tipo_medida()
