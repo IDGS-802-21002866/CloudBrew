@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for, flash
+from flask import Blueprint, render_template, redirect, request, url_for, flash
 
 from app.modules.ventas.service import VentaService
 from app.shared.exceptions import EntidadNoEncontradaError
@@ -9,8 +9,9 @@ venta_service = VentaService()
 
 @bp.route("/")
 def listar():
-    ventas = venta_service.listar_ventas()
-    return render_template("ventas/listar.html", ventas=ventas)
+    page=request.args.get("page", 1, type=int)
+    ventas = venta_service.listar_ventas_paginadas(page=page, per_page=10)
+    return render_template("ventas/listar.html", pagination=ventas)
 
 
 @bp.route("/<int:id>")

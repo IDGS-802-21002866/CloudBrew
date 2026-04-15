@@ -36,3 +36,16 @@ class DetalleCompra(db.Model):
     movimientos_materia_prima = db.relationship(
         "MovimientosMateriaPrima", back_populates="detalle_compra"
     )
+
+class SolicitudCompra(db.Model):
+    __tablename__ = "solicitud_compra"
+    id = db.Column(db.Integer, primary_key=True)
+    materia_prima_id = db.Column(db.Integer, db.ForeignKey("materias_primas.id"), nullable=False)
+    cantidad = db.Column(db.Float, nullable=False)
+    origen = db.Column(db.String(20), nullable=False, default="almacen")
+    referencia_id = db.Column(db.Integer, db.ForeignKey("pedidos.id"), nullable=True)
+    estado = db.Column(db.String(20), nullable=False, default="Pendiente")
+    fecha_creacion = db.Column(db.DateTime, default=db.func.now())
+
+    materia_prima = db.relationship("MateriaPrima")
+    referencia = db.relationship("Pedido", foreign_keys=[referencia_id])

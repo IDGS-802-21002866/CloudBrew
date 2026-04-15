@@ -62,3 +62,25 @@ class InventarioMateriasPrimasService:
     def obtener_stock_actual_materia_prima(self, materia_prima_id):
         self.obtener_materia_prima(materia_prima_id)
         return repository.get_stock_actual_by_materia_prima_id(materia_prima_id)
+    
+    def preparar_solicitud_automatica(self, materia_prima_id):
+        # Obtenemos los datos actuales (stock y requerimiento de recetas)
+        # Usamos la lógica de los 2 lotes que ya tenemos
+        # ... fetch data ...
+        item = repository.get_materia_prima_con_stock_individual(materia_prima_id)
+        
+        factor = float(item.valor_conversion or 1)
+        stock_actual_base = float(item.stock_actual_base or 0)
+        # 2 Lotes de seguridad
+        stock_minimo_base = float(item.max_receta or 0) * 2
+        
+        sugerencia_base = 0
+        if stock_actual_base < stock_minimo_base:
+            sugerencia_base = stock_minimo_base - stock_actual_base
+            
+        return {
+            "materia_prima_id": item.id,
+            "nombre": item.nombre,
+            "sugerencia_visual": sugerencia_base / factor,
+            "unidad": item.unidad_abreviatura or "g/ml"
+        }

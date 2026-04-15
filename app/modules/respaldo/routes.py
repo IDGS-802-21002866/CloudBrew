@@ -9,9 +9,7 @@ from flask import (
     url_for,
 )
 import os
-from flask_login import login_required
 from werkzeug.utils import secure_filename
-from flask_login import login_required
 from app.modules.respaldo.forms import backup_form, restore_form
 from app.modules.respaldo.repository import restore_db
 from app.modules.respaldo.service import RespaldoService
@@ -20,7 +18,6 @@ from . import bp
 service = RespaldoService()
 
 
-@login_required
 @bp.route("/")
 def index():
     form_backup = backup_form()
@@ -30,7 +27,6 @@ def index():
     )
 
 
-@login_required
 @bp.route("/respaldar", methods=["POST"])
 def realizar_backup():
     import tempfile
@@ -45,7 +41,6 @@ def realizar_backup():
 
 
 @bp.route("/restaurar", methods=["POST"])
-@login_required
 def restore():
     form_restore = restore_form()
     if form_restore.validate_on_submit():

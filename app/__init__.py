@@ -84,6 +84,52 @@ def create_app():
             return usuario
         return None
 
+    # Middleware para detectar subdominio y redirigir
+    @app.before_request
+    def detectar_subdominio_y_validar():
+        from flask import request, redirect, url_for
+        from flask_login import current_user
+
+        # Obtener el host y extraer el subdominio
+        host = request.host.lower()
+
+        # Soporta: tienda.cloudbrew.live, localhost:5000, 127.0.0.1
+        subdominio = None
+        if "cloudbrew.live" in host:
+            partes = host.split(".")
+            if len(partes) >= 2:
+                subdominio = partes[0]
+
+        # Lógica de redirección por subdominio
+        if subdominio == "tienda":
+            # Portal de tienda
+            if request.path == "/" or request.path == "":
+                return redirect(url_for("tienda.inicio"))
+
+            # Validar que si el usuario está logueado, sea cliente
+            if current_user.is_authenticated:
+                if current_user.rol.name != "cliente":
+                    from flask_login import logout_user
+
+                    logout_user()
+                    return redirect(url_for("tienda.login"))
+
+        elif subdominio == "crm":
+            # Portal CRM
+            if request.path == "/" or request.path == "":
+                if current_user.is_authenticated:
+                    return redirect(url_for("main.index"))
+                else:
+                    return redirect(url_for("auth.login"))
+
+            # Validar que si el usuario está logueado, NO sea cliente
+            if current_user.is_authenticated:
+                if current_user.rol.name == "cliente":
+                    from flask_login import logout_user
+
+                    logout_user()
+                    return redirect(url_for("auth.login"))
+
     blueprints_protegidos = [
         main_bp,
         proveedores_bp,
@@ -110,8 +156,22 @@ def create_app():
         producto_venta_bp,
     ]
 
+    # Validador de roles para el CRM (blueprints protegidos)
+    def validar_rol_crm():
+        from flask_login import current_user, logout_user
+        from flask import redirect, url_for, request
+
+        if current_user.is_authenticated:
+            # Si está en CRM y es cliente, logout
+            host = request.host.lower()
+            if "crm" in host or ("cloudbrew" in host and "tienda" not in host):
+                if current_user.rol.name == "cliente":
+                    logout_user()
+                    return redirect(url_for("auth.login"))
+
     for bp in blueprints_protegidos:
         bp.before_request(login_required(lambda: None))
+        bp.before_request(validar_rol_crm)
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(tienda_bp)

@@ -17,7 +17,7 @@ class ProveedorService:
         """Lista todos los proveedores activos con filtro de búsqueda opcional"""
         proveedores = repository.get_all_proveedores()
 
-        # Aplicar búsqueda en memoria
+        
         if busqueda:
             proveedores = [
                 p for p in proveedores if busqueda.lower() in (p.nombre or "").lower()
@@ -82,3 +82,6 @@ class ProveedorService:
 
         proveedor.usuario_id = current_user.id if current_user.is_authenticated else proveedor.usuario_id
         return repository.delete_proveedor(id)
+
+    def obtener_proveedores_paginados(self, page, per_page, busqueda=None):
+        return repository.get_paginated_proveedores(page, per_page, busqueda)

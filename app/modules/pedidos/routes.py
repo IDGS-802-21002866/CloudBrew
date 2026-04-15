@@ -5,9 +5,7 @@ from .forms import PedidoForm, PedidoDetalleForm
 from .service import PedidoService
 from app.modules.clientes.service import ClienteService
 from app.modules.producto_venta.service import ProductoVentaService
-from app.modules.inventario_materias_primas.service import (
-    InventarioMateriasPrimasService,
-)
+from app.modules.inventario_materias_primas.service import InventarioMateriasPrimasService
 
 # Inicialización de servicios
 pedido_service = PedidoService()
@@ -25,6 +23,20 @@ def listar():
     )
     return render_template(
         "pedidos/listar.html",
+        pagination=pagination,
+        search_term=search_term,
+    )
+
+
+@bp.route("/terminados")
+def listar_terminados():
+    page = request.args.get("page", 1, type=int)
+    search_term = request.args.get("q", "")
+    pagination = pedido_service.listar_paginado_terminados(
+        page=page, per_page=10, search_term=search_term
+    )
+    return render_template(
+        "pedidos/listar_terminados.html",
         pagination=pagination,
         search_term=search_term,
     )
@@ -52,6 +64,7 @@ def crear():
             form.cliente_id.data = pedido_edit.cliente_id
         cliente_nombre_default = pedido_edit.cliente.nombre_completo
 
+    detalle_agregado = False
     if request.method == "POST":
         action = request.form.get("action", "")
 
@@ -72,33 +85,8 @@ def crear():
                     None,
                 )
 
-                cantidad_total = cantidad_nueva
                 if detalle_existente:
-                    cantidad_total += detalle_existente["cantidad_lotes"]
-
-                try:
-                    for detalle in receta.detalle:
-                        cantidad_necesaria = detalle.cantidad * int(cantidad_total)
-                        stock_disponible = (
-                            inventario_service.obtener_stock_actual_materia_prima(
-                                detalle.materia_prima_id
-                            )
-                        )
-                        if stock_disponible < cantidad_necesaria:
-                            raise ValueError(
-                                f"Stock insuficiente para '{detalle.materia_prima.nombre}'. "
-                                f"Necesario: {cantidad_necesaria}, Disponible: {stock_disponible}"
-                            )
-                except ValueError as e:
-                    flash(str(e), "danger")
-                    return redirect(url_for("pedidos.crear"))
-
-                if detalle_existente:
-                    detalle_existente["cantidad_lotes"] = cantidad_total
-                    detalle_existente["total_unidades"] = (
-                        cantidad_total * receta.cantidad_producida
-                    )
-                    flash(f"{producto.nombre} actualizado.", "success")
+                    flash("Este producto ya está en la lista.", "warning")
                 else:
                     session["pedido_detalles"].append(
                         {
@@ -110,6 +98,7 @@ def crear():
                         }
                     )
                     flash(f"{producto.nombre} agregado.", "success")
+                    detalle_agregado = True
 
                 session.modified = True
 
@@ -163,6 +152,7 @@ def crear():
         productos_venta=productos_venta,
         detalles=session["pedido_detalles"],
         cliente_nombre_default=cliente_nombre_default,
+        detalle_agregado=detalle_agregado,
     )
 
 

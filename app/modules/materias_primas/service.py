@@ -9,6 +9,14 @@ class MateriaPrimaService:
         if incluir_inactivas:
             return repository.get_all_materias_primas_with_inactive()
         return repository.get_all_materias_primas_activas()
+    
+    def listar_materias_paginadas(self, page, per_page, search_term=None, incluir_inactivas=False):
+        return repository.get_materias_primas(
+            page=page,
+            per_page=per_page,
+            search_term=search_term,
+            incluir_inactivas=incluir_inactivas
+        )
 
     def obtener_por_id(self, id):
         materia = repository.get_materia_prima_by_id(id)

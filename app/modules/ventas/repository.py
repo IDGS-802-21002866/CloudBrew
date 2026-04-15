@@ -5,6 +5,13 @@ from app.modules.ventas.model import Venta, DetalleVenta
 class VentaRepository:
     def get_all_ventas(self):
         return Venta.query.order_by(Venta.fecha.desc()).all()
+    
+    def get_paginated_ventas(self, page, per_page):
+        return Venta.query.order_by(Venta.fecha.desc()).paginate(
+            page=page,
+            per_page=per_page,
+            error_out=False
+        )
 
     def get_venta_by_id(self, id_venta):
         return Venta.query.get(id_venta)

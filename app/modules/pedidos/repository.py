@@ -14,9 +14,10 @@ def get_pedido_by_id(pedido_id):
     return Pedido.query.get(pedido_id)
 
 
+from sqlalchemy import or_
+
 def get_paginated_pedidos(page, per_page, search_term=None):
     query = Pedido.query.join(Cliente)
-
     if search_term:
         query = query.filter(
             or_(
@@ -24,6 +25,22 @@ def get_paginated_pedidos(page, per_page, search_term=None):
                 Cliente.apellidos.ilike(f"%{search_term}%"),
             )
         )
+    query = query.filter(Pedido.estado != "Terminado")
+    return query.order_by(Pedido.fecha_registro.desc()).paginate(
+        page=page, per_page=per_page
+    )
+from sqlalchemy import or_
+
+def get_paginated_pedidos_terminados(page, per_page, search_term=None):
+    query = Pedido.query.join(Cliente)
+    if search_term:
+        query = query.filter(
+            or_(
+                Cliente.nombres.ilike(f"%{search_term}%"),
+                Cliente.apellidos.ilike(f"%{search_term}%"),
+            )
+        )
+    query = query.filter(Pedido.estado == "Terminado")
 
     return query.order_by(Pedido.fecha_registro.desc()).paginate(
         page=page, per_page=per_page

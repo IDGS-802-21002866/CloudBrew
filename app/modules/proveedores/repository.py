@@ -13,6 +13,18 @@ def get_all_proveedores():
     proveedores = Proveedor.query.filter_by(activo=True).all()
     return proveedores
 
+def get_paginated_proveedores(page, per_page, search_term=None):
+    query = Proveedor.query.filter(Proveedor.activo.is_(True))
+    if search_term:
+        query = query.filter(
+            Proveedor.nombre.ilike(f"%{search_term}%")
+        )
+    return query.order_by(Proveedor.id.desc()).paginate(
+        page=page,
+        per_page=per_page,
+        error_out=False
+    )
+
 
 def create_proveedor(proveedor):
     """Crea un nuevo proveedor en la BD"""
