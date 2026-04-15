@@ -1,67 +1,112 @@
 {% extends 'base.html' %}
 {% from '_macros.html' import mostrar_flashes %}
 
+{% block title %}Mermas de Producto Terminado{% endblock %}
+
 {% block content %}
-<div class="max-w-4xl mx-auto py-8 px-4">
+<div class="container mx-auto px-4 py-8">
 
-    <a href="{{ url_for('mermas_producto_terminado.listar') }}" class="flex items-center text-2xl font-bold mb-6">
-        <i class="fa-solid fa-chevron-left mr-3"></i> Detalle de la Merma
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-3xl font-bold text-gray-800">Mermas de Producto Terminado</h1>
+    <a href="{{ url_for('mermas_producto_terminado.crear') }}" 
+       class="bg-[#4A9062] hover:opacity-90 text-white font-bold py-2 px-4 rounded shadow-md transition flex items-center">
+      <i class="fa-solid fa-plus mr-2"></i> Crear Nueva Merma de PT
     </a>
+  </div>
 
-    <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
-        <div class="bg-gray-100 px-6 py-4 border-b border-gray-200">
-            <span class="font-bold text-gray-700"><i class="fa-solid fa-clipboard-list mr-2"></i> Datos de la Merma</span>
-        </div>
-
-        <div class="p-8">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-                <div>
-                    <label class="block text-gray-500 text-sm font-bold uppercase">Folio</label>
-                    <p class="text-xl font-bold text-gray-800">{{ merma.folio }}</p>
-                </div>
-                <div>
-                    <label class="block text-gray-500 text-sm font-bold uppercase">Fecha de Registro</label>
-                    <p class="text-lg text-gray-700">{{ merma.fecha_registro.strftime('%d/%m/%Y %H:%M') }}</p>
-                </div>
-                <div>
-                    <label class="block text-gray-500 text-sm font-bold uppercase">Producto</label>
-                    <p class="text-lg text-gray-700">{{ merma.receta.nombre }}</p>
-                </div>
-                <div>
-                    <label class="block text-gray-500 text-sm font-bold uppercase">Cantidad</label>
-                    <p class="text-lg text-gray-700">{{ '%.2f'|format(merma.cantidad) }}</p>
-                </div>
-                <div>
-                    <label class="block text-gray-500 text-sm font-bold uppercase">Estado</label>
-                    <p class="text-lg font-bold {{ 'text-[#4A9062]' if merma.activo else 'text-[#B85B5B]' }}">
-                        {{ 'Registrada' if merma.activo else 'Cancelada / Anulada' }}
-                    </p>
-                </div>
-            </div>
-
-            <div class="bg-gray-50 border-t border-gray-200 pt-6">
-                <div class="px-4 py-6 bg-white rounded-xl border-2 border-gray-200">
-                    <div class="mb-2">
-                        <span class="text-gray-500 uppercase text-xs font-bold">Descripción / Motivo del Incidente</span>
-                        <p class="text-lg text-gray-700 italic">"{{ merma.motivo }}"</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="flex justify-end space-x-4 border-t border-gray-200 pt-6 mt-6">
-                {% if merma.activo and current_user.rol_id == 1 %}
-                <form action="{{ url_for('mermas_producto_terminado.cancelar', id=merma.id) }}" method="POST" onsubmit="return confirm('¿Seguro que deseas cancelar esta merma? Se ajustará el inventario.');">
-                    <button type="submit" class="px-6 py-2 bg-[#B85B5B] text-white font-bold rounded-lg shadow-md hover:opacity-90 transition">
-                        <i class="fa-solid fa-ban mr-2"></i> Cancelar Merma
-                    </button>
-                </form>
-                {% elif not merma.activo %}
-                <div class="rounded-lg bg-red-50 border border-red-200 px-6 py-2">
-                    <p class="text-[#B85B5B] font-bold">Registro Anulado</p>
-                </div>
-                {% endif %}
-            </div>
-        </div>
+  <div class="mb-6 flex items-center space-x-2">
+    <div class="relative w-full md:w-1/3">
+      <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+        <i class="fa-solid fa-magnifying-glass text-gray-400"></i>
+      </span>
+      <input type="text" id="inputBusquedaMermas"
+             data-busqueda-tabla="tablaMermas"
+             data-busqueda-col="col-receta"
+             class="w-full pl-10 pr-4 py-2 border-2 border-gray-400 rounded-lg focus:outline-none focus:border-[#6C9AD0] transition-colors"
+             placeholder="Filtrar por nombre de receta/producto...">
     </div>
+  </div>
+
+  <div class="bg-white shadow-md rounded-lg overflow-hidden border border-gray-200">
+    <table class="min-w-full table-auto" id="tablaMermas">
+      <thead class="bg-brew-bg">
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium text-brew-beige uppercase tracking-wider">Folio</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-brew-beige uppercase tracking-wider">Producto/Receta</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-brew-beige uppercase tracking-wider">Cantidad</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-brew-beige uppercase tracking-wider">Motivo</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-brew-beige uppercase tracking-wider">Estado</th>
+          <th class="px-6 py-3 text-center text-xs font-medium text-brew-beige uppercase tracking-wider">Acciones</th>
+        </tr>
+      </thead>
+      <tbody class="bg-white divide-y divide-gray-200">
+        {% if pagination.items %}
+          {% for merma in pagination.items %}
+          <tr class="hover:bg-gray-50 transition-colors">
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
+              #{{ merma.folio }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900 col-receta">
+              {{ merma.receta.nombre }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 font-medium">
+              {{ '%.2f'|format(merma.cantidad) }} L
+            </td>
+            <td class="px-6 py-4 text-sm text-gray-600 italic">
+              {{ merma.motivo }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm">
+              <span class="px-3 py-1 text-xs font-bold rounded-full border {% if merma.activo %}bg-green-100 text-green-700 border-green-200{% else %}bg-red-100 text-red-700 border-red-200{% endif %}">
+                {{ 'REGISTRADA' if merma.activo else 'CANCELADA' }}
+              </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+              <a href="{{ url_for('mermas_producto_terminado.detalle', id=merma.id) }}"
+                 class="text-white font-bold py-1.5 px-4 rounded-lg inline-flex items-center shadow-sm hover:opacity-90 transition bg-[#6C9AD0]">
+                <i class="fa-solid fa-eye mr-2"></i> Ver Detalle
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="6" class="px-6 py-10 text-center text-gray-500">
+              No hay mermas de producto terminado registradas.
+            </td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="flex justify-center items-center mt-6 space-x-4">
+    {% if pagination.has_prev %}
+    <a href="{{ url_for('mermas_producto_terminado.listar', page=pagination.prev_num) }}"
+       class="px-4 py-2 bg-[#4A9062] text-white font-bold rounded-lg hover:opacity-90 transition shadow-sm">
+      <i class="fa-solid fa-chevron-left mr-2"></i> Anterior
+    </a>
+    {% else %}
+    <span class="px-4 py-2 bg-gray-200 text-gray-400 font-bold rounded-lg cursor-not-allowed">
+      <i class="fa-solid fa-chevron-left mr-2"></i> Anterior
+    </span>
+    {% endif %}
+
+    <span class="text-gray-600 font-medium">
+      Página <span class="font-bold text-gray-900">{{ pagination.page }}</span> de <span class="font-bold text-gray-900">{{ pagination.pages }}</span>
+    </span>
+
+    {% if pagination.has_next %}
+    <a href="{{ url_for('mermas_producto_terminado.listar', page=pagination.next_num) }}"
+       class="px-4 py-2 bg-[#4A9062] text-white font-bold rounded-lg hover:opacity-90 transition shadow-sm">
+      Siguiente <i class="fa-solid fa-chevron-right ml-2"></i>
+    </a>
+    {% else %}
+    <span class="px-4 py-2 bg-gray-200 text-gray-400 font-bold rounded-lg cursor-not-allowed">
+      Siguiente <i class="fa-solid fa-chevron-right ml-2"></i>
+    </span>
+    {% endif %}
+  </div>
 </div>
+
+<script src="{{ url_for('static', filename='js/busqueda_tabla.js') }}"></script>
 {% endblock %}

@@ -202,7 +202,9 @@ def atender_solicitud(solicitud_id):
 
 @bp.route("/crear")
 def crear():
-    return redirect(url_for("compras.listar"))
+    form=OrdenDeCompraForm()
+    detalles_form = OrdenDeCompraDetallesForm()
+    return render_template("compras/crear.html", form=form, detalles_form=detalles_form)
 
 
 @bp.route("/<int:id>/detalle")

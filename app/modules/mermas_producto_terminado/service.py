@@ -44,51 +44,98 @@ class MermaProductoTerminadoService:
         if cantidad <= 0:
             raise ValueError('La cantidad de merma debe ser mayor a cero.')
 
-        lote_obj = None
-        if l_id:
-            from app.modules.lotes.model import LoteProduccion
-
-            lote_obj = db.session.get(LoteProduccion, l_id)
-            if not lote_obj:
-                raise ValueError('El lote seleccionado no existe.')
-            if es_completo:
-                cantidad = float(getattr(lote_obj, 'cantidad_generada', cantidad) or cantidad)
-            if cantidad <= 0:
-                raise ValueError('La cantidad de merma debe ser mayor a cero.')
-
-        stock_actual = self.obtener_stock_actual(int(r_id))
-        if cantidad > stock_actual:
-            raise ValueError(
-                f'No puedes mermar más de lo que hay en existencia (Máx: {stock_actual})'
+        # Si no se especificó un lote, usar FIFO para encontrar lotes disponibles
+        if not l_id:
+            lotes_disponibles = self.obtener_lotes_disponibles_por_receta(r_id)
+            if not lotes_disponibles:
+                raise ValueError('No hay lotes disponibles con stock para este producto.')
+            
+            # Registrar merma usando FIFO (puede afectar múltiples lotes)
+            return self.registrar_merma_multilotes(
+                receta_id=r_id,
+                cantidad_total=cantidad,
+                motivo=motivo,
+                usuario_id=usuario_id,
+                lotes_disponibles=lotes_disponibles
             )
-
+        
+        # Si se especificó un lote, validarlo
+        from app.modules.lotes.model import LoteProduccion
+        lote_obj = db.session.get(LoteProduccion, l_id)
+        if not lote_obj:
+            raise ValueError('El lote seleccionado no existe.')
+        
+        # Verificar disponibilidad específica del lote
+        stock_lote = self.obtener_stock_lote(l_id)
+        if cantidad > stock_lote:
+            raise ValueError(
+                f'El lote {lote_obj.codigo_lote} solo tiene {stock_lote} unidades disponibles. '
+                f'No puedes mermar {cantidad}.'
+            )
+        
+        if es_completo:
+            cantidad = float(stock_lote)  # Mermar todo el lote
+        
+        if cantidad <= 0:
+            raise ValueError('La cantidad de merma debe ser mayor a cero.')
+        
         try:
-            nueva_merma = MermaProductoTerminado(
-                receta_id=int(r_id),
+            # Registrar merma para un lote específico
+            return self._registrar_merma_lote_unico(
+                receta_id=r_id,
                 lote_id=l_id,
+                lote_obj=lote_obj,
                 cantidad=cantidad,
                 motivo=motivo,
                 usuario_id=usuario_id,
-                activo=True,
+                es_completo=es_completo
             )
-            db.session.add(nueva_merma)
-            db.session.flush()
-
-            if es_completo and lote_obj and hasattr(lote_obj, 'activo'):
-                lote_obj.activo = False
-
-            mov = MovimientosReceta(
-                receta_id=int(r_id),
-                lote_id=l_id,
-                tipo='salida',
-                cantidad=cantidad,
-                motivo=f'Merma {nueva_merma.folio}: {motivo}',
-                usuario_id=usuario_id,
-            )
-            db.session.add(mov)
-
-            db.session.commit()
-            return nueva_merma
         except Exception:
             db.session.rollback()
             raise
+    
+    def obtener_stock_lote(self, lote_id):
+        """Obtiene el stock actual de un lote específico"""
+        from app.modules.movimientos_receta.model import MovimientosReceta
+        
+        # Obtener el lote
+        lote = db.session.get(LoteProduccion, lote_id)
+        if not lote:
+            return 0
+        
+        # Calcular salidas de este lote
+        total_salidas = db.session.query(db.func.sum(MovimientosReceta.cantidad))\
+            .filter(
+                MovimientosReceta.lote_id == lote_id,
+                MovimientosReceta.tipo == 'salida'
+            ).scalar() or 0
+        
+        # La cantidad_generada es la producción inicial del lote
+        stock_disponible = lote.cantidad_generada - total_salidas
+        
+        return max(0, stock_disponible)
+
+    def obtener_lotes_disponibles_por_receta(self, receta_id):
+        """Obtiene todos los lotes con stock disponible para una receta"""
+        from app.modules.lotes.model import LoteProduccion
+        from app.modules.produccion.model import Produccion
+        
+        # Subconsulta para obtener producciones de esta receta
+        producciones = db.session.query(Produccion.id_produccion)\
+            .filter(Produccion.id_receta == receta_id)\
+            .subquery()
+        
+        # Obtener lotes de esas producciones que aún tienen stock
+        lotes = db.session.query(LoteProduccion).filter(
+            LoteProduccion.id_produccion.in_(producciones)
+        ).all()
+        
+        # Filtrar solo lotes con stock disponible
+        lotes_con_stock = []
+        for lote in lotes:
+            stock = self.obtener_stock_lote(lote.id_lote)
+            if stock > 0:
+                lote.stock_actual = stock  # Agregar atributo temporal
+                lotes_con_stock.append(lote)
+        
+        return lotes_con_stock

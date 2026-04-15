@@ -42,8 +42,6 @@ class InventarioMateriasPrimasService:
         pagination.sin_stock_total = sin_stock_total
         return pagination
 
-    def _obtener_estado_stock(self, actual, minimo):
-        if actual <= 0: 
     def listar_materias_primas_con_stock_pag(self, page, per_page):
         return repository.get_paginated_materias_primas_con_stock(
             page=page,
