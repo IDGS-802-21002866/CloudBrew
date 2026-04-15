@@ -1,45 +1,52 @@
 from sqlalchemy import case, func
-
 from app import db
 from app.modules.inventario_materias_primas.model import MovimientosMateriaPrima
 from app.modules.materias_primas.model import MateriaPrima
+from app.modules.unidades_medida.model import UnidadMedida, TipoMedida
+from app.modules.recetas.model import RecetaDetalle
 
+def get_all_materias_primas_con_stock(page=1, per_page=10, search_term=None):
+    max_receta_subquery = (
+        db.session.query(
+            RecetaDetalle.materia_prima_id,
+            func.max(RecetaDetalle.cantidad).label("max_requerido")
+        )
+        .group_by(RecetaDetalle.materia_prima_id)
+        .subquery()
+    )
 
-def get_all_materias_primas_con_stock():
     stock_expr = func.coalesce(
         func.sum(
             case(
-                (
-                    MovimientosMateriaPrima.tipo == "entrada",
-                    MovimientosMateriaPrima.cantidad,
-                ),
+                ((MovimientosMateriaPrima.tipo == "entrada"), MovimientosMateriaPrima.cantidad),
                 else_=-MovimientosMateriaPrima.cantidad,
             )
-        ),
-        0,
+        ), 0
     )
 
-    return (
+
+    query = (
         db.session.query(
             MateriaPrima.id,
             MateriaPrima.nombre,
             MateriaPrima.tipo_medida_id,
-            MateriaPrima.stock_minimo,
-            stock_expr.label("stock_actual"),
+            UnidadMedida.abreviatura.label("unidad_abreviatura"),
+            UnidadMedida.valor_conversion,
+            func.coalesce(max_receta_subquery.c.max_requerido, 0).label("max_receta"),
+            stock_expr.label("stock_actual_base")
         )
-        .outerjoin(
-            MovimientosMateriaPrima,
-            MovimientosMateriaPrima.materia_prima_id == MateriaPrima.id,
-        )
-        .group_by(
-            MateriaPrima.id,
-            MateriaPrima.nombre,
-            MateriaPrima.tipo_medida_id,
-            MateriaPrima.stock_minimo,
-        )
-        .order_by(MateriaPrima.nombre.asc())
-        .all()
+        .join(TipoMedida, MateriaPrima.tipo_medida_id == TipoMedida.id)
+        .outerjoin(UnidadMedida, (UnidadMedida.tipo_medida_id == TipoMedida.id) & (UnidadMedida.es_base_sistema == False))
+        .outerjoin(max_receta_subquery, max_receta_subquery.c.materia_prima_id == MateriaPrima.id)
+        .outerjoin(MovimientosMateriaPrima, MovimientosMateriaPrima.materia_prima_id == MateriaPrima.id)
     )
+
+    if search_term:
+        query = query.filter(MateriaPrima.nombre.ilike(f"%{search_term}%"))
+
+    return query.group_by(MateriaPrima.id, UnidadMedida.id, max_receta_subquery.c.max_requerido)\
+                .order_by(MateriaPrima.nombre.asc())\
+                .paginate(page=page, per_page=per_page)
 
 
 def get_all_movimientos_by_materia_prima_id(materia_prima_id):
