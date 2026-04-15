@@ -6,8 +6,9 @@ from flask_login import LoginManager, login_required
 from flask_mail import Mail
 from flask_session import Session
 from flask_session_captcha import FlaskSessionCaptcha
+import os
 
-from app.core.config import DevelopmentConfig
+from app.core.config import DevelopmentConfig, ProductionConfig
 
 
 class Base(DeclarativeBase):
@@ -57,7 +58,14 @@ def create_app():
     from app.modules.producto_venta import bp as producto_venta_bp
 
     app = Flask(__name__)
-    app.config.from_object(DevelopmentConfig)
+
+    # Seleccionar configuración según FLASK_ENV
+    config_env = os.environ.get("FLASK_ENV", "development").lower()
+    if config_env == "production":
+        app.config.from_object(ProductionConfig)
+    else:
+        app.config.from_object(DevelopmentConfig)
+
     db.init_app(app)
     app.config["SESSION_SQLALCHEMY"] = db
     Session(app)
