@@ -33,8 +33,8 @@
         </tr>
       </thead>
       <tbody class="bg-white divide-y divide-gray-200">
-        {% if pagination.items %}
-          {% for lote in pagination.items %}
+        {% if lotes %}
+          {% for lote in lotes %}
           <tr class="hover:bg-gray-50 transition-colors">
             
             <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900 col-codigo">
@@ -73,7 +73,7 @@
     </table>
   </div>
 
-  {% if pagination.pages > 0 %}
+  {% if pagination.pages|length > 0 %}
   <div class="flex justify-center items-center mt-6 space-x-4">
     {% if pagination.has_prev %}
     <a href="{{ url_for('lotes.listar', page=pagination.prev_num) }}"
@@ -87,7 +87,7 @@
     {% endif %}
 
     <span class="text-gray-600 font-medium">
-      Página <span class="font-bold text-gray-900">{{ pagination.page }}</span> de <span class="font-bold text-gray-900">{{ pagination.pages }}</span>
+      Página <span class="font-bold text-gray-900">{{ pagination.page }}</span> de <span class="font-bold text-gray-900">{{ pagination.pages|length }}</span>
     </span>
 
     {% if pagination.has_next %}

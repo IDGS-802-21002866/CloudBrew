@@ -1,6 +1,12 @@
 from flask import render_template, redirect, url_for, flash
 from app.modules.procesos_produccion import bp, service
 from app.shared.exceptions import ValidacionNegocioException
+from app.shared.decorators import verificar_rol_o_denegar
+
+
+@bp.before_request
+def verificar_acceso():
+    return verificar_rol_o_denegar("admin", "almacen")
 
 
 @bp.route("/<int:produccion_id>")

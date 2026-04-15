@@ -10,6 +10,13 @@ from app.modules.recetas.service import RecetaService
 from app.modules.inventario_materias_primas.service import (
     InventarioMateriasPrimasService,
 )
+from app.shared.decorators import verificar_rol_o_denegar
+
+
+@bp.before_request
+def verificar_acceso():
+    return verificar_rol_o_denegar("admin", "ventas")
+
 
 # Inicialización de servicios
 pedido_service = PedidoService()

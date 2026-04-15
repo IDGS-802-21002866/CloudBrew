@@ -1,5 +1,4 @@
 {% extends 'base.html' %}
-{% from '_macros.html' import mostrar_flashes %}
 
 {% block title %}Detalle de Venta{% endblock %}
 
@@ -61,26 +60,41 @@
           <table class="min-w-full table-auto">
             <thead class="bg-gray-50">
               <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Receta</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cantidad</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Producto</th>
+                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Cantidad</th>
+                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Precio Unitario</th>
+                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Subtotal</th>
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
               {% if venta.detallesVenta %}
+                {% set total = namespace(valor=0) %}
                 {% for detalle in venta.detallesVenta %}
+                {% set subtotal = (detalle.precio_unitario or 0) * detalle.cantidad %}
+                {% set total.valor = total.valor + subtotal %}
                 <tr class="hover:bg-brew-bg hover:bg-opacity-10">
                   <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     {{ detalle.producto_venta.nombre if detalle.producto_venta else 'N/A' }}
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ detalle.cantidad }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-center">{{ detalle.cantidad }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-center">${{ "%.2f"|format(detalle.precio_unitario or 0) }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-center font-semibold">${{ "%.2f"|format(subtotal) }}</td>
                 </tr>
                 {% endfor %}
               {% else %}
                 <tr>
-                  <td colspan="2" class="px-6 py-6 text-center text-gray-500">Sin artículos registrados</td>
+                  <td colspan="4" class="px-6 py-6 text-center text-gray-500">Sin artículos registrados</td>
                 </tr>
               {% endif %}
             </tbody>
+            {% if venta.detallesVenta %}
+            <tfoot>
+              <tr class="bg-gray-50 border-t-2 border-gray-300">
+                <td colspan="3" class="px-6 py-4 text-right font-bold text-gray-700 text-sm uppercase">Total:</td>
+                <td class="px-6 py-4 text-center font-bold text-gray-900 text-lg">${{ "%.2f"|format(total.valor) }}</td>
+              </tr>
+            </tfoot>
+            {% endif %}
           </table>
         </div>
       </div>

@@ -2,7 +2,14 @@ from flask import render_template, request, redirect, url_for, flash
 from app.modules.presentaciones.form import PresentacionForm
 from app.modules.presentaciones.service import PresentacionService
 from app.modules.unidades_medida.service import UnidadMedidaService
+from app.shared.decorators import verificar_rol_o_denegar
 from . import bp
+
+
+@bp.before_request
+def verificar_acceso():
+    return verificar_rol_o_denegar("admin", "almacen", "compras")
+
 
 servicio = PresentacionService()
 servicio_unidades = UnidadMedidaService()

@@ -6,8 +6,17 @@ from app.modules.usuarios import form
 from . import bp
 from .forms import MermaProductoTerminadoForm
 from .service import MermaProductoTerminadoService
-from app.modules.inventario_producto_terminado.service import InventarioProductoTerminadoService
+from app.modules.inventario_producto_terminado.service import (
+    InventarioProductoTerminadoService,
+)
 from app.modules.lotes.service import LoteProduccionService
+from app.shared.decorators import verificar_rol_o_denegar
+
+
+@bp.before_request
+def verificar_acceso():
+    return verificar_rol_o_denegar("admin", "almacen")
+
 
 servicio = MermaProductoTerminadoService()
 inventario_servicio = InventarioProductoTerminadoService()
@@ -18,7 +27,9 @@ lote_servicio = LoteProduccionService()
 def listar():
     page = request.args.get("page", 1, type=int)
     search_term = request.args.get("q", "")
-    pagination = servicio.listar_paginados(page=page, per_page=10, search_term=search_term)
+    pagination = servicio.listar_paginados(
+        page=page, per_page=10, search_term=search_term
+    )
     return render_template(
         "mermas_producto_terminado/listar.html",
         pagination=pagination,
@@ -33,49 +44,37 @@ def crear():
     form = MermaProductoTerminadoForm()
     recetas = inventario_servicio.listar_recetas_con_stock()
     lotes_raw = lote_servicio.obtener_lotes_paginados(per_page=2000).items
-    form.receta_id.choices = [("", "Seleccione una receta")] + [
-        (r.id, r.nombre) for r in recetas
-    ]
+
     lotes_por_receta = {}
     lotes_choices = [(None, "Seleccione un lote")]
 
     for l in lotes_raw:
-        es_activo = getattr(l, "activo", True)
-
-        if es_activo:
+        # AGREGAMOS ESTE IF: Solo si el lote está activo, lo metemos a la lista
+        if l.activo:
             try:
                 r_id = str(l.produccion.id_receta)
-
                 if r_id not in lotes_por_receta:
                     lotes_por_receta[r_id] = []
-
-                lote_info = {
-                    "id": l.id_lote,
-                    "codigo": l.codigo_lote,
-                    "cantidad": float(l.cantidad_generada),
-                }
-
-                lotes_por_receta[r_id].append(lote_info)
-
-                lotes_choices.append(
-                    (l.id_lote, f"{l.codigo_lote} - {l.cantidad_generada:.2f}")
+                lotes_por_receta[r_id].append(
+                    {
+                        "id": l.id_lote,
+                        "codigo": l.codigo_lote,
+                        "cantidad": float(l.cantidad_generada),
+                    }
                 )
-
-            except Exception:
+            except:
                 continue
 
-    form.lote_id.choices = lotes_choices
-
-    if form.validate_on_submit():
+    if request.method == "POST":
+        datos = {
+            "receta_id": request.form.get("receta_id"),
+            "producto_terminado": request.form.get("producto_terminado"),
+            "cantidad": request.form.get("cantidad"),
+            "motivo": request.form.get("motivo"),
+            "lote_id": request.form.get("lote_id") or None,
+            "es_lote_completo": "es_lote_completo" in request.form,
+        }
         try:
-            datos = {
-                "receta_id": form.receta_id.data,
-                "cantidad": form.cantidad.data,
-                "motivo": form.motivo.data,
-                "lote_id": form.lote_id.data,
-                "es_lote_completo": form.es_lote_completo.data,
-            }
-
             servicio.registrar_merma(datos, current_user.id)
 
             flash("Merma registrada y stock actualizado correctamente.", "success")
@@ -84,17 +83,13 @@ def crear():
         except ValueError as e:
             flash(str(e), "danger")
 
-    if form.errors:
-        for field, errores in form.errors.items():
-            for error in errores:
-                flash(f"{field}: {error}", "danger")
-
     return render_template(
         "mermas_producto_terminado/crear.html",
         form=form,
         recetas=recetas,
         lotes_data=lotes_por_receta,
     )
+
 
 @bp.route("/stock/<int:receta_id>")
 def obtener_stock(receta_id):

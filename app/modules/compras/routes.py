@@ -11,6 +11,12 @@ from app.modules.proveedores.service import ProveedorService
 from app.modules.materias_primas.service import MateriaPrimaService
 from app.modules.presentaciones.service import PresentacionService
 from app.shared.exceptions import ValidacionNegocioException
+from app.shared.decorators import verificar_rol_o_denegar
+
+
+@bp.before_request
+def verificar_acceso():
+    return verificar_rol_o_denegar("admin", "almacen", "compras")
 
 
 compras_service = ComprasService()
@@ -21,12 +27,24 @@ presentaciones_service = PresentacionService()
 
 @bp.route("/", methods=["GET"])
 def listar():
+    page = request.args.get("page", 1, type=int)
     solicitudes_pendientes = compras_service.listar_solicitudes_pendientes()
-    ordenes_compra = compras_service.listar_ordenes_compra()
+    pagination = compras_service.listar_ordenes_pendientes(page=page, per_page=10)
     return render_template(
         "compras/listar.html",
         solicitudes_pendientes=solicitudes_pendientes,
-        ordenes_compra=ordenes_compra,
+        ordenes_compra=pagination.items,
+        pagination=pagination,
+    )
+
+
+@bp.route("/terminadas", methods=["GET"])
+def listar_terminadas():
+    page = request.args.get("page", 1, type=int)
+    pagination = compras_service.listar_ordenes_terminadas(page=page, per_page=10)
+    return render_template(
+        "compras/listar_terminadas.html",
+        pagination=pagination,
     )
 
 
@@ -72,6 +90,7 @@ def atender_solicitud(solicitud_id):
                     proveedor_id=orden_form.proveedor_id.data,
                     usuario_id=current_user.id,
                     detalles=carrito,
+                    solicitud_compra_id=solicitud_id,
                 )
                 compras_service.marcar_solicitud_estado(solicitud_id, "En Compra")
                 return redirect(

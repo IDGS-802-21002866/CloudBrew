@@ -2,7 +2,8 @@
 
 {% block content %}
 <div class="max-w-6xl mx-auto py-8 px-4">
-    <a href="{{ url_for('compras.listar') }}" class="flex items-center text-2xl font-bold mb-6 hover:text-gray-600 transition">
+    {% set origen = request.args.get('origen', '') %}
+    <a href="{{ url_for('compras.listar_terminadas') if origen == 'historico' else url_for('compras.listar') }}" class="flex items-center text-2xl font-bold mb-6 hover:text-gray-600 transition">
         <i class="fa-solid fa-chevron-left mr-3"></i> 
         Detalle de Compra #{{ compra.id }}
     </a>

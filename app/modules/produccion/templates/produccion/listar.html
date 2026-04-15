@@ -2,14 +2,19 @@
 
 {% block content %}
 <div class="container mx-auto px-4 py-8">
-  <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
-    <div>
-      <h1 class="text-3xl font-bold text-gray-800">Producción</h1>
-      <p class="text-sm text-gray-600 mt-1">Inbox de solicitudes de retail confirmadas y lista de órdenes de producción.</p>
+
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-3xl font-bold text-gray-800">Órdenes de Producción</h1>
+    <div class="flex items-center space-x-3">
+      <a href="{{ url_for('produccion.listar_terminadas') }}"
+         class="bg-[#6C9AD0] hover:opacity-90 text-white font-bold py-2 px-4 rounded shadow-md transition flex items-center">
+        <i class="fa-solid fa-clipboard-check mr-2"></i> Histórico
+      </a>
+      <a href="{{ url_for('produccion.crear') }}"
+         class="bg-[#4A9062] hover:opacity-90 text-white font-bold py-2 px-4 rounded shadow-md transition flex items-center">
+        <i class="fa-solid fa-plus mr-2"></i> Nueva Orden
+      </a>
     </div>
-    <a href="{{ url_for('produccion.crear') }}" class="inline-flex items-center rounded-lg bg-[#4A9062] px-4 py-2 text-sm font-semibold text-white shadow-md hover:bg-[#418155] transition">
-      <i class="fa-solid fa-plus mr-2"></i> Nueva Orden
-    </a>
   </div>
 
   <div class="mb-6 flex items-center space-x-2">
@@ -17,166 +22,100 @@
       <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
         <i class="fa-solid fa-magnifying-glass text-gray-400"></i>
       </span>
-      <input type="text" id="inputBusquedaProduccion"
-             name="q" value="{{ search_term if search_term }}"
-             class="w-full pl-10 pr-4 py-2 border-2 border-gray-400 rounded-lg focus:outline-none focus:border-[#6C9AD0] transition-colors"
-             placeholder="Buscar por nombre de receta..."
-             onkeypress="if(event.key === 'Enter') realizarBusqueda()">
+      <input type="text" id="inputBusqueda"
+             data-busqueda-tabla="tablaProduccion"
+             data-busqueda-col="col-receta"
+             class="w-full pl-10 pr-4 py-2 border-2 border-gray-400 rounded-lg focus:outline-none focus:border-[#6C9AD0] focus:ring-0 transition-colors"
+             placeholder="Buscar por nombre de receta...">
     </div>
-    {% if search_term %}
-      <a href="{{ url_for('produccion.listar') }}" class="text-sm text-[#B85B5B] font-bold hover:underline">
-        Limpiar búsqueda
-      </a>
-    {% endif %}
   </div>
 
-  <div class="grid gap-6 lg:grid-cols-[1.1fr_1.9fr]">
-    <section class="space-y-4">
-      <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-        <div class="flex items-center justify-between mb-4">
-          <div>
-            <h2 class="text-xl font-semibold text-gray-800">Solicitudes Surtidas</h2>
-            <p class="text-sm text-gray-500">Solicitudes retail que ya fueron surtidas y están listas para producción.</p>
-          </div>
-          <span class="text-xs uppercase tracking-wide font-semibold text-[#6C9AD0]">Surtida</span>
-        </div>
-
-        {% if solicitudes %}
-          <div class="space-y-4">
-            {% for solicitud in solicitudes %}
-            <article class="rounded-2xl border border-gray-300 bg-gray-50 p-4 hover:border-[#6C9AD0] transition">
-              <div class="flex items-start justify-between gap-4">
-                <div>
-                  <h3 class="text-lg font-semibold text-gray-800">{{ solicitud.materia_prima.nombre }}</h3>
-                  <p class="text-sm text-gray-600 mt-1">Origen: <span class="font-semibold">{{ solicitud.origen|capitalize }}</span></p>
-                </div>
-                <div class="text-right">
-                  <span class="inline-flex rounded-full bg-[#4A9062] bg-opacity-15 px-3 py-1 text-xs font-semibold text-[#2D6A3E] border border-[#4A9062]">{{ solicitud.estado }}</span>
-                </div>
-              </div>
-              <div class="mt-3 grid gap-2 text-sm text-gray-700">
-                <p><strong>Cantidad:</strong> {{ solicitud.cantidad }}</p>
-                <p><strong>Pedido:</strong> {{ solicitud.referencia.folio if solicitud.referencia else 'N/A' }}</p>
-              </div>
-              {% if solicitud.estado == 'Surtida' %}
-              <div class="mt-4">
-                <a href="{{ url_for('produccion.atender_solicitud', solicitud_id=solicitud.id) }}" class="inline-flex w-full items-center justify-center rounded-lg bg-[#6C9AD0] px-4 py-2 text-sm font-semibold text-white hover:bg-[#5d89c4] transition">
-                  <i class="fa-solid fa-play mr-2"></i> Atender Producción
-                </a>
-              </div>
+  <div class="bg-white shadow-md rounded-lg overflow-hidden border border-gray-200">
+    <table class="min-w-full table-auto" id="tablaProduccion">
+      <thead class="bg-brew-bg">
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium text-brew-beige uppercase tracking-wider">Receta</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-brew-beige uppercase tracking-wider">Pedido</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-brew-beige uppercase tracking-wider">Cantidad</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-brew-beige uppercase tracking-wider">Inicio</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-brew-beige uppercase tracking-wider">Fin</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-brew-beige uppercase tracking-wider">Estado</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-brew-beige uppercase tracking-wider">Acciones</th>
+        </tr>
+      </thead>
+      <tbody class="bg-white divide-y divide-gray-200">
+        {% if pagination.items %}
+          {% for produccion in pagination.items %}
+          <tr class="hover:bg-gray-50 transition-colors">
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 col-receta">{{ produccion.receta.nombre if produccion.receta else '-' }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+              {% if produccion.pedidos and produccion.pedidos|length > 0 %}
+                {{ produccion.pedidos[0].pedido.folio if produccion.pedidos[0].pedido else '-' }}
+              {% else %}
+                <span class="text-gray-400">Manual</span>
               {% endif %}
-            </article>
-            {% endfor %}
-          </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ produccion.cantidad }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ produccion.fecha_inicio.strftime('%d/%m/%Y') if produccion.fecha_inicio else '-' }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ produccion.fecha_fin.strftime('%d/%m/%Y') if produccion.fecha_fin else '-' }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+              {% set estado = produccion.estado or 'pendiente' %}
+              {% if estado in ['Terminado', 'completado', 'completada'] %}
+                <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-green-100 text-green-800 border border-green-200">{{ estado }}</span>
+              {% elif estado in ['en_proceso', 'En Proceso'] %}
+                <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-blue-100 text-blue-800 border border-blue-200">{{ estado }}</span>
+              {% elif estado in ['cancelado', 'Cancelado'] %}
+                <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-red-100 text-red-800 border border-red-200">{{ estado }}</span>
+              {% else %}
+                <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-gray-100 text-gray-700 border border-gray-200">{{ estado }}</span>
+              {% endif %}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+              <a href="{{ url_for('produccion.detalle', id=produccion.id_produccion) }}"
+                 class="text-white font-bold py-1.5 px-4 rounded-lg inline-flex items-center shadow-sm hover:opacity-90 transition bg-[#6C9AD0]">
+                <i class="fa-solid fa-eye mr-2"></i> Ver Detalle
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
         {% else %}
-          <div class="rounded-2xl border border-gray-200 bg-white p-6 text-center text-gray-600">
-            No hay solicitudes de retail confirmadas para mostrar.
-          </div>
+          <tr>
+            <td colspan="7" class="px-6 py-10 text-center text-gray-500">
+              No hay órdenes de producción registradas.
+            </td>
+          </tr>
         {% endif %}
-      </div>
-    </section>
+      </tbody>
+    </table>
+  </div>
 
-    <section class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-      <div class="mb-4 flex items-center justify-between">
-        <div>
-          <h2 class="text-xl font-semibold text-gray-800">Órdenes de Producción</h2>
-          <p class="text-sm text-gray-500">Todas las producciones registradas en el sistema.</p>
-        </div>
-      </div>
+  <div class="flex justify-center items-center mt-6 space-x-4">
+    {% if pagination.has_prev %}
+    <a href="{{ url_for('produccion.listar', page=pagination.prev_num, q=search_term) }}"
+       class="px-4 py-2 bg-[#4A9062] text-white font-bold rounded-lg hover:opacity-90 transition shadow-sm">
+      <i class="fa-solid fa-chevron-left mr-2"></i> Anterior
+    </a>
+    {% else %}
+    <span class="px-4 py-2 bg-gray-200 text-gray-400 font-bold rounded-lg cursor-not-allowed">
+      <i class="fa-solid fa-chevron-left mr-2"></i> Anterior
+    </span>
+    {% endif %}
 
-      <div class="overflow-x-auto">
-        <table class="w-full min-w-full text-left text-sm text-gray-700">
-          <thead class="bg-gray-100 text-xs uppercase tracking-wide text-gray-500">
-            <tr>
-              <th class="px-5 py-3">Receta</th>
-              <th class="px-5 py-3">Pedido</th>
-              <th class="px-5 py-3">Cantidad</th>
-              <th class="px-5 py-3">Inicio</th>
-              <th class="px-5 py-3">Fin</th>
-              <th class="px-5 py-3">Estado</th>
-              <th class="px-5 py-3">Acciones</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-gray-200 bg-white">
-            {% if producciones %}
-              {% for produccion in producciones %}
-              <tr class="hover:bg-gray-50">
-                <td class="px-5 py-4 font-medium text-gray-900">{{ produccion.receta.nombre if produccion.receta else '-' }}</td>
-                <td class="px-5 py-4 text-gray-600">
-                  {% if produccion.pedidos and produccion.pedidos|length > 0 %}
-                    {{ produccion.pedidos[0].pedido.folio if produccion.pedidos[0].pedido else '-' }}
-                  {% else %}
-                    -
-                  {% endif %}
-                </td>
-                <td class="px-5 py-4 text-gray-700">{{ produccion.cantidad }}</td>
-                <td class="px-5 py-4 text-gray-700">{{ produccion.fecha_inicio or '-' }}</td>
-                <td class="px-5 py-4 text-gray-700">{{ produccion.fecha_fin or '-' }}</td>
-                <td class="px-5 py-4">
-                  {% set estado = produccion.estado or 'pendiente' %}
-                  {% if estado in ['Terminado', 'completado', 'completada'] %}
-                    <span class="inline-flex rounded-full bg-[#4A9062] bg-opacity-15 px-3 py-1 text-xs font-semibold text-[#2D6A3E] border border-[#4A9062]">{{ estado }}</span>
-                  {% elif estado in ['en_proceso', 'En Proceso'] %}
-                    <span class="inline-flex rounded-full bg-[#6C9AD0] bg-opacity-15 px-3 py-1 text-xs font-semibold text-[#1f4f7a] border border-[#6C9AD0]">{{ estado }}</span>
-                  {% elif estado in ['cancelado', 'Cancelado'] %}
-                    <span class="inline-flex rounded-full bg-[#B85B5B] bg-opacity-15 px-3 py-1 text-xs font-semibold text-[#7a3636] border border-[#B85B5B]">{{ estado }}</span>
-                  {% else %}
-                    <span class="inline-flex rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-700 border border-gray-200">{{ estado }}</span>
-                  {% endif %}
-                </td>
-                <td class="px-5 py-4">
-                  <a href="{{ url_for('produccion.detalle', id=produccion.id_produccion) }}" class="inline-flex items-center rounded-lg bg-[#6C9AD0] px-4 py-2 text-xs font-semibold text-white hover:bg-[#5d89c4] transition">
-                    <i class="fa-solid fa-eye mr-2"></i> Ver detalle
-                  </a>
-                </td>
-              </tr>
-              {% endfor %}
-            {% else %}
-              <tr>
-                <td colspan="7" class="px-5 py-8 text-center text-gray-500">No hay producciones registradas.</td>
-              </tr>
-            {% endif %}
-          </tbody>
-        </table>
-      </div>
+    <span class="text-gray-600 font-medium">
+      Página <span class="font-bold text-gray-900">{{ pagination.page }}</span> de <span class="font-bold text-gray-900">{{ pagination.pages }}</span>
+    </span>
 
-      {% if pagination and pagination.pages > 1 %}
-      <div class="flex justify-center items-center mt-6 space-x-4">
-        {% if pagination.has_prev %}
-        <a href="{{ url_for('produccion.listar', page=pagination.prev_num, q=search_term) }}"
-           class="px-4 py-2 bg-[#4A9062] text-white font-bold rounded-lg hover:opacity-90 transition shadow-sm">
-          <i class="fa-solid fa-chevron-left mr-2"></i> Anterior
-        </a>
-        {% else %}
-        <span class="px-4 py-2 bg-gray-200 text-gray-400 font-bold rounded-lg cursor-not-allowed">
-          <i class="fa-solid fa-chevron-left mr-2"></i> Anterior
-        </span>
-        {% endif %}
-
-        <span class="text-gray-600 font-medium">
-          Página <span class="font-bold text-gray-900">{{ pagination.page }}</span> de <span class="font-bold text-gray-900">{{ pagination.pages }}</span>
-        </span>
-
-        {% if pagination.has_next %}
-        <a href="{{ url_for('produccion.listar', page=pagination.next_num, q=search_term) }}"
-           class="px-4 py-2 bg-[#4A9062] text-white font-bold rounded-lg hover:opacity-90 transition shadow-sm">
-          Siguiente <i class="fa-solid fa-chevron-right ml-2"></i>
-        </a>
-        {% else %}
-        <span class="px-4 py-2 bg-gray-200 text-gray-400 font-bold rounded-lg cursor-not-allowed">
-          Siguiente <i class="fa-solid fa-chevron-right ml-2"></i>
-        </span>
-        {% endif %}
-      </div>
-      {% endif %}
-    </section>
+    {% if pagination.has_next %}
+    <a href="{{ url_for('produccion.listar', page=pagination.next_num, q=search_term) }}"
+       class="px-4 py-2 bg-[#4A9062] text-white font-bold rounded-lg hover:opacity-90 transition shadow-sm">
+      Siguiente <i class="fa-solid fa-chevron-right ml-2"></i>
+    </a>
+    {% else %}
+    <span class="px-4 py-2 bg-gray-200 text-gray-400 font-bold rounded-lg cursor-not-allowed">
+      Siguiente <i class="fa-solid fa-chevron-right ml-2"></i>
+    </span>
+    {% endif %}
   </div>
 </div>
 
-<script>
-    function realizarBusqueda() {
-        const query = document.getElementById('inputBusquedaProduccion').value;
-        window.location.href = "{{ url_for('produccion.listar') }}?q=" + encodeURIComponent(query);
-    }
-</script>
 {% endblock %}

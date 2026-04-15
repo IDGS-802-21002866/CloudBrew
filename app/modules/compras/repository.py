@@ -6,7 +6,10 @@ from app.modules.proveedores.model import Proveedor
 def get_all_compras():
     compras = Compra.query.all()
     return compras
+
+
 from sqlalchemy import or_
+
 
 def get_paginated_compras(page, per_page, search_term=None, terminadas=False):
     query = Compra.query.join(Proveedor)
@@ -17,14 +20,16 @@ def get_paginated_compras(page, per_page, search_term=None, terminadas=False):
             )
         )
     if terminadas:
-        query = query.filter(Compra.fecha_compra.is_not(None))
+        query = query.filter(
+            or_(Compra.fecha_compra.is_not(None), Compra.cancelada == True)
+        )
     else:
-        query = query.filter(Compra.fecha_compra.is_(None))
+        query = query.filter(Compra.fecha_compra.is_(None), Compra.cancelada == False)
 
     return query.order_by(Compra.fecha_registro.desc()).paginate(
-        page=page,
-        per_page=per_page
+        page=page, per_page=per_page
     )
+
 
 def get_pending_solicitudes():
     return SolicitudCompra.query.filter_by(estado="Pendiente").all()
@@ -45,7 +50,9 @@ def get_solicitudes_surtidas_retail():
 
 
 def get_confirmed_compras():
-    return Compra.query.filter(Compra.fecha_compra.isnot(None), Compra.cancelada == False).all()
+    return Compra.query.filter(
+        Compra.fecha_compra.isnot(None), Compra.cancelada == False
+    ).all()
 
 
 def get_solicitud_by_id(solicitud_id):
@@ -78,7 +85,9 @@ def get_compra_by_id(id):
     return compra
 
 
-def create_compra(proveedor_id, usuario_id, detalles, usuario_actual):
+def create_compra(
+    proveedor_id, usuario_id, detalles, usuario_actual, solicitud_compra_id=None
+):
     """
     Crear una nueva compra con sus detalles.
 
@@ -87,12 +96,18 @@ def create_compra(proveedor_id, usuario_id, detalles, usuario_actual):
         usuario_id: ID del usuario
         detalles: lista de dicts con {materia_prima_id, presentacion_id, cantidad, precio_unitario}
         usuario_actual: nombre del usuario actual
+        solicitud_compra_id: ID de solicitud de compra asociada (opcional)
 
     Returns:
         ID de la compra creada
     """
     # Crear la compra
-    nueva_compra = Compra(proveedor_id=proveedor_id, usuario_id=usuario_id, actualizado_por=usuario_actual)
+    nueva_compra = Compra(
+        proveedor_id=proveedor_id,
+        usuario_id=usuario_id,
+        actualizado_por=usuario_actual,
+        solicitud_compra_id=solicitud_compra_id,
+    )
 
     db.session.add(nueva_compra)
     db.session.flush()  # Flush para obtener el ID sin hacer commit

@@ -10,14 +10,19 @@ BEGIN
     DECLARE v_cantidad_equivalente DECIMAL(18, 6);
     DECLARE v_tipo_presentacion_id INT;
     DECLARE v_tipo_materia_prima_id INT;
+    DECLARE v_solicitud_compra_id INT DEFAULT NULL;
+    DECLARE v_solicitud_origen VARCHAR(20) DEFAULT NULL;
+    DECLARE v_solicitud_cantidad DECIMAL(18, 6) DEFAULT 0;
+    DECLARE v_cantidad_base DECIMAL(18, 6);
+    DECLARE v_cantidad_entrada DECIMAL(18, 6);
 
     IF NEW.precio_unitario < 0 THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'El precio no puede ser negativo';
     END IF;
 
-    SELECT c.fecha_compra, c.usuario_id, c.cancelada
-      INTO v_fecha_compra, v_usuario_id, v_cancelada
+    SELECT c.fecha_compra, c.usuario_id, c.cancelada, c.solicitud_compra_id
+      INTO v_fecha_compra, v_usuario_id, v_cancelada, v_solicitud_compra_id
       FROM compra c
      WHERE c.id = NEW.compra_id;
 
@@ -52,24 +57,48 @@ BEGIN
               AND m.motivo = CONCAT('Compra #', NEW.compra_id, ' - Detalle #', NEW.id)
        )
     THEN
-        INSERT INTO movimientos_materia_prima (
-            materia_prima_id,
-            tipo,
-            cantidad,
-            fecha,
-            motivo,
-            usuario_id,
-            detalle_compra_id
-        )
-        VALUES (
-            NEW.materia_prima_id,
-            'entrada',
-            NEW.cantidad * v_cantidad_equivalente,
-            v_fecha_compra,
-            CONCAT('Compra #', NEW.compra_id, ' - Detalle #', NEW.id),
-            v_usuario_id,
-            NEW.id
-        );
+        SET v_cantidad_base = NEW.cantidad * v_cantidad_equivalente;
+        SET v_cantidad_entrada = v_cantidad_base;
+
+        -- Si la compra esta vinculada a una solicitud retail (pedido),
+        -- solo agregar el excedente al inventario
+        IF v_solicitud_compra_id IS NOT NULL THEN
+            SELECT sc.origen, sc.cantidad
+              INTO v_solicitud_origen, v_solicitud_cantidad
+              FROM solicitud_compra sc
+             WHERE sc.id = v_solicitud_compra_id
+               AND sc.materia_prima_id = NEW.materia_prima_id;
+
+            IF v_solicitud_origen = 'retail' THEN
+                IF v_cantidad_base > v_solicitud_cantidad THEN
+                    SET v_cantidad_entrada = v_cantidad_base - v_solicitud_cantidad;
+                ELSE
+                    -- No agregar nada al inventario, la compra cubre exactamente lo necesario
+                    SET v_cantidad_entrada = 0;
+                END IF;
+            END IF;
+        END IF;
+
+        IF v_cantidad_entrada > 0 THEN
+            INSERT INTO movimientos_materia_prima (
+                materia_prima_id,
+                tipo,
+                cantidad,
+                fecha,
+                motivo,
+                usuario_id,
+                detalle_compra_id
+            )
+            VALUES (
+                NEW.materia_prima_id,
+                'entrada',
+                v_cantidad_entrada,
+                v_fecha_compra,
+                CONCAT('Compra #', NEW.compra_id, ' - Detalle #', NEW.id),
+                v_usuario_id,
+                NEW.id
+            );
+        END IF;
     END IF;
 END$$
 

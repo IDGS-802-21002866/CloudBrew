@@ -1,13 +1,10 @@
 {% extends 'base.html' %}
-{% from '_macros.html' import mostrar_flashes %}
 
 {% block content %}
 <div class="max-w-4xl mx-auto py-8 px-4">
   <a href="{{ url_for('producto_venta.listar') }}" class="flex items-center text-2xl font-bold mb-6 hover:text-[#6C9AD0] transition">
     <i class="fas fa-chevron-left mr-3"></i> Detalle del Producto
   </a>
-
-  {{ mostrar_flashes() }}
 
   <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
     <!-- Header -->

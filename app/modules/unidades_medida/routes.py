@@ -1,14 +1,21 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from app.modules.unidades_medida.form import UnidadMedidaForm
 from app.modules.unidades_medida.service import UnidadMedidaService
+from app.shared.decorators import verificar_rol_o_denegar
 from . import bp
+
+
+@bp.before_request
+def verificar_acceso():
+    return verificar_rol_o_denegar("admin", "almacen")
+
 
 servicio = UnidadMedidaService()
 
 
 @bp.route("/")
 def listar():
-    page=request.args.get("page", 1, type=int)
+    page = request.args.get("page", 1, type=int)
     pagination = servicio.listar_unidades_medida(page, per_page=10)
     return render_template("unidades_medida/listar.html", pagination=pagination)
 
