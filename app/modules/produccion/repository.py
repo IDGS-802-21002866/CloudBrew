@@ -137,12 +137,33 @@ def get_procesos_por_produccion(id_produccion):
     except Exception:
         return ValueError("Ocurrio un error al obtener los Procesos de produccion.")
 
-
-def get_produccion():
-    try:
-        return Produccion.query.all()
-    except Exception:
+def get_produccion(): 
+    try: 
+        return Produccion.query.filter(Produccion.estado!='completado').all() 
+    except Exception: 
         return ValueError("Ocurrio un error al obtener los registros de produccion.")
+
+def get_produccion_paginada(page, per_page):
+    try:
+        return Produccion.query.filter(
+            Produccion.estado != 'completado'
+        ).order_by(Produccion.id_produccion.desc()).paginate(
+            page=page,
+            per_page=per_page
+        )
+    except Exception as e:
+        raise ValueError("Ocurrió un error al obtener los registros de producción.") from e
+
+def get_produccion_completadas(page, per_page):
+    try:
+        return Produccion.query.filter(
+            Produccion.estado == 'completado'
+        ).order_by(Produccion.id_produccion.desc()).paginate(
+            page=page,
+            per_page=per_page
+        )
+    except Exception as e:
+        raise ValueError("Ocurrió un error al obtener los registros de producción." + str(e)) from e
 
 
 def get_produccion_by_id(id):
@@ -156,3 +177,5 @@ def get_pedido_produccion_por_produccion(id_produccion):
     from app.modules.sol_prod.model import PedidoProduccion
 
     return PedidoProduccion.query.filter_by(id_produccion=id_produccion).first()
+
+

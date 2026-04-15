@@ -9,6 +9,9 @@ from flask_login import current_user
 class PedidoService:
     def listar_paginados(self, page=1, per_page=10, search_term=None):
         return pedido_repo.get_paginated_pedidos(page, per_page, search_term)
+    
+    def listar_paginado_terminados(self, page=1, per_page=10, search_term=None):
+        return pedido_repo.get_paginated_pedidos_terminados(page, per_page, search_term)
 
     def obtener_por_id(self, pedido_id):
         pedido = pedido_repo.get_pedido_by_id(pedido_id)
@@ -93,5 +96,4 @@ class PedidoService:
 
         pedido.usuario_id = current_user.id if current_user.is_authenticated else pedido.usuario_id
         pedido_repo.update_pedido_estado(pedido, "Cancelado", current_user.id if current_user.is_authenticated else None)
-        return pedido
         return pedido

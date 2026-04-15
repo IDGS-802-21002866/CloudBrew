@@ -13,6 +13,8 @@ from app.modules.produccion.repository import (
     eliminar_produccion,
     modificar_produccion,
     modificar_produccion_proceso,
+    get_produccion_completadas,
+    get_produccion_paginada
 )
 from .forms import ProduccionForm
 from app.modules.recetas.service import RecetaService
@@ -23,8 +25,8 @@ inventario_service = InventarioMateriasPrimasService()
 RecetaService=RecetaService()
 class ProduccionService:
 
-    def listar_produccion(self):
-        return get_produccion()
+    def listar_produccion(self,page=1, per_page=5):
+        return get_produccion_paginada(page, per_page)
 
     def crear_produccion(self, data: dict):
         from app import db
@@ -172,3 +174,6 @@ class ProduccionService:
 
     def buscar_produccion_por_id(self, id):
         return get_produccion_by_id(id)
+    
+    def listar_produccion_completada(self, page=1, per_page=5):
+        return get_produccion_completadas(page, per_page)

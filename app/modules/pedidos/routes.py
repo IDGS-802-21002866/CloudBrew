@@ -29,6 +29,19 @@ def listar():
         pagination=pagination,
         search_term=search_term,
     )
+@login_required
+@bp.route("/terminados")
+def listar_terminados():
+    page = request.args.get("page", 1, type=int)
+    search_term = request.args.get("q", "")
+    pagination = pedido_service.listar_paginado_terminados(
+        page=page, per_page=10, search_term=search_term
+    )
+    return render_template(
+        "pedidos/listar_terminados.html",
+        pagination=pagination,
+        search_term=search_term,
+    )
 
 @login_required
 @bp.route("/crear", methods=["GET", "POST"])

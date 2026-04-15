@@ -135,3 +135,6 @@ class ComprasService:
                 "No se puede cancelar una compra ya confirmada."
             )
         repository.cancelar_compra(compra_id, current_user.nombre)
+
+    def get_compras_paginadas(self, page, per_page, search_term=None, terminadas=False):
+        return repository.get_paginated_compras(page, per_page, search_term, terminadas)

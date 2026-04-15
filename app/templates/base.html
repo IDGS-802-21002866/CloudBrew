@@ -69,7 +69,12 @@
             
             <a href="{{ url_for('compras.listar') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-brew-bg transition">
               <i class="fas fa-shopping-cart w-5 flex-shrink-0"></i>
-              <span>Compras</span>
+              <span>Compras Pendientes</span>
+            </a>
+
+            <a href="{{ url_for('compras.listar_terminadas') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-brew-bg transition">
+              <i class="fas fa-check-circle w-5 flex-shrink-0"></i>
+              <span>Compras Terminadas</span>
             </a>
 
             <a href="{{ url_for('inventario_materias_primas.listar') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-brew-bg transition">
@@ -94,8 +99,14 @@
             
             <a href="{{ url_for('pedidos.listar') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-brew-bg transition">
               <i class="fas fa-clipboard-list w-5 flex-shrink-0"></i>
-              <span>Pedidos</span>
+              <span>Pedidos Pendientes</span>
             </a>
+            
+            <a href="{{ url_for('pedidos.listar_terminados') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-brew-bg transition">
+              <i class="fas fa-clipboard-check w-5 flex-shrink-0"></i>
+              <span>Pedidos Terminados</span>
+            </a>
+
 
             <a href="{{ url_for('ventas.listar') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-brew-bg transition">
               <i class="fas fa-receipt w-5 flex-shrink-0"></i>
@@ -114,7 +125,12 @@
 
             <a href="{{ url_for('produccion.listar') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-brew-bg transition">
               <i class="fas fa-industry w-5 flex-shrink-0"></i>
-              <span>Producción</span>
+              <span>Peticiones de Producción Pendientes</span>
+            </a>
+
+            <a href="{{ url_for('produccion.listar_terminadas') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-brew-bg transition">
+              <i class="fas fa-check-double w-5 flex-shrink-0"></i>
+              <span>Peticiones de Producción Terminadas</span>
             </a>
 
             <a href="{{ url_for('lotes.listar') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-brew-bg transition">
