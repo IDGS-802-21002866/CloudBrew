@@ -1,5 +1,6 @@
 import random
 import secrets
+import threading
 import uuid
 from datetime import datetime, timedelta, timezone
 
@@ -27,6 +28,15 @@ inventario_service = InventarioProductoTerminadoService()
 
 # Tiempo que dura una reserva de stock desde que se agrega al carrito
 RESERVA_TTL_MINUTOS = 30
+
+
+def _enviar_correo(app, msg):
+    """Envía un correo en segundo plano con el contexto de la app."""
+    try:
+        with app.app_context():
+            mail.send(msg)
+    except Exception:
+        pass
 
 
 def _get_session_id():
@@ -63,6 +73,12 @@ class TiendaAuthService:
         if not check_password_hash(usuario.password, contrasenia):
             raise ValueError("Credenciales incorrectas.")
 
+        # Validar que el usuario SÍ sea cliente
+        if usuario.rol.name != "cliente":
+            raise ValueError(
+                "Esta cuenta no tiene acceso al portal de tienda. Por favor, usa el sistema administrativo."
+            )
+
         codigo = f"{random.randint(0, 999999):06d}"
         session["codigo_2fa"] = codigo
         session["codigo_2fa_expiry"] = (
@@ -79,7 +95,8 @@ class TiendaAuthService:
                 codigo=codigo,
             ),
         )
-        mail.send(msg)
+        app = current_app._get_current_object()
+        threading.Thread(target=lambda: _enviar_correo(app, msg)).start()
 
         return True
 
@@ -132,7 +149,8 @@ class TiendaAuthService:
                 nombre=usuario.nombre,
             ),
         )
-        mail.send(msg)
+        app = current_app._get_current_object()
+        threading.Thread(target=lambda: _enviar_correo(app, msg)).start()
 
     def restablecer_contrasena(self, token, nueva_contrasenia):
         usuario = get_usuario_by_reset_token(token)

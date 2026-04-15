@@ -1,4 +1,5 @@
 import secrets
+import threading
 from datetime import datetime, timedelta, timezone
 
 from flask import current_app, render_template, url_for
@@ -19,6 +20,14 @@ from app.modules.usuarios.service import UsuarioService
 usuarios_service = UsuarioService()
 
 
+def _enviar_correo(app, msg):
+    try:
+        with app.app_context():
+            mail.send(msg)
+    except Exception:
+        pass
+
+
 class AuthService:
     def iniciar_sesion(self, correo, contrasenia):
         usuario = usuarios_service.obtener_usuario_por_email(correo)
@@ -28,6 +37,12 @@ class AuthService:
 
         if not check_password_hash(usuario.password, contrasenia):
             raise ValueError("Credenciales incorrectas")
+
+        # Validar que el usuario NO sea cliente
+        if usuario.rol.name == "cliente":
+            raise ValueError(
+                "Esta cuenta no tiene acceso al sistema administrativo. Por favor, usa el portal de tienda."
+            )
 
         login_user(usuario)
 
@@ -53,7 +68,8 @@ class AuthService:
                 "auth/correo_recuperacion.html", enlace=enlace, nombre=usuario.nombre
             ),
         )
-        mail.send(msg)
+        app = current_app._get_current_object()
+        threading.Thread(target=lambda: _enviar_correo(app, msg)).start()
 
     def restablecer_contrasena(self, token, nueva_contrasenia):
         usuario = get_usuario_by_reset_token(token)

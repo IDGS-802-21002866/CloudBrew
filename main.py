@@ -13,27 +13,30 @@ with app.app_context():
     from app.modules.unidades_medida.model import TipoMedida, UnidadMedida
     from werkzeug.security import generate_password_hash
 
-    # Verificar si el rol admin existe
-    rol_admin = Rol.query.filter_by(name="admin").first()
+    # Roles a crear
+    roles_data = [
+        {"name": "admin", "description": "Administrador del sistema"},
+        {"name": "almacen", "description": "Encargado de almacén"},
+        {"name": "compras", "description": "Encargado de compras"},
+        {"name": "ventas", "description": "Encargado de ventas"},
+        {"name": "cliente", "description": "Cliente del portal web"},
+    ]
 
-    if not rol_admin:
-        rol_admin = Rol(name="admin", description="Administrador del sistema")
-        db.session.add(rol_admin)
-        db.session.commit()
-        print("Rol admin creado")
-    else:
-        print("Rol admin ya existe")
-
-    # Verificar si el rol cliente existe
-    rol_cliente = Rol.query.filter_by(name="cliente").first()
-
-    if not rol_cliente:
-        rol_cliente = Rol(name="cliente", description="Cliente del portal web")
-        db.session.add(rol_cliente)
-        db.session.commit()
-        print("Rol cliente creado")
-    else:
-        print("Rol cliente ya existe")
+    # Crear roles
+    rol_admin = None
+    for rol_data in roles_data:
+        rol_existente = Rol.query.filter_by(name=rol_data["name"]).first()
+        if not rol_existente:
+            nuevo_rol = Rol(name=rol_data["name"], description=rol_data["description"])
+            db.session.add(nuevo_rol)
+            db.session.commit()
+            print(f"Rol '{rol_data['name']}' creado")
+            if rol_data["name"] == "admin":
+                rol_admin = nuevo_rol
+        else:
+            print(f"Rol '{rol_data['name']}' ya existe")
+            if rol_data["name"] == "admin":
+                rol_admin = rol_existente
 
     # Verificar si el usuario de prueba existe
     usuario_test = Usuario.query.filter_by(email="test@test.com").first()

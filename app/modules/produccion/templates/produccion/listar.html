@@ -1,7 +1,5 @@
 {% extends 'base.html' %}
 
-{% block title %}Órdenes de Producción{% endblock %}
-
 {% block content %}
 <div class="container mx-auto px-4 py-8">
   <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
@@ -20,11 +18,16 @@
         <i class="fa-solid fa-magnifying-glass text-gray-400"></i>
       </span>
       <input type="text" id="inputBusquedaProduccion"
-             data-busqueda-tabla="tablaProduccion"
-             data-busqueda-col="col-receta"
+             name="q" value="{{ search_term if search_term }}"
              class="w-full pl-10 pr-4 py-2 border-2 border-gray-400 rounded-lg focus:outline-none focus:border-[#6C9AD0] transition-colors"
-             placeholder="Filtrar por receta...">
+             placeholder="Buscar por nombre de receta..."
+             onkeypress="if(event.key === 'Enter') realizarBusqueda()">
     </div>
+    {% if search_term %}
+      <a href="{{ url_for('produccion.listar') }}" class="text-sm text-[#B85B5B] font-bold hover:underline">
+        Limpiar búsqueda
+      </a>
+    {% endif %}
   </div>
 
   <div class="grid gap-6 lg:grid-cols-[1.1fr_1.9fr]">
@@ -86,6 +89,7 @@
           <thead class="bg-gray-100 text-xs uppercase tracking-wide text-gray-500">
             <tr>
               <th class="px-5 py-3">Receta</th>
+              <th class="px-5 py-3">Pedido</th>
               <th class="px-5 py-3">Cantidad</th>
               <th class="px-5 py-3">Inicio</th>
               <th class="px-5 py-3">Fin</th>
@@ -98,6 +102,13 @@
               {% for produccion in producciones %}
               <tr class="hover:bg-gray-50">
                 <td class="px-5 py-4 font-medium text-gray-900">{{ produccion.receta.nombre if produccion.receta else '-' }}</td>
+                <td class="px-5 py-4 text-gray-600">
+                  {% if produccion.pedidos and produccion.pedidos|length > 0 %}
+                    {{ produccion.pedidos[0].pedido.folio if produccion.pedidos[0].pedido else '-' }}
+                  {% else %}
+                    -
+                  {% endif %}
+                </td>
                 <td class="px-5 py-4 text-gray-700">{{ produccion.cantidad }}</td>
                 <td class="px-5 py-4 text-gray-700">{{ produccion.fecha_inicio or '-' }}</td>
                 <td class="px-5 py-4 text-gray-700">{{ produccion.fecha_fin or '-' }}</td>
@@ -122,15 +133,50 @@
               {% endfor %}
             {% else %}
               <tr>
-                <td colspan="6" class="px-5 py-8 text-center text-gray-500">No hay producciones registradas.</td>
+                <td colspan="7" class="px-5 py-8 text-center text-gray-500">No hay producciones registradas.</td>
               </tr>
             {% endif %}
           </tbody>
         </table>
       </div>
+
+      {% if pagination and pagination.pages > 1 %}
+      <div class="flex justify-center items-center mt-6 space-x-4">
+        {% if pagination.has_prev %}
+        <a href="{{ url_for('produccion.listar', page=pagination.prev_num, q=search_term) }}"
+           class="px-4 py-2 bg-[#4A9062] text-white font-bold rounded-lg hover:opacity-90 transition shadow-sm">
+          <i class="fa-solid fa-chevron-left mr-2"></i> Anterior
+        </a>
+        {% else %}
+        <span class="px-4 py-2 bg-gray-200 text-gray-400 font-bold rounded-lg cursor-not-allowed">
+          <i class="fa-solid fa-chevron-left mr-2"></i> Anterior
+        </span>
+        {% endif %}
+
+        <span class="text-gray-600 font-medium">
+          Página <span class="font-bold text-gray-900">{{ pagination.page }}</span> de <span class="font-bold text-gray-900">{{ pagination.pages }}</span>
+        </span>
+
+        {% if pagination.has_next %}
+        <a href="{{ url_for('produccion.listar', page=pagination.next_num, q=search_term) }}"
+           class="px-4 py-2 bg-[#4A9062] text-white font-bold rounded-lg hover:opacity-90 transition shadow-sm">
+          Siguiente <i class="fa-solid fa-chevron-right ml-2"></i>
+        </a>
+        {% else %}
+        <span class="px-4 py-2 bg-gray-200 text-gray-400 font-bold rounded-lg cursor-not-allowed">
+          Siguiente <i class="fa-solid fa-chevron-right ml-2"></i>
+        </span>
+        {% endif %}
+      </div>
+      {% endif %}
     </section>
   </div>
 </div>
 
-<script src="{{ url_for('static', filename='js/busqueda_tabla.js') }}"></script>
+<script>
+    function realizarBusqueda() {
+        const query = document.getElementById('inputBusquedaProduccion').value;
+        window.location.href = "{{ url_for('produccion.listar') }}?q=" + encodeURIComponent(query);
+    }
+</script>
 {% endblock %}

@@ -1,5 +1,6 @@
 from app.modules.procesos_produccion import repository
 from app.modules.produccion.model import Produccion
+from app.modules.compras.model import SolicitudCompra
 from app.shared.exceptions import ValidacionNegocioException
 from flask_login import current_user
 from app import db
@@ -61,15 +62,29 @@ def completar_proceso(id_produccion_proceso):
         # Completar el proceso
         proceso_completado = repository.completar_proceso(id_produccion_proceso)
 
-        # Si es el primer proceso (orden == 1), actualizar fecha_inicio y estado de producción
+        # Si es el primer proceso (orden == 1), validar compras pagadas y actualizar estado
         produccion = Produccion.query.get(proceso_completado.id_produccion)
         if proceso_completado.orden == 1 and produccion:
+            # Bloquear si hay solicitudes de compra no surtidas para el pedido asociado
+            if produccion.pedidos:
+                for pedido_rel in produccion.pedidos:
+                    if pedido_rel.pedido:
+                        solicitudes = SolicitudCompra.query.filter_by(
+                            referencia_id=pedido_rel.pedido.id
+                        ).all()
+                        no_surtidas = [s for s in solicitudes if s.estado != "Surtida"]
+                        if no_surtidas:
+                            raise ValidacionNegocioException(
+                                "No se puede iniciar la producción. Las órdenes de compra asociadas al pedido aún no han sido surtidas."
+                            )
             produccion.fecha_inicio = date.today()
             produccion.estado = "en proceso"
             db.session.add(produccion)
 
         # Si no hay procesos pendientes, cerrar orden de pedido retail relacionada
-        siguiente_proceso = repository.obtener_proceso_siguiente(proceso_completado.id_produccion)
+        siguiente_proceso = repository.obtener_proceso_siguiente(
+            proceso_completado.id_produccion
+        )
         if not siguiente_proceso and produccion and produccion.pedidos:
             for pedido_rel in produccion.pedidos:
                 if pedido_rel.pedido and pedido_rel.pedido.estado != "Terminado":

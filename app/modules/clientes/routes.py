@@ -5,16 +5,20 @@ from . import bp
 
 servicio = ClienteService()
 
+
 @bp.route("/")
 def listar():
-    page = request.args.get('page', 1, type=int)
-    search_term = request.args.get('q', '')
-    
-    pagination = servicio.listar_paginados(page=page, per_page=10, search_term=search_term)
-    
-    return render_template("clientes/listar.html", 
-                           pagination=pagination, 
-                           search_term=search_term)
+    page = request.args.get("page", 1, type=int)
+    search_term = request.args.get("q", "")
+
+    pagination = servicio.listar_paginados(
+        page=page, per_page=10, search_term=search_term
+    )
+
+    return render_template(
+        "clientes/listar.html", pagination=pagination, search_term=search_term
+    )
+
 
 @bp.route("/crear", methods=["GET", "POST"])
 def crear():
@@ -32,7 +36,7 @@ def crear():
                 "ciudad": form.ciudad.data,
                 "estado": form.estado.data,
                 "codigo_postal": form.codigo_postal.data,
-                "tipo": form.tipo.data
+                "tipo": "retail",
             }
             servicio.crear_cliente(data)
             flash("Cliente creado exitosamente.", "success")
@@ -42,6 +46,7 @@ def crear():
 
     return render_template("clientes/crear.html", form=form)
 
+
 @bp.route("/<int:id>")
 def detalle(id):
     try:
@@ -50,6 +55,7 @@ def detalle(id):
     except ValueError as e:
         flash(str(e), "danger")
         return redirect(url_for("clientes.listar"))
+
 
 @bp.route("/<int:id>/editar", methods=["GET", "POST"])
 def editar(id):
@@ -69,7 +75,7 @@ def editar(id):
                     "ciudad": form.ciudad.data,
                     "estado": form.estado.data,
                     "codigo_postal": form.codigo_postal.data,
-                    "tipo": form.tipo.data
+                    "tipo": form.tipo.data,
                 }
                 servicio.actualizar_cliente(id, data)
                 flash("Cliente actualizado exitosamente.", "success")
@@ -82,6 +88,7 @@ def editar(id):
         flash(str(e), "danger")
         return redirect(url_for("clientes.listar"))
 
+
 @bp.route("/<int:id>/desactivar", methods=["POST"])
 def desactivar(id):
     try:
@@ -90,6 +97,7 @@ def desactivar(id):
     except ValueError as e:
         flash(str(e), "danger")
     return redirect(url_for("clientes.listar"))
+
 
 @bp.route("/<int:id>/activar", methods=["POST"])
 def activar(id):

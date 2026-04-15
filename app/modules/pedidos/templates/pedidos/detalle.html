@@ -50,22 +50,35 @@
           <table class="min-w-full table-auto">
             <thead class="bg-brew-bg">
               <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-brew-beige uppercase tracking-wider">Receta</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-brew-beige uppercase tracking-wider">Producto</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-brew-beige uppercase tracking-wider">Lotes Solicitados</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-brew-beige uppercase tracking-wider">Rendimiento por Lote</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-brew-beige uppercase tracking-wider">Total Unidades Proyectadas</th>
+                <th class="px-6 py-3 text-center text-xs font-medium text-brew-beige uppercase tracking-wider">Cantidad</th>
+                <th class="px-6 py-3 text-center text-xs font-medium text-brew-beige uppercase tracking-wider">Total Unidades</th>
+                <th class="px-6 py-3 text-center text-xs font-medium text-brew-beige uppercase tracking-wider">Precio Unitario</th>
+                <th class="px-6 py-3 text-center text-xs font-medium text-brew-beige uppercase tracking-wider">Subtotal</th>
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
+              {% set ns = namespace(total=0) %}
               {% for detalle in pedido.detalles %}
+              {% set subtotal = (detalle.precio_unitario or 0) * (detalle.cantidad or detalle.cantidad_lotes or 0) %}
+              {% set ns.total = ns.total + subtotal %}
               <tr class="hover:bg-brew-bg hover:bg-opacity-10">
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ detalle.producto_venta.receta.nombre if detalle.producto_venta.receta else '-' }}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ detalle.producto_venta.nombre }}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ detalle.cantidad_lotes }}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ detalle.producto_venta.receta.cantidad_producida }} unidades</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ '%.2f'|format(detalle.total_unidades) }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">{{ detalle.cantidad or detalle.cantidad_lotes }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">{{ '%.0f'|format(detalle.total_unidades) }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">${{ '%.2f'|format(detalle.precio_unitario) if detalle.precio_unitario else 'N/A' }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-center font-semibold">${{ '%.2f'|format(subtotal) }}</td>
               </tr>
               {% endfor %}
             </tbody>
+            <tfoot class="bg-gray-50">
+              <tr>
+                <td colspan="5" class="px-6 py-4 text-right text-sm font-bold text-gray-700 uppercase">Total</td>
+                <td class="px-6 py-4 text-center text-lg font-bold text-gray-900">${{ '%.2f'|format(ns.total) }}</td>
+              </tr>
+            </tfoot>
           </table>
         </div>
       </div>

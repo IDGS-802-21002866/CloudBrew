@@ -10,9 +10,14 @@ servicio_unidades = UnidadMedidaService()
 
 @bp.route("/")
 def listar():
-    page=request.args.get("page", 1, type=int)
-    paginacion = servicio.listar_presentaciones_paginadas(page, 10)
-    return render_template("presentaciones/listar.html", pagination=paginacion)
+    page = request.args.get("page", 1, type=int)
+    search_term = request.args.get("q", "")
+    paginacion = servicio.listar_presentaciones_paginadas(
+        page, 10, search_term=search_term
+    )
+    return render_template(
+        "presentaciones/listar.html", pagination=paginacion, search_term=search_term
+    )
 
 
 @bp.route("/crear", methods=["GET", "POST"])

@@ -13,19 +13,20 @@ from decimal import Decimal, InvalidOperation
 class RecetaService:
     """Servicio para gestionar recetas, sus detalles y procesos."""
 
-    def listar_recetas(self, incluir_inactivas=True):
-        """Lista todas las recetas activas o incluyendo inactivas."""
+    def listar_recetas(
+        self, page=None, per_page=None, search_term=None, incluir_inactivas=False
+    ):
+        """Lista recetas. Si se pasan page y per_page, retorna resultado paginado."""
+        if page is not None and per_page is not None:
+            return repository.get_paginated_recetas(
+                page=page,
+                per_page=per_page,
+                search_term=search_term,
+                incluir_inactivas=incluir_inactivas,
+            )
         if incluir_inactivas:
             return repository.get_all_recetas_with_inactive()
         return repository.get_all_recetas_activas()
-    
-    def listar_recetas(self, page, per_page, search_term=None, incluir_inactivas=False):
-        return repository.get_paginated_recetas(
-            page=page,
-            per_page=per_page,
-            search_term=search_term,
-            incluir_inactivas=incluir_inactivas
-        )
 
     def obtener_receta(self, id):
         """Obtiene una receta por ID."""

@@ -46,6 +46,7 @@ class PedidoDetalle(db.Model):
     cantidad_lotes: Mapped[int] = mapped_column(Integer, nullable=False)
     total_unidades: Mapped[float] = mapped_column(Float, nullable=False)
     precio_unitario: Mapped[float] = mapped_column(Float, nullable=True)
+    cantidad: Mapped[int] = mapped_column(Integer, nullable=True)
 
     pedido = relationship("Pedido", back_populates="detalles")
     producto_venta = relationship("ProductoVenta")
