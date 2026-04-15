@@ -45,8 +45,7 @@ def crear():
 
     lotes_por_receta = {}
     for l in lotes_raw:
-        # AGREGAMOS ESTE IF: Solo si el lote está activo, lo metemos a la lista
-        if l.activo:
+        if l.cantidad_generada and l.cantidad_generada > 0:
             try:
                 r_id = str(l.produccion.id_receta)
                 if r_id not in lotes_por_receta:

@@ -34,7 +34,7 @@ def listar():
 @bp.route("/crear", methods=["GET", "POST"])
 def crear():
     form = MermaForm()
-    materias = inv_repo.get_all_materias_primas_con_stock()
+    materias = inv_repo.get_all_materias_primas_con_stock_lista()
     form.materia_prima_id.choices = [
         (mp.id, f"{mp.nombre} - Stock: {mp.stock_actual:.2f}") for mp in materias
     ]
