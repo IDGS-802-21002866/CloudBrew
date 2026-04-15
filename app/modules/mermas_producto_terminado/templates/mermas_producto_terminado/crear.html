@@ -6,11 +6,8 @@
         <i class="fa-solid fa-arrow-left mr-3"></i> Registrar Merma de Producto Terminado
     </a>
 
-    <form method="POST" class="bg-white border border-gray-200 rounded-3xl shadow-xl overflow-hidden">
+    <form method="POST" action="{{ url_for('mermas_producto_terminado.crear') }}" class="bg-white border border-gray-200 rounded-3xl shadow-xl overflow-hidden">
         {{ form.csrf_token }}
-
-        <!-- Campo oculto real del form -->
-        {{ form.receta_id(id="js_receta_id") }}
 
         <div class="bg-gray-50/80 px-8 py-5 border-b border-gray-100">
             <span class="font-bold text-gray-500 uppercase tracking-widest text-xs flex items-center">
@@ -22,57 +19,54 @@
         <div class="p-8 space-y-8">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 
-                <!-- Producto (custom input) -->
                 <div class="lg:col-span-2 space-y-4">
-                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">1. Seleccionar Cerveza</label>
-                    {{ form.producto_terminado(
-                        id="producto_input",
-                        class="w-full px-6 py-4 text-lg border-2 border-gray-100 rounded-2xl focus:border-[#6C9AD0] focus:ring-4 focus:ring-[#6C9AD0]/10 outline-none transition-all font-bold text-gray-700 shadow-sm",
-                        list="productos",
-                        placeholder="Busca por nombre...",
-                        autocomplete="off"
+                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">
+                        1. Seleccionar Cerveza
+                    </label>
+
+                    {# Usamos el campo receta_id del form directamente como un select #}
+                    {{ form.receta_id(
+                        id="select_receta",
+                        class="w-full px-6 py-4 text-lg border-2 border-gray-100 rounded-2xl focus:border-[#6C9AD0] focus:ring-4 focus:ring-[#6C9AD0]/10 outline-none transition-all font-bold text-gray-700 shadow-sm"
                     ) }}
-                    <datalist id="productos">
-                        {% for r in recetas %}
-                            <option value="{{ r.nombre }}" data-id="{{ r.id }}" data-stock="{{ r.stock_actual }}">
-                        {% endfor %}
-                    </datalist>
                 </div>
 
-                <!-- Stock -->
                 <div class="lg:col-span-1">
                     <div class="bg-gradient-to-br from-[#6C9AD0] to-[#4A7BB0] rounded-2xl p-6 text-white shadow-lg text-center flex flex-col justify-center h-full">
-                        <span class="text-[10px] font-bold uppercase tracking-widest opacity-80 mb-1">Stock Disponible</span>
+                        <span class="text-[10px] font-bold uppercase tracking-widest opacity-80 mb-1">Stock del Lote</span>
                         <div id="display_stock" class="text-5xl font-black tracking-tighter">--</div>
-                        <span class="text-[10px] font-bold uppercase opacity-80 mt-1">Litros / Unidades</span>
+                        <span class="text-[10px] font-bold uppercase opacity-80 mt-1">Unidades</span>
                     </div>
                 </div>
 
-                <!-- Lotes -->
                 <div class="lg:col-span-2 space-y-4">
-                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">2. Lote de Procedencia</label>
+                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">
+                        2. Lote de Procedencia
+                    </label>
                     {{ form.lote_id(
                         id="select_lote",
                         class="w-full px-6 py-4 border-2 border-gray-100 rounded-2xl bg-gray-50 focus:border-[#6C9AD0] outline-none transition-all font-bold text-gray-600 cursor-pointer shadow-sm appearance-none"
                     ) }}
                 </div>
 
-                <!-- Checkbox -->
                 <div class="lg:col-span-1 flex items-center p-4 bg-blue-50/50 rounded-2xl border-2 border-dashed border-[#6C9AD0]/20">
                     <label class="flex items-center cursor-pointer group w-full">
                         {{ form.es_lote_completo(id="check_lote", class="sr-only") }}
                         <div id="track" class="relative inline-flex h-7 w-12 items-center rounded-full bg-gray-300 transition-colors group-hover:bg-gray-400">
                             <span id="dot" class="inline-block h-5 w-5 transform rounded-full bg-white transition-transform translate-x-1 shadow-md"></span>
                         </div>
-                        <span class="ml-4 text-gray-600 font-bold text-[10px] uppercase tracking-tighter">Desechar lote completo</span>
+                        <span class="ml-4 text-gray-600 font-bold text-[10px] uppercase tracking-tighter">
+                            Desechar lote completo
+                        </span>
                     </label>
                 </div>
             </div>
 
-            <!-- Cantidad + Motivo -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 pt-8 border-t border-gray-100">
                 <div class="lg:col-span-1 space-y-4">
-                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">3. Cantidad</label>
+                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">
+                        3. Cantidad
+                    </label>
                     <div class="relative">
                         {{ form.cantidad(
                             id="input_cantidad",
@@ -85,7 +79,9 @@
                 </div>
 
                 <div class="lg:col-span-2 space-y-4">
-                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">4. Motivo</label>
+                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">
+                        4. Motivo
+                    </label>
                     {{ form.motivo(
                         rows="3",
                         class="w-full px-6 py-4 border-2 border-gray-100 rounded-2xl focus:border-[#4A9062] outline-none resize-none font-medium text-gray-700 bg-gray-50/30",
@@ -95,7 +91,8 @@
             </div>
 
             <div class="flex justify-end pt-4">
-                <button type="submit" id="btn_confirmar" class="w-full lg:w-auto px-12 py-5 bg-[#4A9062] text-white font-bold rounded-2xl hover:bg-[#3d7a52] hover:shadow-lg transition-all shadow-md uppercase tracking-widest text-sm">
+                <button type="submit" id="btn_confirmar"
+                        class="w-full lg:w-auto px-12 py-5 bg-[#4A9062] text-white font-bold rounded-2xl hover:bg-[#3d7a52] hover:shadow-lg transition-all shadow-md uppercase tracking-widest text-sm">
                     Confirmar Registro
                 </button>
             </div>
@@ -104,45 +101,68 @@
 </div>
 
 <script>
+    // Datos de lotes inyectados desde Flask
     const lotesData = JSON.parse('{{ lotes_data | tojson | safe }}');
-    const inputP = document.getElementById('producto_input');
-    const datalist = document.getElementById('productos');
-    const hiddenId = document.getElementById('js_receta_id');
-    const selectL = document.getElementById('select_lote');
-    const displayS = document.getElementById('display_stock');
-    const checkL = document.getElementById('check_lote');
-    const inputC = document.getElementById('input_cantidad');
-    const btnConfirmar = document.getElementById('btn_confirmar');
+    
+    // Referencias DOM
+    const selectReceta = document.getElementById('select_receta');
+    const selectLote = document.getElementById('select_lote');
+    const displayStock = document.getElementById('display_stock');
+    const inputCantidad = document.getElementById('input_cantidad');
+    const checkLote = document.getElementById('check_lote');
+    const track = document.getElementById('track');
+    const dot = document.getElementById('dot');
 
-    inputP.addEventListener('input', function() {
-        const val = this.value;
-        const options = datalist.options;
-        let id = null;
-
-        for (let i = 0; i < options.length; i++) {
-            if (options[i].value === val) {
-                id = options[i].getAttribute('data-id');
-                break;
-            }
+    // 1. Al cambiar la Receta (Cerveza)
+    selectReceta.addEventListener('change', function() {
+        const recetaId = this.value;
+        
+        // Limpiar stock y lotes
+        displayStock.textContent = '--';
+        selectLote.innerHTML = '<option value="">-- Selecciona el lote --</option>';
+        
+        if (recetaId && lotesData[recetaId]) {
+            lotesData[recetaId].forEach(lote => {
+                const opt = document.createElement('option');
+                opt.value = lote.id;
+                opt.textContent = `${lote.codigo} (Disp: ${lote.cantidad})`;
+                // Guardamos el stock en un atributo data para usarlo después
+                opt.setAttribute('data-stock', lote.cantidad);
+                selectLote.appendChild(opt);
+            });
         }
+    });
 
-        if (id) {
-            hiddenId.value = id;
-            displayS.textContent = '0';
-            selectL.innerHTML = '<option value="">-- Elige el lote --</option>';
-            if (lotesData[id]) {
-                lotesData[id].forEach(l => {
-                    const o = document.createElement('option');
-                    o.value = l.id;
-                    o.textContent = `${l.codigo} (Stock: ${l.cantidad})`;
-                    o.dataset.cant = l.cantidad;
-                    selectL.appendChild(o);
-                });
+    // 2. Al cambiar el Lote
+    selectLote.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        const stock = selectedOption.getAttribute('data-stock');
+
+        if (stock) {
+            displayStock.textContent = stock;
+            // Si el check de "lote completo" está activo, actualizar cantidad
+            if (checkLote.checked) {
+                inputCantidad.value = stock;
             }
         } else {
-            hiddenId.value = "";
-            displayS.textContent = '0';
-            selectL.innerHTML = '<option value="">-- Primero selecciona producto --</option>';
+            displayStock.textContent = '--';
+        }
+    });
+
+    // 3. Lógica del Switch (Checkbox)
+    checkLote.addEventListener('change', function() {
+        if (this.checked) {
+            track.classList.replace('bg-gray-300', 'bg-[#6C9AD0]');
+            dot.classList.replace('translate-x-1', 'translate-x-6');
+            
+            // Si hay un lote seleccionado, copiar su stock al input de cantidad
+            const selectedOption = selectLote.options[selectLote.selectedIndex];
+            const stock = selectedOption ? selectedOption.getAttribute('data-stock') : null;
+            if (stock) inputCantidad.value = stock;
+            
+        } else {
+            track.classList.replace('bg-[#6C9AD0]', 'bg-gray-300');
+            dot.classList.replace('translate-x-6', 'translate-x-1');
         }
     });
 </script>

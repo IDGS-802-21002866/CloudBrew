@@ -4,28 +4,22 @@ from wtforms.validators import DataRequired, Length, NumberRange
 
 
 class MermaProductoTerminadoForm(FlaskForm):
-    producto_terminado = StringField(
-        "Producto Terminado",
-        validators=[DataRequired(message="Debe seleccionar un producto terminado activo.")],
-    )
-
     receta_id = SelectField(
         "Receta",
         choices=[("", "Seleccione una receta")],
         validators=[DataRequired(message="Debe seleccionar una receta.")],
-        coerce=int,
+        coerce=lambda x: int(x) if x else None,
         validate_choice=False,
-    )
-
-    es_lote_completo = BooleanField("Es merma de lote completo")
-
+        )
     lote_id = SelectField(
         "Lote",
         choices=[("", "Seleccione un lote")],
         validators=[DataRequired(message="Debe seleccionar un lote.")],
-        coerce=int,
+        coerce=lambda x: int(x) if x else None,
         validate_choice=False,
-    )
+        )
+
+    es_lote_completo = BooleanField("Es merma de lote completo")
 
     cantidad = DecimalField(
         "Cantidad",

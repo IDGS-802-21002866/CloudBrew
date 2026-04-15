@@ -19,9 +19,12 @@ def get_merma_by_id(merma_id):
 
 
 def save(merma):
-    db.session.add(merma)
-    db.session.commit()
-    return merma
+    try:
+        db.session.add(merma)
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        raise ValueError(f"Error al guardar la merma"+str(e))
 
 
 def commit():
