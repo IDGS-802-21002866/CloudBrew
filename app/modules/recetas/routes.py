@@ -26,9 +26,7 @@ proceso_productivo_service = ProcesoProductivoService()
 def listar():
     page = request.args.get("page", 1, type=int)
     recetas = receta_service.listar_recetas(
-        page=page,
-        per_page=10,
-        incluir_inactivas=True
+        page=page, per_page=10, incluir_inactivas=True
     )
     return render_template("recetas/listar.html", pagination=recetas)
 
@@ -484,13 +482,13 @@ def imagen(id):
     try:
         receta = receta_service.obtener_receta(id)
         if not receta.imagen:
-            return redirect(url_for("static", filename="img/logo-solo.png"))
+            return redirect(url_for("static", filename="img/logo-solo-claro.png"))
         response = make_response(receta.imagen)
         response.headers.set("Content-Type", receta.imagen_tipo or "image/jpeg")
         response.headers.set("Cache-Control", "public, max-age=3600")
         return response
     except ValueError:
-        return redirect(url_for("static", filename="img/logo-solo.png"))
+        return redirect(url_for("static", filename="img/logo-solo-claro.png"))
 
 
 @bp.route("/<int:id>/confirmar_desactivar")

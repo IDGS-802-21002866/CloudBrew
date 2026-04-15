@@ -4,12 +4,16 @@
 {% block body %}
 <div class="flex flex-col h-screen overflow-hidden">
 
-  <nav class="bg-brew-bg text-brew-beige shadow-lg px-6 py-4 flex flex-none items-center justify-between z-10">
-    <div></div>
-    <div>
-      <img src="{{ url_for('static', filename='img/logo-solo.png') }}" alt="CloudBrew" class="h-7 w-auto">
+  <nav class="bg-brew-bg text-brew-beige shadow-lg px-6 py-2 flex flex-none items-center justify-between z-10">
+    <div class="w-48 flex justify-start">
+      <a href="{{ url_for('main.index') }}" class="text-brew-beige hover:opacity-80 transition">
+        <i class="fas fa-home text-xl"></i>
+      </a>
     </div>
-    <div class="flex items-center gap-4">
+    <div class="flex-1 flex justify-center">
+      <img src="{{ url_for('static', filename='img/logo-completo-claro.png') }}" alt="CloudBrew" class="h-10 w-auto">
+    </div>
+    <div class="w-48 flex justify-end">
       <a href="{{ url_for('auth.logout') }}" class="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-brew-dark transition">
         <i class="fas fa-user-circle text-2xl"></i>
         <span class="text-sm font-medium">{{ current_user.nombre }}</span>
