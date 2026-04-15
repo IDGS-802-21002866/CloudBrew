@@ -14,10 +14,7 @@ class Produccion(db.Model):
     usuario_id = db.Column(db.Integer, db.ForeignKey("usuario.id"), nullable=True)
 
     usuario = db.relationship("Usuario")
-    receta = db.relationship(
-        'Recetas',
-        back_populates='produccion'
-    )
+    receta = db.relationship("Recetas", back_populates="producciones")
 
     procesos = db.relationship(
         "ProduccionProceso", back_populates="produccion", cascade="all, delete-orphan"
@@ -30,8 +27,6 @@ class Produccion(db.Model):
     pedidos = db.relationship(
         "PedidoProduccion", back_populates="produccion", cascade="all, delete-orphan"
     )
-
-    receta = db.relationship("Recetas", back_populates="producciones")
 
     movimientos_materia_prima = db.relationship(
         "MovimientosMateriaPrima", back_populates="produccion"

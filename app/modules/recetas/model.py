@@ -18,7 +18,6 @@ class Recetas(db.Model):
     )
 
     usuario = db.relationship("Usuario")
-    produccion = db.relationship("Produccion", back_populates="receta")
     detalle = db.relationship("RecetaDetalle", back_populates="receta")
     procesos_receta = db.relationship("ProcesosReceta", back_populates="receta")
     producciones = db.relationship("Produccion", back_populates="receta")
