@@ -59,8 +59,16 @@ def create_app():
 
     app = Flask(__name__)
 
-    # Detectar ambiente: si existe MYSQL_URL es Production, sino Development
-    if os.environ.get("MYSQL_URL"):
+    # Detectar ambiente:
+    # Production si existe MYSQL_URL, MYSQLHOST, o si FLASK_ENV=production
+    # Development en caso contrario
+    is_production = (
+        os.environ.get("MYSQL_URL")
+        or os.environ.get("MYSQLHOST")
+        or os.environ.get("FLASK_ENV") == "production"
+    )
+
+    if is_production:
         app.config.from_object(ProductionConfig)
     else:
         app.config.from_object(DevelopmentConfig)
@@ -69,8 +77,8 @@ def create_app():
     if not app.config.get("SQLALCHEMY_DATABASE_URI"):
         raise RuntimeError(
             "SQLALCHEMY_DATABASE_URI no configurada. "
-            "En Railway: asegúrate de que MYSQL_URL esté disponible en Variables. "
-            "En desarrollo local: asegúrate de que DATABASE_URL esté en .env"
+            "En Railway: verifica que las variables MySQL estén disponibles (MYSQLHOST, MYSQLUSER, MYSQLPASSWORD, MYSQL_DATABASE). "
+            "En desarrollo local: verifica que DATABASE_URL esté en .env"
         )
 
     db.init_app(app)

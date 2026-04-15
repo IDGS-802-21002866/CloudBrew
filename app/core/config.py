@@ -45,10 +45,24 @@ class ProductionConfig(Config):
 
     DEBUG = False
     SESSION_COOKIE_SECURE = True  # Solo HTTPS
-    # Priorizar MYSQL_URL de Railway, fallback a DATABASE_URL
-    SQLALCHEMY_DATABASE_URI = os.environ.get("MYSQL_URL") or os.environ.get(
-        "DATABASE_URL"
-    )
+
+    # Railway expone variables individuales de MySQL
+    # Construir DATABASE_URI a partir de componentes si MYSQL_URL no existe
+    _mysql_url = os.environ.get("MYSQL_URL")
+    if not _mysql_url:
+        # Construir desde componentes individuales de Railway
+        _host = os.environ.get("MYSQLHOST")
+        _user = os.environ.get("MYSQLUSER")
+        _password = os.environ.get("MYSQLPASSWORD")
+        _database = os.environ.get("MYSQL_DATABASE")
+        _port = os.environ.get("MYSQLPORT", "3306")
+
+        if _host and _user and _password and _database:
+            _mysql_url = (
+                f"mysql+pymysql://{_user}:{_password}@{_host}:{_port}/{_database}"
+            )
+
+    SQLALCHEMY_DATABASE_URI = _mysql_url or os.environ.get("DATABASE_URL")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     MAIL_SERVER = os.environ.get("MAIL_SERVER", "smtp.gmail.com")
     MAIL_PORT = int(os.environ.get("MAIL_PORT", 587))
