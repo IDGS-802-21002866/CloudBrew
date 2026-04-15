@@ -105,4 +105,4 @@ with app.app_context():
             print(f"UnidadMedida '{unidad_data['nombre']}' ya existe")
 
 if __name__ == "__main__":
-    app.run()
+    app.run(host="0.0.0.0")
