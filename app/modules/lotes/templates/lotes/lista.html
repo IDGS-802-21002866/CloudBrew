@@ -10,15 +10,15 @@
 
   <div class="bg-white shadow-md rounded-lg overflow-hidden border border-gray-200">
     <table class="min-w-full table-auto">
-      <thead class="bg-gray-50">
-        <tr>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Código de Lote</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Receta</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha de Finalización</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cantidad Generada</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Acciones</th>
-        </tr>
-      </thead>
+      <thead class="bg-brew-bg">
+      <tr>
+        <th class="px-6 py-3 text-left text-xs font-medium text-brew-beige uppercase tracking-wider">Código de Lote</th>
+        <th class="px-6 py-3 text-left text-xs font-medium text-brew-beige uppercase tracking-wider">Receta</th>
+        <th class="px-6 py-3 text-left text-xs font-medium text-brew-beige uppercase tracking-wider">Fecha de Finalización</th>
+        <th class="px-6 py-3 text-left text-xs font-medium text-brew-beige uppercase tracking-wider">Cantidad Generada</th>
+        <th class="px-6 py-3 text-left text-xs font-medium text-brew-beige uppercase tracking-wider">Acciones</th>
+      </tr>
+    </thead>
       <tbody class="bg-white divide-y divide-gray-200">
         {% if lotes %}
           {% for lote in lotes %}
