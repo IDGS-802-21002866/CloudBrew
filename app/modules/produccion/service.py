@@ -16,7 +16,7 @@ from app.modules.produccion.repository import (
     modificar_produccion,
     modificar_produccion_proceso,
     get_produccion_completadas,
-    get_produccion_paginada
+    get_produccion_paginada,
 )
 from .forms import ProduccionForm
 from app.modules.recetas.service import RecetaService
@@ -24,10 +24,12 @@ from app.modules.recetas.service import RecetaService
 receta_service = RecetaService()
 inventario_service = InventarioMateriasPrimasService()
 
-RecetaService=RecetaService()
+RecetaService = RecetaService()
+
+
 class ProduccionService:
 
-    def listar_produccion(self,page=1, per_page=5):
+    def listar_produccion(self, page=1, per_page=5):
         return get_produccion_paginada(page, per_page)
 
     def crear_produccion(self, data: dict, commit=True):
@@ -53,8 +55,10 @@ class ProduccionService:
         if not es_retail:
             for detalle in receta.detalle:
                 cantidad_necesaria = detalle.cantidad * int(cantidad)
-                stock_disponible = inventario_service.obtener_stock_actual_materia_prima(
-                    detalle.materia_prima_id
+                stock_disponible = (
+                    inventario_service.obtener_stock_actual_materia_prima(
+                        detalle.materia_prima_id
+                    )
                 )
                 if stock_disponible < cantidad_necesaria:
                     raise ValueError(
@@ -82,12 +86,12 @@ class ProduccionService:
             if es_retail:
                 self._registrar_movimientos_virtuales(produccion, receta)
 
-            if commit and not db.session.in_transaction():
+            if commit:
                 db.session.commit()
             return produccion
 
         except Exception as e:
-            if not db.session.in_transaction():
+            if commit:
                 db.session.rollback()
             raise ValueError(f"Error interno al crear producción: {str(e)}")
 
@@ -109,7 +113,9 @@ class ProduccionService:
                     tipo=tipo,
                     cantidad=cantidad,
                     motivo=motivo,
-                    usuario_id=current_user.id if current_user.is_authenticated else None,
+                    usuario_id=(
+                        current_user.id if current_user.is_authenticated else None
+                    ),
                     produccion_id=produccion.id_produccion,
                 )
                 db.session.add(movimiento)
@@ -172,11 +178,12 @@ class ProduccionService:
                 and estado_anterior != "Terminado"
                 and form.estado.data == "Terminado"
             ):
-                receta_final = receta_service.obtener_receta(produccion_actual.id_receta)
+                receta_final = receta_service.obtener_receta(
+                    produccion_actual.id_receta
+                )
                 if receta_final:
                     self._registrar_buffer_finalizacion(produccion, receta_final)
-                    if not db.session.in_transaction():
-                        db.session.commit()
+                    db.session.commit()
 
             procesos_query = get_procesos_por_produccion(id_produccion)
 
@@ -243,6 +250,6 @@ class ProduccionService:
 
     def buscar_produccion_por_id(self, id):
         return get_produccion_by_id(id)
-    
+
     def listar_produccion_completada(self, page=1, per_page=5):
         return get_produccion_completadas(page, per_page)

@@ -15,6 +15,10 @@ class Compra(db.Model):
     proveedor = db.relationship("Proveedor", back_populates="compras")
     usuario_id: Mapped[int] = mapped_column(db.ForeignKey("usuario.id"))
     usuario = db.relationship("Usuario")
+    solicitud_compra_id: Mapped[int] = mapped_column(
+        db.ForeignKey("solicitud_compra.id"), nullable=True
+    )
+    solicitud_compra = db.relationship("SolicitudCompra")
     actualizado_por: Mapped[str] = mapped_column(db.String(100), nullable=True)
     detalles = db.relationship(
         "DetalleCompra", back_populates="compra", cascade="all, delete-orphan"
@@ -37,10 +41,13 @@ class DetalleCompra(db.Model):
         "MovimientosMateriaPrima", back_populates="detalle_compra"
     )
 
+
 class SolicitudCompra(db.Model):
     __tablename__ = "solicitud_compra"
     id = db.Column(db.Integer, primary_key=True)
-    materia_prima_id = db.Column(db.Integer, db.ForeignKey("materias_primas.id"), nullable=False)
+    materia_prima_id = db.Column(
+        db.Integer, db.ForeignKey("materias_primas.id"), nullable=False
+    )
     cantidad = db.Column(db.Float, nullable=False)
     origen = db.Column(db.String(20), nullable=False, default="almacen")
     referencia_id = db.Column(db.Integer, db.ForeignKey("pedidos.id"), nullable=True)

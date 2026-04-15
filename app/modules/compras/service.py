@@ -2,6 +2,7 @@ from datetime import datetime
 
 from app import db
 from app.modules.compras import repository
+from app.modules.compras.model import SolicitudCompra
 from app.modules.materias_primas.service import MateriaPrimaService
 from app.modules.presentaciones.service import PresentacionService
 from app.shared.exceptions import ValidacionNegocioException
@@ -57,7 +58,9 @@ class ComprasService:
             )
         return detalles
 
-    def crear_compra(self, proveedor_id, usuario_id, detalles):
+    def crear_compra(
+        self, proveedor_id, usuario_id, detalles, solicitud_compra_id=None
+    ):
         """
         Crear una nueva compra con sus detalles.
 
@@ -65,6 +68,7 @@ class ComprasService:
             proveedor_id: ID del proveedor
             usuario_id: ID del usuario que crea la compra
             detalles: lista de dicts con {materia_prima_id, presentacion_id, cantidad, precio_unitario}
+            solicitud_compra_id: ID de solicitud de compra asociada (opcional)
 
         Returns:
             ID de la compra creada
@@ -91,12 +95,18 @@ class ComprasService:
 
         # Crear compra en base de datos
         compra_id = repository.create_compra(
-            proveedor_id=proveedor_id, usuario_id=usuario_id, detalles=detalles, usuario_actual=current_user.nombre
+            proveedor_id=proveedor_id,
+            usuario_id=usuario_id,
+            detalles=detalles,
+            usuario_actual=current_user.nombre,
+            solicitud_compra_id=solicitud_compra_id,
         )
 
         return compra_id
 
-    def crear_solicitud_compra(self, materia_prima_id, cantidad, origen="almacen", referencia_id=None):
+    def crear_solicitud_compra(
+        self, materia_prima_id, cantidad, origen="almacen", referencia_id=None
+    ):
         if not materia_prima_id:
             raise ValueError("Debe seleccionar una materia prima.")
         if cantidad is None:
@@ -119,6 +129,12 @@ class ComprasService:
 
     def listar_ordenes_compra(self):
         return repository.get_all_compras()
+
+    def listar_ordenes_pendientes(self, page=1, per_page=10):
+        return repository.get_paginated_compras(page, per_page, terminadas=False)
+
+    def listar_ordenes_terminadas(self, page=1, per_page=10):
+        return repository.get_paginated_compras(page, per_page, terminadas=True)
 
     def obtener_compra(self, id):
         compra = repository.get_compra_by_id(id)
@@ -168,9 +184,23 @@ class ComprasService:
             detalle_precios.append((int(detalle_id), precio))
 
         fecha_compra = datetime.now()
-        repository.confirmar_compra(compra_id, detalle_precios, fecha_compra, current_user.nombre)
+        repository.confirmar_compra(
+            compra_id, detalle_precios, fecha_compra, current_user.nombre
+        )
         if solicitud_id:
             repository.mark_solicitud_estado(int(solicitud_id), "Surtida")
+
+        # Auto-marcar solicitudes "En Compra" cuya materia prima coincida con los detalles de esta compra
+        compra = repository.get_compra_by_id(compra_id)
+        if compra:
+            materia_prima_ids = {d.materia_prima_id for d in compra.detalles}
+            solicitudes_en_compra = SolicitudCompra.query.filter(
+                SolicitudCompra.materia_prima_id.in_(materia_prima_ids),
+                SolicitudCompra.estado == "En Compra",
+            ).all()
+            for sol in solicitudes_en_compra:
+                sol.estado = "Surtida"
+            db.session.commit()
 
     def cancelar_compra(self, compra_id):
         compra = self.obtener_compra(compra_id)

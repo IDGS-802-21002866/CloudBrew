@@ -1,14 +1,14 @@
 {% extends 'base.html' %}
 
-{% block title %}Órdenes de Producción{% endblock %}
+{% block title %}Histórico de Producción{% endblock %}
 
 {% block content %}
 <div class="container mx-auto px-4 py-8">
   <div class="flex justify-between items-center mb-6">
-    <h1 class="text-3xl font-bold text-gray-800">Ordenes de Producción Terminadas</h1>
-    <a href="{{ url_for('produccion.crear') }}"
-       class="bg-[#4A9062] hover:opacity-90 text-white font-bold py-2 px-4 rounded shadow-md transition flex items-center">
-      <i class="fa-solid fa-plus mr-2"></i> Nueva Orden
+    <h1 class="text-3xl font-bold text-gray-800">Histórico de Producción</h1>
+    <a href="{{ url_for('produccion.listar') }}"
+       class="bg-[#6C9AD0] hover:opacity-90 text-white font-bold py-2 px-4 rounded shadow-md transition flex items-center">
+      <i class="fa-solid fa-arrow-left mr-2"></i> Ver Pendientes
     </a>
   </div>
 
@@ -30,9 +30,10 @@
       <thead class="bg-brew-bg">
         <tr>
           <th class="px-6 py-3 text-left text-xs font-medium text-brew-beige uppercase tracking-wider">Receta</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-brew-beige uppercase tracking-wider">Pedido</th>
           <th class="px-6 py-3 text-left text-xs font-medium text-brew-beige uppercase tracking-wider">Cantidad</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-brew-beige uppercase tracking-wider">Fecha Inicio</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-brew-beige uppercase tracking-wider">Fecha Fin</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-brew-beige uppercase tracking-wider">Inicio</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-brew-beige uppercase tracking-wider">Fin</th>
           <th class="px-6 py-3 text-left text-xs font-medium text-brew-beige uppercase tracking-wider">Estado</th>
           <th class="px-6 py-3 text-center text-xs font-medium text-brew-beige uppercase tracking-wider">Acciones</th>
         </tr>
@@ -44,23 +45,21 @@
             <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900 col-receta">
               {{ produccion.receta.nombre if produccion.receta else '-' }}
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 font-medium">{{ produccion.cantidad }} L</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ produccion.fecha_inicio or '-' }}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ produccion.fecha_fin or '-' }}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm">
-              {% set estado = (produccion.estado or 'pendiente')|lower %}
-              {% if estado in ['completado', 'completada'] %}
-                <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-bold bg-green-100 text-green-700 border border-green-200">Completada</span>
-              {% elif estado in ['en_proceso', 'en proceso'] %}
-                <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-bold bg-blue-100 text-blue-700 border border-blue-200">En Proceso</span>
-              {% elif estado in ['cancelado', 'cancelada'] %}
-                <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-bold bg-red-100 text-red-700 border border-red-200">Cancelada</span>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+              {% if produccion.pedidos and produccion.pedidos|length > 0 %}
+                {{ produccion.pedidos[0].pedido.folio if produccion.pedidos[0].pedido else '-' }}
               {% else %}
-                <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-bold bg-amber-100 text-amber-700 border border-amber-200">Pendiente</span>
+                <span class="text-gray-400">Manual</span>
               {% endif %}
             </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 font-medium">{{ produccion.cantidad }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ produccion.fecha_inicio.strftime('%d/%m/%Y') if produccion.fecha_inicio else '-' }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ produccion.fecha_fin.strftime('%d/%m/%Y') if produccion.fecha_fin else '-' }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm">
+              <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-bold bg-green-100 text-green-700 border border-green-200">Completada</span>
+            </td>
             <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-              <a href="{{ url_for('produccion.detalle', id=produccion.id_produccion) }}"
+              <a href="{{ url_for('produccion.detalle', id=produccion.id_produccion, origen='historico') }}"
                  class="text-white font-bold py-1.5 px-4 rounded-lg inline-flex items-center shadow-sm hover:opacity-90 transition bg-[#6C9AD0]">
                 <i class="fa-solid fa-eye mr-2"></i> Ver Detalle
               </a>
@@ -69,8 +68,8 @@
           {% endfor %}
         {% else %}
           <tr>
-            <td colspan="6" class="px-6 py-10 text-center text-gray-500">
-              No se encontraron órdenes de producción registradas.
+            <td colspan="7" class="px-6 py-10 text-center text-gray-500">
+              No se encontraron órdenes de producción completadas.
             </td>
           </tr>
         {% endif %}
@@ -80,7 +79,7 @@
 
   <div class="flex justify-center items-center mt-6 space-x-4">
     {% if pagination.has_prev %}
-    <a href="{{ url_for('produccion.listar', page=pagination.prev_num) }}"
+    <a href="{{ url_for('produccion.listar_terminadas', page=pagination.prev_num) }}"
        class="px-4 py-2 bg-[#4A9062] text-white font-bold rounded-lg hover:opacity-90 transition shadow-sm">
       <i class="fa-solid fa-chevron-left mr-2"></i> Anterior
     </a>
@@ -95,7 +94,7 @@
     </span>
 
     {% if pagination.has_next %}
-    <a href="{{ url_for('produccion.listar', page=pagination.next_num) }}"
+    <a href="{{ url_for('produccion.listar_terminadas', page=pagination.next_num) }}"
        class="px-4 py-2 bg-[#4A9062] text-white font-bold rounded-lg hover:opacity-90 transition shadow-sm">
       Siguiente <i class="fa-solid fa-chevron-right ml-2"></i>
     </a>

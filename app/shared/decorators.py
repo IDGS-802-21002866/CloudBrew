@@ -68,3 +68,28 @@ def has_role(role_name):
         return False
 
     return current_user.rol.name == role_name
+
+
+def verificar_rol_o_denegar(*roles):
+    """
+    Para usar en @bp.before_request. Retorna una redirección si el usuario
+    no tiene el rol requerido, o None si el acceso es permitido.
+
+    Uso:
+        @bp.before_request
+        def verificar_acceso():
+            return verificar_rol_o_denegar("admin", "compras")
+    """
+    if not current_user.is_authenticated:
+        flash("Debes iniciar sesión para acceder a este recurso", "warning")
+        return redirect(url_for("auth.login"))
+
+    if not current_user.rol:
+        flash("Tu usuario no tiene un rol asignado", "danger")
+        return redirect(url_for("main.index"))
+
+    if current_user.rol.name not in roles:
+        flash("No tienes permiso para acceder a este recurso.", "danger")
+        return redirect(url_for("main.index"))
+
+    return None

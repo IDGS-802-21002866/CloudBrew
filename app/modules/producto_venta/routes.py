@@ -6,6 +6,13 @@ from app.modules.producto_venta.forms import ProductoVentaForm
 from app.modules.producto_venta.service import ProductoVentaService
 from app.modules.recetas.service import RecetaService
 from app.shared.exceptions import ValidacionNegocioException
+from app.shared.decorators import verificar_rol_o_denegar
+
+
+@bp.before_request
+def verificar_acceso():
+    return verificar_rol_o_denegar("admin", "ventas")
+
 
 servicio = ProductoVentaService()
 receta_service = RecetaService()

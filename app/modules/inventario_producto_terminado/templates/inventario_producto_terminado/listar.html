@@ -6,6 +6,10 @@
 <div class="container mx-auto px-4 py-8">
   <div class="flex justify-between items-center mb-6">
     <h1 class="text-3xl font-bold text-gray-800">Inventario de Producto Terminado</h1>
+    <a href="{{ url_for('inventario_producto_terminado.solicitar_produccion') }}"
+       class="bg-[#4A9062] hover:opacity-90 text-white font-bold py-2.5 px-6 rounded-lg shadow-md transition flex items-center">
+      <i class="fa-solid fa-industry mr-2"></i> Solicitar Producción
+    </a>
   </div>
 
   <div class="mb-6 flex items-center space-x-2">

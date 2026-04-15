@@ -2,7 +2,14 @@ from flask import render_template, request, redirect, url_for, flash
 from app.modules.materias_primas.form import MateriaPrimaForm
 from app.modules.materias_primas.service import MateriaPrimaService
 from app.modules.unidades_medida.service import UnidadMedidaService
+from app.shared.decorators import verificar_rol_o_denegar
 from . import bp
+
+
+@bp.before_request
+def verificar_acceso():
+    return verificar_rol_o_denegar("admin", "almacen", "compras")
+
 
 servicio = MateriaPrimaService()
 servicio_unidades = UnidadMedidaService()
@@ -10,7 +17,7 @@ servicio_unidades = UnidadMedidaService()
 
 @bp.route("/")
 def listar():
-    page=request.args.get("page", 1, type=int)
+    page = request.args.get("page", 1, type=int)
     pagination = servicio.listar_materias_paginadas(page=page, per_page=5)
     return render_template("materias_primas/listar.html", pagination=pagination)
 

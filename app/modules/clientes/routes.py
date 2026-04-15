@@ -1,7 +1,14 @@
 from flask import render_template, request, redirect, url_for, flash
 from app.modules.clientes.forms import ClienteForm
 from app.modules.clientes.service import ClienteService
+from app.shared.decorators import verificar_rol_o_denegar
 from . import bp
+
+
+@bp.before_request
+def verificar_acceso():
+    return verificar_rol_o_denegar("admin", "ventas")
+
 
 servicio = ClienteService()
 

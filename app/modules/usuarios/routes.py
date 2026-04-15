@@ -1,7 +1,15 @@
 from flask import flash, render_template, request, redirect, url_for
 from app.modules.usuarios.form import UsuarioForm, UsuarioFormAux
 from app.modules.usuarios.service import UsuarioService
+from app.shared.decorators import verificar_rol_o_denegar
+from app.shared.exceptions import ValidacionNegocioException
 from . import bp
+
+
+@bp.before_request
+def verificar_acceso():
+    return verificar_rol_o_denegar("admin")
+
 
 servicio = UsuarioService()
 
@@ -12,9 +20,7 @@ def listar():
         page = request.args.get("page", 1, type=int)
         querry = request.args.get("querry", "", type=str)
         pag = servicio.obtener_usuarios(pagina=page, por_pagina=5, querry=querry)
-        return render_template(
-            "usuarios/listar.html", pagination=pag
-        )
+        return render_template("usuarios/listar.html", pagination=pag)
 
     except ValueError as e:
         flash(str(e), "danger")
@@ -58,7 +64,7 @@ def editar(id):
                 servicio.actualizar_usuario(id, form)
                 flash("Usuario actualizado correctamente", "success")
                 return redirect(url_for("usuarios.detalle", id=id))
-            except ValueError as e:
+            except (ValueError, ValidacionNegocioException) as e:
                 flash(str(e), "danger")
 
         return render_template("usuarios/crear.html", form=form, usuario=usuario)
