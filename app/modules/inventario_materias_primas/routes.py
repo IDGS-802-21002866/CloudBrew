@@ -1,4 +1,4 @@
-from flask import flash, redirect, render_template, url_for
+from flask import flash, redirect, render_template, request, url_for
 
 from . import bp
 from app.modules.inventario_materias_primas.service import (
@@ -10,9 +10,15 @@ servicio = InventarioMateriasPrimasService()
 
 @bp.route("/")
 def listar():
-    inventario = servicio.listar_materias_primas_con_stock()
+    page = request.args.get('page', 1, type=int)
+    search_term = request.args.get('q', '')
+    
+    pagination = servicio.listar_materias_primas_paginadas(page=page, per_page=10, search_term=search_term)
+    
     return render_template(
-        "inventario_materias_primas/listar.html", inventario=inventario
+        "inventario_materias_primas/listar.html", 
+        pagination=pagination,
+        search_term=search_term
     )
 
 
