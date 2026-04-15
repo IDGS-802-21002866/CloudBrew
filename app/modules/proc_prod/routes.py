@@ -1,7 +1,14 @@
 from flask import flash, render_template, request, redirect, url_for
 from app.modules.proc_prod.form import ProcesoProductivoForm
 from app.modules.proc_prod.service import ProcesoProductivoService
+from app.shared.decorators import verificar_rol_o_denegar
 from . import bp
+
+
+@bp.before_request
+def verificar_acceso():
+    return verificar_rol_o_denegar("admin", "almacen")
+
 
 servicio = ProcesoProductivoService()
 

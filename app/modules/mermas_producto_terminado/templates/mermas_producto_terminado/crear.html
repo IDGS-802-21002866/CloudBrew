@@ -1,13 +1,10 @@
 {% extends 'base.html' %}
-{% from '_macros.html' import mostrar_flashes %}
 
 {% block content %}
 <div class="p-10 max-w-6xl mx-auto">
     <a href="{{ url_for('mermas_producto_terminado.listar') }}" class="flex items-center text-2xl font-black mb-10 hover:text-gray-600 transition">
         <i class="fa-solid fa-arrow-left mr-3"></i> Registrar Merma de Producto Terminado
     </a>
-
-    {{ mostrar_flashes() }}
 
     <form method="POST" class="bg-white border border-gray-100 rounded-[3rem] shadow-2xl overflow-hidden">
         {{ form.csrf_token }}

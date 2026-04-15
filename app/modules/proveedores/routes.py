@@ -1,7 +1,14 @@
 from flask import render_template, request, redirect, url_for, flash
 from app.modules.proveedores.form import ProveedorForm
 from app.modules.proveedores.service import ProveedorService
+from app.shared.decorators import verificar_rol_o_denegar
 from . import bp
+
+
+@bp.before_request
+def verificar_acceso():
+    return verificar_rol_o_denegar("admin", "compras")
+
 
 servicio = ProveedorService()
 
@@ -10,7 +17,9 @@ servicio = ProveedorService()
 def listar():
     try:
         page = request.args.get("page", 1, type=int)
-        pagination = servicio.obtener_proveedores_paginados(page, per_page=5, busqueda=None)
+        pagination = servicio.obtener_proveedores_paginados(
+            page, per_page=5, busqueda=None
+        )
         return render_template(
             "proveedores/listar.html",
             pagination=pagination,

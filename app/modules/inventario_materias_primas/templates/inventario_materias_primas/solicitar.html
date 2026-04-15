@@ -11,21 +11,13 @@
             <div class="mb-4">
                 <label class="block text-sm font-bold text-gray-700 mb-2">Materia Prima</label>
                 {% if materia %}
-                    {# Intento obtener la unidad de forma ultra segura #}
-                    {% set abr = materia.tipo_medida.unidad_base if materia.tipo_medida is defined else 'unidades' %}
-                    <input type="hidden" name="materia_prima_id" id="materia-hidden" value="{{ materia.id }}" data-unidad="{{ abr }}">
+                    <input type="hidden" name="materia_prima_id" id="materia-hidden" value="{{ materia.id }}" data-unidad="{{ unidad_hint }}">
                     <input type="text" value="{{ materia.nombre }}" class="w-full p-2 border-2 border-gray-400 rounded-lg bg-gray-50" readonly>
                 {% else %}
                     <select name="materia_prima_id" id="materia-select" class="w-full p-2 border-2 border-gray-400 rounded-lg focus:border-[#6C9AD0] outline-none" required>
                         <option value="" data-unidad="unidades">-- Selecciona una materia --</option>
                         {% for m in materias %}
-                            {# Verificamos si m es objeto o dict para no tronar #}
-                            {% if m.tipo_medida is defined %}
-                                {% set unidad_m = m.tipo_medida.unidad_base %}
-                            {% else %}
-                                {% set unidad_m = 'unidades' %}
-                            {% endif %}
-                            <option value="{{ m.id }}" data-unidad="{{ unidad_m }}">{{ m.nombre }}</option>
+                            <option value="{{ m.id }}" data-unidad="{{ m.abr }}">{{ m.nombre }} — {{ m.estado_stock | replace('_', ' ') | upper }}</option>
                         {% endfor %}
                     </select>
                 {% endif %}

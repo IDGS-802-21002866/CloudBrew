@@ -41,7 +41,6 @@ class DetalleVenta(db.Model):
     )
     cantidad: Mapped[int] = mapped_column(db.Integer, nullable=False)
     precio_unitario: Mapped[float] = mapped_column(db.Float, nullable=True)
-    subtotal: Mapped[float] = mapped_column(db.Float, nullable=True)
 
     # Relaciones
     venta = relationship("Venta", back_populates="detallesVenta")

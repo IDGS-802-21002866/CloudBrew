@@ -2,14 +2,21 @@ from flask import Blueprint, render_template, redirect, request, url_for, flash
 
 from app.modules.ventas.service import VentaService
 from app.shared.exceptions import EntidadNoEncontradaError
+from app.shared.decorators import verificar_rol_o_denegar
 from . import bp
+
+
+@bp.before_request
+def verificar_acceso():
+    return verificar_rol_o_denegar("admin", "ventas")
+
 
 venta_service = VentaService()
 
 
 @bp.route("/")
 def listar():
-    page=request.args.get("page", 1, type=int)
+    page = request.args.get("page", 1, type=int)
     ventas = venta_service.listar_ventas_paginadas(page=page, per_page=10)
     return render_template("ventas/listar.html", pagination=ventas)
 

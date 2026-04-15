@@ -5,6 +5,13 @@ from .forms import MermaForm
 from .service import MermaMateriaPrimaService
 from app.modules.inventario_materias_primas import repository as inv_repo
 from app.modules.unidades_medida.service import UnidadMedidaService
+from app.shared.decorators import verificar_rol_o_denegar
+
+
+@bp.before_request
+def verificar_acceso():
+    return verificar_rol_o_denegar("admin", "almacen")
+
 
 medida_service = UnidadMedidaService()
 servicio = MermaMateriaPrimaService()

@@ -13,7 +13,14 @@ from werkzeug.utils import secure_filename
 from app.modules.respaldo.forms import backup_form, restore_form
 from app.modules.respaldo.repository import restore_db
 from app.modules.respaldo.service import RespaldoService
+from app.shared.decorators import verificar_rol_o_denegar
 from . import bp
+
+
+@bp.before_request
+def verificar_acceso():
+    return verificar_rol_o_denegar("admin")
+
 
 service = RespaldoService()
 

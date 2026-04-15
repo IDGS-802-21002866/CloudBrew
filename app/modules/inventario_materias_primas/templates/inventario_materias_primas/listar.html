@@ -1,11 +1,9 @@
 {% extends 'base.html' %}
-{% from '_macros.html' import mostrar_flashes %}
 
 {% block title %}Inventario de Materias Primas{% endblock %}
 
 {% block content %}
 <div class="container mx-auto px-4 py-8">
-    {{ mostrar_flashes() }}
 
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-3xl font-bold text-gray-800">Inventario de Materias Primas</h1>
@@ -93,10 +91,12 @@
                                 Ver Detalle
                             </a>
 
+                            {% if item.estado_stock != 'disponible' %}
                             <a href="{{ url_for('inventario_materias_primas.solicitar', id=item.id) }}"
                                 class="bg-[#4A9062] text-white font-bold py-1.5 px-4 rounded-lg shadow-sm hover:opacity-90 transition text-xs">
                                 Solicitar
                             </a>
+                            {% endif %}
                         </div>
                     </td>
                 </tr>

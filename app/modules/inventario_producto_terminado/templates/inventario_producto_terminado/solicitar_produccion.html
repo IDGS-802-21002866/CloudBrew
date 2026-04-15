@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block title %}Solicitar Producción{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+
+  <div class="flex justify-between items-center mb-6">
+    <a href="{{ url_for('inventario_producto_terminado.listar') }}" class="flex items-center text-2xl font-bold text-gray-800 hover:text-gray-600 transition">
+      <i class="fa-solid fa-chevron-left mr-3"></i> Solicitar Producción
+    </a>
+  </div>
+
+  <div class="mb-6">
+    <p class="text-gray-600">
+      <i class="fa-solid fa-circle-info mr-2 text-blue-500"></i>
+      Solo se muestran recetas con stock nulo. Seleccione la cantidad de lotes a producir.
+    </p>
+  </div>
+
+  <div class="bg-white shadow-md rounded-lg overflow-hidden border border-gray-200">
+    <table class="min-w-full table-auto">
+      <thead class="bg-brew-bg">
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium text-brew-beige uppercase tracking-wider">Receta</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-brew-beige uppercase tracking-wider">Descripción</th>
+          <th class="px-6 py-3 text-center text-xs font-medium text-brew-beige uppercase tracking-wider">Piezas por Lote</th>
+          <th class="px-6 py-3 text-center text-xs font-medium text-brew-beige uppercase tracking-wider">Stock Actual</th>
+          <th class="px-6 py-3 text-center text-xs font-medium text-brew-beige uppercase tracking-wider">Cantidad Lotes</th>
+          <th class="px-6 py-3 text-center text-xs font-medium text-brew-beige uppercase tracking-wider">Acciones</th>
+        </tr>
+      </thead>
+      <tbody class="bg-white divide-y divide-gray-200">
+        {% if pagination.items %}
+          {% for item in pagination.items %}
+          <tr class="hover:bg-gray-50 transition-colors">
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">{{ item.nombre }}</td>
+            <td class="px-6 py-4 text-sm text-gray-600">{{ item.descripcion or 'N/A' }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-center font-bold">{{ item.cantidad_producida }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-center">
+              <span class="px-3 py-1 text-xs font-bold rounded-full bg-red-100 text-red-800 border border-red-200 uppercase">Sin Stock</span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-center">
+              <form method="POST" action="{{ url_for('inventario_producto_terminado.crear_solicitud_produccion', receta_id=item.id) }}" class="flex items-center justify-center gap-2">
+                <input type="number" name="cantidad" value="1" min="1" max="10"
+                       class="w-20 px-2 py-1 border-2 border-gray-400 rounded-lg text-center focus:border-[#6C9AD0] outline-none">
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-center">
+                <button type="submit" class="bg-[#4A9062] text-white font-bold py-1.5 px-4 rounded-lg shadow-sm hover:opacity-90 transition text-xs">
+                  <i class="fa-solid fa-industry mr-1"></i> Producir
+                </button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="6" class="px-6 py-10 text-center text-gray-500">
+              <i class="fa-solid fa-check-circle text-green-500 mr-2"></i>
+              Todas las recetas tienen stock disponible. No hay solicitudes pendientes.
+            </td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if pagination.pages > 1 %}
+  <div class="flex justify-center items-center mt-6 space-x-4">
+    {% if pagination.has_prev %}
+    <a href="{{ url_for('inventario_producto_terminado.solicitar_produccion', page=pagination.prev_num) }}"
+       class="px-4 py-2 bg-[#4A9062] text-white font-bold rounded-lg hover:opacity-90 transition shadow-sm">
+      <i class="fa-solid fa-chevron-left mr-2"></i> Anterior
+    </a>
+    {% endif %}
+
+    <span class="text-gray-600 font-medium bg-white px-4 py-2 rounded-lg border border-gray-200">
+      Página <span class="font-bold text-gray-900">{{ pagination.page }}</span> de <span class="font-bold text-gray-900">{{ pagination.pages }}</span>
+    </span>
+
+    {% if pagination.has_next %}
+    <a href="{{ url_for('inventario_producto_terminado.solicitar_produccion', page=pagination.next_num) }}"
+       class="px-4 py-2 bg-[#4A9062] text-white font-bold rounded-lg hover:opacity-90 transition shadow-sm">
+      Siguiente <i class="fa-solid fa-chevron-right ml-2"></i>
+    </a>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

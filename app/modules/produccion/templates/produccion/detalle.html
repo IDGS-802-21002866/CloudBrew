@@ -3,7 +3,8 @@
 {% block content %}
 <div class="p-6 max-w-6xl mx-auto">
 
-  <a href="{{ url_for('produccion.listar') }}" class="flex items-center text-2xl font-bold mb-6 hover:text-gray-600 transition">
+  {% set origen = request.args.get('origen', '') %}
+  <a href="{{ url_for('produccion.listar_terminadas') if origen == 'historico' else url_for('produccion.listar') }}" class="flex items-center text-2xl font-bold mb-6 hover:text-gray-600 transition">
     <i class="fa-solid fa-chevron-left mr-3"></i>
     Orden de Producción #{{ produccion.id_produccion }}
   </a>
