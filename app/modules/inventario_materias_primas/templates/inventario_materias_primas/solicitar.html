@@ -2,26 +2,37 @@
 {% block content %}
 <div class="container mx-auto px-4 py-8">
     <div class="max-w-2xl mx-auto bg-white shadow-md rounded-lg p-8 border border-gray-400">
-        <h1 class="text-2xl font-bold text-gray-800 mb-6">Nueva Solicitud de Compra</h1>
-        
+        <div class="mb-6">
+            <a href="{{ url_for('inventario_materias_primas.listar') }}" class="flex items-center text-2xl font-bold text-gray-800 hover:text-[#4A9062] transition">
+                <i class="fa-solid fa-chevron-left mr-3"></i> Nueva Solicitud de Compra
+            </a>
+        </div>
         <form method="POST">
             <div class="mb-4">
                 <label class="block text-sm font-bold text-gray-700 mb-2">Materia Prima</label>
                 {% if materia %}
-                    <input type="hidden" name="materia_prima_id" value="{{ materia.id }}">
+                    {# Intento obtener la unidad de forma ultra segura #}
+                    {% set abr = materia.tipo_medida.unidad_base if materia.tipo_medida is defined else 'unidades' %}
+                    <input type="hidden" name="materia_prima_id" id="materia-hidden" value="{{ materia.id }}" data-unidad="{{ abr }}">
                     <input type="text" value="{{ materia.nombre }}" class="w-full p-2 border-2 border-gray-400 rounded-lg bg-gray-50" readonly>
                 {% else %}
-                    <select name="materia_prima_id" class="w-full p-2 border-2 border-gray-400 rounded-lg focus:border-[#6C9AD0] outline-none" required>
-                        <option value="">-- Selecciona una materia --</option>
+                    <select name="materia_prima_id" id="materia-select" class="w-full p-2 border-2 border-gray-400 rounded-lg focus:border-[#6C9AD0] outline-none" required>
+                        <option value="" data-unidad="unidades">-- Selecciona una materia --</option>
                         {% for m in materias %}
-                            <option value="{{ m.id }}">{{ m.nombre }}</option>
+                            {# Verificamos si m es objeto o dict para no tronar #}
+                            {% if m.tipo_medida is defined %}
+                                {% set unidad_m = m.tipo_medida.unidad_base %}
+                            {% else %}
+                                {% set unidad_m = 'unidades' %}
+                            {% endif %}
+                            <option value="{{ m.id }}" data-unidad="{{ unidad_m }}">{{ m.nombre }}</option>
                         {% endfor %}
                     </select>
                 {% endif %}
             </div>
 
             <div class="mb-4">
-                <label class="block text-sm font-bold text-gray-700 mb-2">Cantidad Necesaria</label>
+                <label id="cantidad-label" class="block text-sm font-bold text-gray-700 mb-2">Cantidad Necesaria</label>
                 <input type="number" name="cantidad" step="0.01" class="w-full p-2 border-2 border-gray-400 rounded-lg focus:border-[#6C9AD0] outline-none" placeholder="0.00" required>
             </div>
 
@@ -30,8 +41,7 @@
                 <textarea name="motivo" class="w-full p-2 border-2 border-gray-400 rounded-lg focus:border-[#6C9AD0] outline-none" rows="3" placeholder="Ej: Stock crítico para fin de semana..."></textarea>
             </div>
 
-            <div class="flex justify-end space-x-4 pt-4 border-t border-gray-100">
-                <a href="{{ url_for('inventario_materias_primas.listar') }}" class="px-4 py-2 text-gray-500 font-bold hover:text-gray-700 transition">Cancelar</a>
+            <div class="flex justify-end pt-4 border-t border-gray-100">
                 <button type="submit" class="bg-[#4A9062] text-white font-bold py-2 px-8 rounded shadow-md hover:opacity-90 transition">
                     Enviar a Compras
                 </button>
@@ -39,4 +49,32 @@
         </form>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const select = document.getElementById('materia-select');
+        const hidden = document.getElementById('materia-hidden');
+        const label = document.getElementById('cantidad-label');
+
+        function updateLabel(unidad) {
+            if (label) {
+                const text = unidad ? unidad : 'unidades';
+                label.textContent = `Cantidad Necesaria (${text})`;
+            }
+        }
+
+        if (select) {
+            select.addEventListener('change', function () {
+                const option = this.options[this.selectedIndex];
+                updateLabel(option.getAttribute('data-unidad'));
+            });
+            // Carga inicial
+            if(select.selectedIndex >= 0) {
+                updateLabel(select.options[select.selectedIndex].getAttribute('data-unidad'));
+            }
+        } else if (hidden) {
+            updateLabel(hidden.getAttribute('data-unidad'));
+        }
+    });
+</script>
 {% endblock %}

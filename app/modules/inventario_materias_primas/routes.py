@@ -1,11 +1,13 @@
 from flask import flash, redirect, render_template, request, url_for
 
 from . import bp
+from app.modules.compras.service import ComprasService
 from app.modules.inventario_materias_primas.service import (
     InventarioMateriasPrimasService,
 )
 
 servicio = InventarioMateriasPrimasService()
+compras_service = ComprasService()
 
 
 @bp.route("/")
@@ -38,7 +40,8 @@ def detalle(id):
         flash(str(e), "danger")
         return redirect(url_for("inventario_materias_primas.listar"))
     
-# Esta ruta es "todoterreno": funciona para /solicitar y para /solicitar/5
+# app/modules/inventario_materias_primas/routes.py
+
 @bp.route("/solicitar", defaults={'id': None}, methods=["GET", "POST"])
 @bp.route("/solicitar/<int:id>", methods=["GET", "POST"])
 def solicitar(id):
@@ -46,11 +49,9 @@ def solicitar(id):
     materias = []
     
     if id:
-        # Caso: venimos de una fila específica (botón de la tabla)
         materia = servicio.obtener_materia_prima(id)
     else:
-        # Caso: venimos del botón verde de arriba (general)
-        # Cargamos todas para que el usuario elija en el select
+        # Cargamos materias para el select
         materias = servicio.listar_materias_primas_paginadas(per_page=100).items
 
     if request.method == "POST":
@@ -58,10 +59,15 @@ def solicitar(id):
         cantidad = request.form.get("cantidad")
         motivo = request.form.get("motivo")
         
-        # Aquí es donde se conectaría con la lógica de SolicitudCompra
-        # Por ahora el flash para confirmar que funciona
-        nombre_materia = materia.nombre if materia else "Materia"
-        flash(f"Solicitud de {cantidad} para {nombre_materia} enviada a Compras", "success")
-        return redirect(url_for("inventario_materias_primas.listar"))
-        
+        try:
+            # Quitamos el flash de aquí. El servicio se encarga.
+            compras_service.crear_solicitud_compra(
+                materia_prima_id=materia_id,
+                cantidad=float(cantidad),
+                origen="almacen",
+            )
+            return redirect(url_for("inventario_materias_primas.listar"))
+        except ValueError as e:
+            flash(str(e), "danger")
+
     return render_template("inventario_materias_primas/solicitar.html", materia=materia, materias=materias)

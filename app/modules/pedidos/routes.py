@@ -5,12 +5,14 @@ from .forms import PedidoForm, PedidoDetalleForm
 from .service import PedidoService
 from app.modules.clientes.service import ClienteService
 from app.modules.producto_venta.service import ProductoVentaService
+from app.modules.recetas.service import RecetaService
 from app.modules.inventario_materias_primas.service import InventarioMateriasPrimasService
 
 # Inicialización de servicios
 pedido_service = PedidoService()
 cliente_service = ClienteService()
 producto_venta_service = ProductoVentaService()
+receta_service = RecetaService()
 inventario_service = InventarioMateriasPrimasService()
 
 
@@ -51,6 +53,7 @@ def crear():
         c for c in cliente_service.listar_clientes() if c.tipo.lower() == "retail"
     ]
     productos_venta = producto_venta_service.listar_por_tipo("retail")
+    recetas = receta_service.listar_recetas(incluir_inactivas=False)
     detalle_form.producto_venta_id.choices = [(p.id, p.nombre) for p in productos_venta]
 
     if "pedido_detalles" not in session:
@@ -150,6 +153,7 @@ def crear():
         detalle_form=detalle_form,
         clientes_retail=clientes_retail,
         productos_venta=productos_venta,
+        recetas=recetas,
         detalles=session["pedido_detalles"],
         cliente_nombre_default=cliente_nombre_default,
         detalle_agregado=detalle_agregado,
