@@ -39,6 +39,8 @@ def create_app():
     from app.modules.recetas import bp as recetas_bp
     from app.modules.lotes import bp as lotes_bp
     from app.modules.produccion import bp as produccion_bp
+    from app.modules.bitacora_login import bp as bitacora_login_bp
+    from app.modules.respaldo import bp as backup_bp
 
     from app.modules.inventario_materias_primas import (
         bp as inventario_materias_primas_bp,
@@ -51,6 +53,8 @@ def create_app():
     from app.modules.procesos_produccion import bp as procesos_produccion_bp
     from app.modules.ventas import bp as ventas_bp
     from app.modules.costos import bp as costos_bp
+    from app.modules.tienda import bp as tienda_bp
+    from app.modules.producto_venta import bp as producto_venta_bp
 
     app = Flask(__name__)
     app.config.from_object(DevelopmentConfig)
@@ -59,6 +63,10 @@ def create_app():
     Session(app)
     captcha.init_app(app)
     app.jinja_env.globals.update(captcha=captcha)
+
+    from flask_wtf.csrf import generate_csrf
+
+    app.jinja_env.globals["csrf_token"] = generate_csrf
 
     migrate.init_app(app, db)
     mail.init_app(app)
@@ -97,13 +105,27 @@ def create_app():
         procesos_produccion_bp,
         ventas_bp,
         costos_bp,
+        bitacora_login_bp,
+        backup_bp,
+        producto_venta_bp,
     ]
 
     for bp in blueprints_protegidos:
         bp.before_request(login_required(lambda: None))
 
     app.register_blueprint(auth_bp)
+    app.register_blueprint(tienda_bp)
+
     for bp in blueprints_protegidos:
         app.register_blueprint(bp)
+
+    @app.after_request
+    def no_cache(response):
+        response.headers["Cache-Control"] = (
+            "no-store, no-cache, must-revalidate, post-check=0, pre-check=0, max-age=0"
+        )
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+        return response
 
     return app

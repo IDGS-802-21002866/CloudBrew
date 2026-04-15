@@ -1,5 +1,6 @@
 from app.modules.presentaciones import repository
 from app.modules.presentaciones.model import Presentacion
+from flask_login import current_user
 
 
 class PresentacionService:
@@ -24,6 +25,8 @@ class PresentacionService:
             nombre=nombre,
             tipo_medida_id=data.get("tipo_medida_id"),
             cantidad_equivalente=float(data.get("cantidad_equivalente")),
+            uso=data.get("uso", "comercial"),
+            usuario_id=current_user.id if current_user.is_authenticated else None,
         )
         return repository.create_presentacion(nueva)
 
@@ -32,15 +35,19 @@ class PresentacionService:
         p.nombre = data.get("nombre").strip().capitalize()
         p.tipo_medida_id = data.get("tipo_medida_id")
         p.cantidad_equivalente = float(data.get("cantidad_equivalente"))
-        repository.update_db()
-        return p
+        p.uso = data.get("uso", p.uso)
+        p.usuario_id = (
+            current_user.id if current_user.is_authenticated else p.usuario_id
+        )
+        return repository.update_presentacion(p)
 
     def desactivar(self, id):
         p = self.obtener_por_id(id)
-        p.activo = False
-        repository.update_db()
+        p.usuario_id = (
+            current_user.id if current_user.is_authenticated else p.usuario_id
+        )
+        return repository.deactivate_presentacion(p)
 
     def activar(self, id):
         p = self.obtener_por_id(id)
-        p.activo = True
-        repository.update_db()
+        return repository.activate_presentacion(p)

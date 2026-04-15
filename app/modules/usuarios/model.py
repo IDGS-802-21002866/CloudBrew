@@ -30,6 +30,7 @@ class Usuario(db.Model, UserMixin):
     reset_token_expiry: Mapped[datetime] = mapped_column(DateTime, nullable=True)
     rol_id: Mapped[int] = mapped_column(ForeignKey("rol.id"))
     rol: Mapped["Rol"] = relationship(back_populates="usuarios")
+    actualizado_por: Mapped[str] = mapped_column(String(100), nullable=True)
     movimientos_materia_prima = relationship(
         "MovimientosMateriaPrima", back_populates="usuario"
     )

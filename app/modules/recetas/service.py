@@ -1,8 +1,13 @@
+from decimal import Decimal
+
+from flask_login import current_user
 from app.modules.recetas import repository
 from app.modules.recetas.model import Recetas, RecetaDetalle, ProcesosReceta
 from app.modules.materias_primas.model import MateriaPrima
 from app.modules.proc_prod.model import ProcesoProductivo
+from app.modules.unidades_medida.model import UnidadMedida
 from app.shared.exceptions import ValidacionNegocioException
+from decimal import Decimal, InvalidOperation
 
 
 class RecetaService:
@@ -44,11 +49,9 @@ class RecetaService:
             descripcion=data.get("descripcion"),
             cantidad_producida=cantidad,
             activo=True,
-            precio_venta=(
-                float(data["precio_venta"]) if data.get("precio_venta") else None
-            ),
             imagen=data.get("imagen"),
             imagen_tipo=data.get("imagen_tipo"),
+            usuario_id=current_user.id if current_user.is_authenticated else None,
         )
         return repository.create_receta(nueva_receta)
 
@@ -71,11 +74,12 @@ class RecetaService:
             )
 
         receta.cantidad_producida = cantidad
-        precio = data.get("precio_venta")
-        receta.precio_venta = float(precio) if precio else None
         if data.get("imagen") is not None:
             receta.imagen = data.get("imagen")
             receta.imagen_tipo = data.get("imagen_tipo")
+        receta.usuario_id = (
+            current_user.id if current_user.is_authenticated else receta.usuario_id
+        )
         repository.update_db()
         return receta
 
@@ -86,6 +90,9 @@ class RecetaService:
             raise ValueError("Receta no encontrada.")
         if receta.activo:
             receta.activo = False
+            receta.usuario_id = (
+                current_user.id if current_user.is_authenticated else receta.usuario_id
+            )
             repository.update_db()
         else:
             raise ValidacionNegocioException("La receta ya está desactivada.")
@@ -113,8 +120,8 @@ class RecetaService:
                         "materia_prima_id": item["materia_prima_id"],
                         "materia_prima_nombre": materia_prima.nombre,
                         "cantidad": item["cantidad"],
-                        "tipo_medida": (
-                            materia_prima.tipo_medida.nombre
+                        "unidad": (
+                            materia_prima.tipo_medida.unidad_base
                             if materia_prima.tipo_medida
                             else ""
                         ),
@@ -123,29 +130,38 @@ class RecetaService:
         return detalles_expandidos
 
     def agregar_al_carrito_detalles(self, carrito, materia_prima_id, cantidad):
-        """Agrega una materia prima al carrito de detalles."""
         materia_prima = MateriaPrima.query.get(materia_prima_id)
         if not materia_prima:
             raise ValidacionNegocioException("Materia prima no encontrada.")
 
         try:
-            cantidad = float(cantidad)
-        except (ValueError, TypeError):
+            if cantidad is None or str(cantidad).strip() == "":
+                raise ValidacionNegocioException("La cantidad es obligatoria.")
+
+            # 👇 normaliza entrada (cantidad ya en unidad base)
+            cantidad_str = str(cantidad).replace(",", ".").strip()
+            cantidad_decimal = Decimal(cantidad_str)
+
+        except (InvalidOperation, ValueError, TypeError):
             raise ValidacionNegocioException("La cantidad debe ser un número válido.")
 
-        if cantidad <= 0:
+        if cantidad_decimal <= 0:
             raise ValidacionNegocioException("La cantidad debe ser mayor a 0.")
 
-        # Verificar si ya existe en el carrito
+        # 👇 convertir a float para session (ya en unidad base)
+        cantidad_final = float(cantidad_decimal)
+
         existe = False
         for item in carrito:
             if item["materia_prima_id"] == materia_prima_id:
-                item["cantidad"] += cantidad
+                item["cantidad"] += cantidad_final
                 existe = True
                 break
 
         if not existe:
-            carrito.append({"materia_prima_id": materia_prima_id, "cantidad": cantidad})
+            carrito.append(
+                {"materia_prima_id": materia_prima_id, "cantidad": cantidad_final}
+            )
 
         return carrito
 

@@ -18,6 +18,13 @@ def create_cliente(cliente):
 def update_db():
     db.session.commit()
 
+def update_cliente(cliente):
+    db.session.commit()
+
+def deactivate_cliente(cliente):
+    cliente.activo = False
+    db.session.commit()
+
 def get_paginated_clientes(page, per_page, search_term=None):
     query = Cliente.query
     

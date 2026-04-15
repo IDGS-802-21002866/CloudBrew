@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import campo_nuevo %}
+
+{% block content %}
+<div class="max-w-xl mx-auto">
+  <div class="flex items-center gap-3 mb-6">
+    <a href="{{ url_for('producto_venta.listar') }}" class="text-gray-500 hover:text-gray-700">
+      <i class="fas fa-arrow-left"></i>
+    </a>
+    <h1 class="text-2xl font-bold text-gray-800">Nuevo Producto de Venta</h1>
+  </div>
+
+  <div class="bg-white rounded-xl shadow p-6">
+    <form method="POST">
+      {{ form.hidden_tag() }}
+      <div class="space-y-4">
+        {{ campo_nuevo(form.nombre) }}
+        {{ campo_nuevo(form.descripcion) }}
+        {{ campo_nuevo(form.receta_id) }}
+        {{ campo_nuevo(form.presentacion_id) }}
+
+        <div id="cantidad-hint" class="text-sm text-gray-600 bg-gray-50 px-3 py-2 rounded hidden">
+          Unidades por presentación: <span id="cantidad-valor" class="font-semibold"></span>
+        </div>
+
+        {{ campo_nuevo(form.tipo) }}
+        {{ campo_nuevo(form.precio_venta) }}
+      </div>
+
+      <div class="mt-6 flex gap-3">
+        {{ form.submit(class_="bg-brew-bg text-white px-6 py-2 rounded-lg font-semibold hover:bg-brew-dark transition") }}
+        <a href="{{ url_for('producto_venta.listar') }}" class="px-6 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition">Cancelar</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+const presentacionesMap = {{ presentaciones_map | tojson }};
+const selectPresentacion = document.getElementById("{{ form.presentacion_id.id }}");
+const hintDiv = document.getElementById("cantidad-hint");
+const hintValor = document.getElementById("cantidad-valor");
+
+function actualizarHint() {
+  const id = parseInt(selectPresentacion.value);
+  if (presentacionesMap[id] !== undefined) {
+    hintValor.textContent = parseInt(presentacionesMap[id]);
+    hintDiv.classList.remove("hidden");
+  } else {
+    hintDiv.classList.add("hidden");
+  }
+}
+
+selectPresentacion.addEventListener("change", actualizarHint);
+actualizarHint();
+</script>
+{% endblock %}

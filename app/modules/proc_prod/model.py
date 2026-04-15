@@ -10,7 +10,9 @@ class ProcesoProductivo(db.Model):
     nombre: Mapped[str] = mapped_column(String(100), nullable=True)
     descripcion: Mapped[str] = mapped_column(String(200), nullable=True)
     activo: Mapped[bool] = mapped_column(default=True)
+    usuario_id: Mapped[int] = mapped_column(Integer, db.ForeignKey("usuario.id"), nullable=True)
 
+    usuario: Mapped["Usuario"] = relationship("Usuario")
     procesos_receta = db.relationship(
         "ProcesosReceta", back_populates="proceso_productivo"
     )

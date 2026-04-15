@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from flask import (
     render_template,
     request,
@@ -35,7 +37,6 @@ def crear():
         session.pop("receta_carrito_procesos", None)
         session.pop("receta_form_data", None)
         session.modified = True
-
     receta_form = RecetaForm()
     detalle_form = RecetaDetalleForm()
     proceso_form = ProcesoRecetaForm()
@@ -47,6 +48,7 @@ def crear():
     detalle_form.materia_prima_id.choices = [
         (str(mp.id), mp.nombre) for mp in materias_primas
     ]
+
     proceso_form.proceso_productivo_id.choices = [
         (str(p.id), p.nombre) for p in procesos
     ]
@@ -61,7 +63,6 @@ def crear():
             "nombre": request.form.get("h_nombre", ""),
             "cantidad_producida": request.form.get("h_cantidad_producida", ""),
             "descripcion": request.form.get("h_descripcion", ""),
-            "precio_venta": request.form.get("h_precio_venta", ""),
         }
         session.modified = True
 
@@ -103,15 +104,13 @@ def crear():
                     )
             except InvalidOperation:
                 pass
-            try:
-                if form_data.get("precio_venta"):
-                    receta_form.precio_venta.data = Decimal(
-                        str(form_data["precio_venta"])
-                    )
-            except InvalidOperation:
-                pass
 
         nombre_receta = form_data.get("nombre", "")
+
+        mp_tipos = {
+            mp.id: (mp.tipo_medida.unidad_base if mp.tipo_medida else "")
+            for mp in materias_primas
+        }
 
         return render_template(
             "recetas/crear.html",
@@ -125,6 +124,7 @@ def crear():
             costo_ingredientes=costo_ingredientes,
             mp_sin_costo=mp_sin_costo,
             nombre_receta=nombre_receta,
+            mp_tipos=mp_tipos,
         )
 
     if request.method == "POST":
@@ -137,11 +137,7 @@ def crear():
                 carrito = session["receta_carrito_detalles"]
                 carrito = receta_service.agregar_al_carrito_detalles(
                     carrito,
-                    (
-                        int(detalle_form.materia_prima_id.data)
-                        if detalle_form.materia_prima_id.data
-                        else None
-                    ),
+                    int(detalle_form.materia_prima_id.data),
                     detalle_form.cantidad.data,
                 )
                 session["receta_carrito_detalles"] = carrito
@@ -278,14 +274,13 @@ def editar(id):
         procesos = (
             pag_procesos.items if hasattr(pag_procesos, "items") else pag_procesos
         )
-
         detalle_form.materia_prima_id.choices = [
             (str(mp.id), mp.nombre) for mp in materias_primas
         ]
+
         proceso_form.proceso_productivo_id.choices = [
             (str(p.id), p.nombre) for p in procesos
         ]
-
         # Inicializar carritos con datos existentes en BD.
         # Si el id de receta en edición cambió (o no existe), recargar desde BD.
         if session.get("receta_carrito_editando_id") != id:
@@ -322,7 +317,6 @@ def editar(id):
             procesos_carrito = receta_service.obtener_carrito_procesos(
                 session.get("receta_carrito_procesos", [])
             )
-
             costo_ingredientes = 0.0
             mp_sin_costo = []
             for item in carrito_items:
@@ -342,7 +336,10 @@ def editar(id):
                         mp["materia_prima_nombre"] if mp else "Desconocida"
                     )
                 costo_ingredientes += costo_mp * item["cantidad"]
-
+            mp_tipos = {
+                mp.id: (mp.tipo_medida.unidad_base if mp.tipo_medida else "")
+                for mp in materias_primas
+            }
             return render_template(
                 "recetas/editar.html",
                 receta=receta,
@@ -355,6 +352,7 @@ def editar(id):
                 procesos_carrito=procesos_carrito,
                 costo_ingredientes=costo_ingredientes,
                 mp_sin_costo=mp_sin_costo,
+                mp_tipos=mp_tipos,
             )
 
         if request.method == "POST":

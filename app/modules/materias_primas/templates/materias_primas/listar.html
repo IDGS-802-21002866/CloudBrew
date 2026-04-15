@@ -40,7 +40,7 @@
         {% for materia in materias %}
         <tr class="hover:bg-gray-50 transition-colors">
           <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900 col-nombre">{{ materia.nombre }}</td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ materia.tipo_medida.nombre }}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ materia.tipo_medida.unidad_base }}</td>
           <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ materia.stock_minimo }}</td>
           <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
             {% if materia.activo %}

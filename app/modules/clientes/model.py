@@ -24,6 +24,9 @@ class Cliente(db.Model):
     tipo: Mapped[str] = mapped_column(String(20), default="retail")
     fecha_registro: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     activo: Mapped[bool] = mapped_column(Boolean, default=True)
+    usuario_id: Mapped[int] = mapped_column(Integer, db.ForeignKey("usuario.id"), nullable=True)
+
+    usuario = relationship("Usuario")
 
     @property
     def nombre_completo(self):

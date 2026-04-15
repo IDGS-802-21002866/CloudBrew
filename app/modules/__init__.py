@@ -14,6 +14,8 @@ from app.modules.lotes.model import LoteProduccion
 from app.modules.produccion.model import Produccion, ProduccionProceso
 from app.modules.pedidos import Pedido, PedidoDetalle
 from app.modules.ventas.model import Venta, DetalleVenta
+from app.modules.dashboard.model import VentasPorMes,MermasPorMes,ProductoMasProducido,ProductoMasVendido
+from app.modules.bitacora_login import BitacoraLogin
 
 #  Agregar nuevos modelos aquí y luego importarlos en __all__ para que estén disponibles en toda la aplicación
 __all__ = [
@@ -43,4 +45,8 @@ __all__ = [
     "PedidoDetalle",
     "Venta",
     "DetalleVenta",
+    "VentasPorMes","MermasPorMes",
+    "ProductoMasProducido",
+    "ProductoMasVendido",
+    "BitacoraLogin"
 ]

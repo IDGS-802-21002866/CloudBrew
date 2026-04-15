@@ -1,3 +1,4 @@
+from sqlalchemy import String
 from app import db
 
 
@@ -10,11 +11,10 @@ class Produccion(db.Model):
     fecha_fin = db.Column(db.Date)
     estado = db.Column(db.String(50))
     cantidad = db.Column(db.Integer, nullable=False, default=1)
+    usuario_id = db.Column(db.Integer, db.ForeignKey("usuario.id"), nullable=True)
 
-    receta = db.relationship(
-        'Recetas',
-        back_populates='produccion'
-    )
+    usuario = db.relationship("Usuario")
+    receta = db.relationship("Recetas", back_populates="producciones")
 
     procesos = db.relationship(
         "ProduccionProceso", back_populates="produccion", cascade="all, delete-orphan"
@@ -27,8 +27,6 @@ class Produccion(db.Model):
     pedidos = db.relationship(
         "PedidoProduccion", back_populates="produccion", cascade="all, delete-orphan"
     )
-
-    receta = db.relationship("Recetas", back_populates="producciones")
 
     movimientos_materia_prima = db.relationship(
         "MovimientosMateriaPrima", back_populates="produccion"

@@ -4,7 +4,9 @@ from . import bp
 from .forms import MermaForm
 from .service import MermaMateriaPrimaService
 from app.modules.inventario_materias_primas import repository as inv_repo
+from app.modules.unidades_medida.service import UnidadMedidaService
 
+medida_service = UnidadMedidaService()
 servicio = MermaMateriaPrimaService()
 
 
@@ -12,7 +14,9 @@ servicio = MermaMateriaPrimaService()
 def listar():
     page = request.args.get("page", 1, type=int)
     search_term = request.args.get("q", "")
-    pagination = servicio.listar_paginados(page=page, per_page=10, search_term=search_term)
+    pagination = servicio.listar_paginados(
+        page=page, per_page=10, search_term=search_term
+    )
     return render_template(
         "mermas_materia_prima/listar.html",
         pagination=pagination,
@@ -27,6 +31,11 @@ def crear():
     form.materia_prima_id.choices = [
         (mp.id, f"{mp.nombre} - Stock: {mp.stock_actual:.2f}") for mp in materias
     ]
+    tipos_medida = medida_service.listar_tipos_medida()
+    tipo_unidad_map = {t.id: t.unidad_base for t in tipos_medida}
+    mp_tipos = {
+        str(mp.id): tipo_unidad_map.get(mp.tipo_medida_id, "") for mp in materias
+    }
 
     if form.validate_on_submit():
         try:
@@ -41,7 +50,9 @@ def crear():
         except ValueError as e:
             flash(str(e), "danger")
 
-    return render_template("mermas_materia_prima/crear.html", form=form)
+    return render_template(
+        "mermas_materia_prima/crear.html", form=form, mp_tipos=mp_tipos
+    )
 
 
 @bp.route("/<int:id>")

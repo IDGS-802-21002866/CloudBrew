@@ -1,0 +1,44 @@
+{% extends 'layout.html' %}
+{% from '_macros.html' import campo_nuevo, mostrar_flashes %}
+
+{% block body %}
+<div class="min-h-screen flex items-center justify-center p-4 bg-white">
+  <div class="rounded-2xl p-12 w-full max-w-md shadow-2xl bg-brew-bg">
+    {{ mostrar_flashes() }}
+    <div class="text-center mb-12">
+      <div class="mb-8 flex justify-center">
+        <img src="{{ url_for('static', filename='img/logo-solo.png') }}" alt="CloudBrew Logo" class="h-20 w-auto">
+      </div>
+      <div class="pb-6 mb-10 border-b-4 border-brew-beige">
+        <h1 class="text-5xl font-black text-brew-beige">Inicia Sesión</h1>
+      </div>
+    </div>
+
+    <form method="post" novalidate class="space-y-6">
+      {{ form.hidden_tag() }}
+
+      {{ campo_nuevo(form.correo, class="w-full px-4 py-3 rounded border-2 border-brew-beige bg-brew-bg text-brew-beige focus:outline-none focus:ring-0", labelClass="block text-base font-medium mb-3 text-white") }}
+
+      {{ campo_nuevo(form.contrasenia, class="w-full px-4 py-3 rounded border-2 border-brew-beige bg-brew-bg text-brew-beige focus:outline-none focus:ring-0", labelClass="block text-base font-medium mb-3 text-white") }}
+
+      <div class="my-6 border-t-4 border-brew-beige"></div>
+
+      <div class="text-center py-4">
+        <p class="text-base text-white text-opacity-50">
+          ¿Olvidaste tu contraseña? <a href="{{ url_for('tienda.recuperar_contrasena') }}" class="text-brew-beige hover:text-white transition font-medium">Da click aquí</a>
+        </p>
+      </div>
+
+      <button type="submit" class="w-full py-4 font-bold text-lg rounded-xl transition duration-200 hover:opacity-85 shadow-lg bg-brew-beige text-brew-dark">
+        Iniciar Sesión
+      </button>
+
+      <div class="text-center pt-4">
+        <p class="text-base text-white text-opacity-50">
+          ¿No tienes cuenta? <a href="{{ url_for('tienda.registrarse') }}" class="text-brew-beige hover:text-white transition font-medium">Regístrate</a>
+        </p>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

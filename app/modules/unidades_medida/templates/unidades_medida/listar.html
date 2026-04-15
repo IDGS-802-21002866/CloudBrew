@@ -45,7 +45,7 @@
             {% endif %}
           </td>
           <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ unidad.abreviatura }}</td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ unidad.tipo_medida.nombre }}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ unidad.tipo_medida.unidad_base }}</td>
           <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
             <a href="{{ url_for('unidades_medida.detalle', id=unidad.id) }}" 
                class="inline-block text-white font-bold py-1.5 px-4 rounded-lg shadow-sm hover:opacity-90 transition" 

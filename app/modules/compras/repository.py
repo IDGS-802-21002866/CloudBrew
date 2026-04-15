@@ -12,7 +12,7 @@ def get_compra_by_id(id):
     return compra
 
 
-def create_compra(proveedor_id, usuario_id, detalles):
+def create_compra(proveedor_id, usuario_id, detalles, usuario_actual):
     """
     Crear una nueva compra con sus detalles.
 
@@ -20,12 +20,13 @@ def create_compra(proveedor_id, usuario_id, detalles):
         proveedor_id: ID del proveedor
         usuario_id: ID del usuario
         detalles: lista de dicts con {materia_prima_id, presentacion_id, cantidad, precio_unitario}
+        usuario_actual: nombre del usuario actual
 
     Returns:
         ID de la compra creada
     """
     # Crear la compra
-    nueva_compra = Compra(proveedor_id=proveedor_id, usuario_id=usuario_id)
+    nueva_compra = Compra(proveedor_id=proveedor_id, usuario_id=usuario_id, actualizado_por=usuario_actual)
 
     db.session.add(nueva_compra)
     db.session.flush()  # Flush para obtener el ID sin hacer commit
@@ -45,11 +46,12 @@ def create_compra(proveedor_id, usuario_id, detalles):
     return nueva_compra.id
 
 
-def update_compra():
+def update_compra(compra, usuario_actual):
+    compra.actualizado_por = usuario_actual
     db.session.commit()
 
 
-def confirmar_compra(compra_id, detalle_precios, fecha_compra):
+def confirmar_compra(compra_id, detalle_precios, fecha_compra, usuario_actual):
     """
     Actualiza precios de los detalles y la fecha de compra en una sola transacción.
 
@@ -57,10 +59,12 @@ def confirmar_compra(compra_id, detalle_precios, fecha_compra):
         compra_id: ID de la compra a confirmar
         detalle_precios: lista de tuplas (detalle_id, precio_unitario)
         fecha_compra: fecha de la compra (date)
+        usuario_actual: nombre del usuario actual
     """
     compra = Compra.query.get(compra_id)
     if compra:
         compra.fecha_compra = fecha_compra
+        compra.actualizado_por = usuario_actual
 
     for detalle_id, precio in detalle_precios:
         detalle = DetalleCompra.query.get(detalle_id)
@@ -70,8 +74,9 @@ def confirmar_compra(compra_id, detalle_precios, fecha_compra):
     db.session.commit()
 
 
-def cancelar_compra(compra_id):
+def cancelar_compra(compra_id, usuario_actual):
     compra = Compra.query.get(compra_id)
     if compra:
         compra.cancelada = True
+        compra.actualizado_por = usuario_actual
         db.session.commit()

@@ -19,6 +19,7 @@ def crear():
     form = MateriaPrimaForm()
     tipos_medida = servicio_unidades.listar_tipos_medida()
     form.tipo_medida_id.choices = [(t.id, t.nombre) for t in tipos_medida]
+    tipo_unidades = {str(t.id): t.unidad_base for t in tipos_medida}
 
     if form.validate_on_submit():
         try:
@@ -34,7 +35,9 @@ def crear():
         except ValueError as e:
             flash(str(e), "danger")
 
-    return render_template("materias_primas/crear.html", form=form)
+    return render_template(
+        "materias_primas/crear.html", form=form, tipo_unidades=tipo_unidades
+    )
 
 
 @bp.route("/<int:id>")
@@ -55,6 +58,7 @@ def editar(id):
 
         tipos_medida = servicio_unidades.listar_tipos_medida()
         form.tipo_medida_id.choices = [(t.id, t.nombre) for t in tipos_medida]
+        tipo_unidades = {str(t.id): t.unidad_base for t in tipos_medida}
 
         if form.validate_on_submit():
             try:
@@ -70,7 +74,12 @@ def editar(id):
             except ValueError as e:
                 flash(str(e), "danger")
 
-        return render_template("materias_primas/crear.html", form=form, materia=materia)
+        return render_template(
+            "materias_primas/crear.html",
+            form=form,
+            materia=materia,
+            tipo_unidades=tipo_unidades,
+        )
     except ValueError as e:
         flash(str(e), "danger")
         return redirect(url_for("materias_primas.listar"))

@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import campo_nuevo %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-bold text-gray-800">Productos de Venta</h1>
+    <a href="{{ url_for('producto_venta.crear') }}" class="bg-brew-bg text-white px-4 py-2 rounded-lg font-semibold hover:bg-brew-dark transition">
+      <i class="fas fa-plus mr-2"></i>Nuevo Producto
+    </a>
+  </div>
+
+  {% if productos %}
+  <div class="bg-white rounded-xl shadow overflow-x-auto">
+    <table class="min-w-full text-sm">
+      <thead class="bg-brew-dark text-brew-beige">
+        <tr>
+          <th class="px-4 py-3 text-left">Nombre</th>
+          <th class="px-4 py-3 text-left">Receta</th>
+          <th class="px-4 py-3 text-left">Presentación</th>
+          <th class="px-4 py-3 text-left">Tipo</th>
+          <th class="px-4 py-3 text-right">Uds.</th>
+          <th class="px-4 py-3 text-right">Precio</th>
+          <th class="px-4 py-3 text-center">Estado</th>
+          <th class="px-4 py-3 text-center">Acciones</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        {% for p in productos %}
+        <tr class="hover:bg-gray-50">
+          <td class="px-4 py-3 font-medium">{{ p.nombre }}</td>
+          <td class="px-4 py-3">{{ p.receta.nombre }}</td>
+          <td class="px-4 py-3">{{ p.presentacion.nombre }}</td>
+          <td class="px-4 py-3 capitalize">{{ p.tipo }}</td>
+          <td class="px-4 py-3 text-right">{{ p.cantidad_unidades }}</td>
+          <td class="px-4 py-3 text-right">${{ "%.2f"|format(p.precio_venta) }}</td>
+          <td class="px-4 py-3 text-center">
+            {% if p.activo %}
+              <span class="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">Activo</span>
+            {% else %}
+              <span class="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-semibold">Inactivo</span>
+            {% endif %}
+          </td>
+          <td class="px-4 py-3 text-center">
+            <div class="flex gap-2 justify-center">
+              <a href="{{ url_for('producto_venta.editar', id=p.id) }}" class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-xs">Editar</a>
+              {% if p.activo %}
+              <form method="POST" action="{{ url_for('producto_venta.desactivar', id=p.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-xs">Desactivar</button>
+              </form>
+              {% else %}
+              <form method="POST" action="{{ url_for('producto_venta.activar', id=p.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-xs">Activar</button>
+              </form>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="bg-white rounded-xl shadow p-8 text-center text-gray-500">
+    No hay productos de venta registrados.
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

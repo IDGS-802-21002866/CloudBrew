@@ -19,6 +19,7 @@ def crear():
     form = PresentacionForm()
     tipos_medida = servicio_unidades.listar_tipos_medida()
     form.tipo_medida_id.choices = [(t.id, t.nombre) for t in tipos_medida]
+    tipo_unidades = {str(t.id): t.unidad_base for t in tipos_medida}
 
     if form.validate_on_submit():
         try:
@@ -26,6 +27,7 @@ def crear():
                 "nombre": form.nombre.data,
                 "tipo_medida_id": form.tipo_medida_id.data,
                 "cantidad_equivalente": form.cantidad_equivalente.data,
+                "uso": form.uso.data,
             }
             servicio.crear_presentacion(data)
             flash("Presentación creada exitosamente.", "success")
@@ -33,7 +35,9 @@ def crear():
         except ValueError as e:
             flash(str(e), "danger")
 
-    return render_template("presentaciones/crear.html", form=form)
+    return render_template(
+        "presentaciones/crear.html", form=form, tipo_unidades=tipo_unidades
+    )
 
 
 @bp.route("/<int:id>")
@@ -54,6 +58,7 @@ def editar(id):
 
         tipos_medida = servicio_unidades.listar_tipos_medida()
         form.tipo_medida_id.choices = [(t.id, t.nombre) for t in tipos_medida]
+        tipo_unidades = {str(t.id): t.unidad_base for t in tipos_medida}
 
         if form.validate_on_submit():
             try:
@@ -61,6 +66,7 @@ def editar(id):
                     "nombre": form.nombre.data,
                     "tipo_medida_id": form.tipo_medida_id.data,
                     "cantidad_equivalente": form.cantidad_equivalente.data,
+                    "uso": form.uso.data,
                 }
                 servicio.actualizar_presentacion(id, data)
                 flash("Presentación actualizada exitosamente.", "success")
@@ -69,7 +75,10 @@ def editar(id):
                 flash(str(e), "danger")
 
         return render_template(
-            "presentaciones/crear.html", form=form, presentacion=presentacion
+            "presentaciones/crear.html",
+            form=form,
+            presentacion=presentacion,
+            tipo_unidades=tipo_unidades,
         )
     except ValueError as e:
         flash(str(e), "danger")

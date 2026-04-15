@@ -18,11 +18,25 @@
                 </div>
                 <div>
                     <label class="block text-gray-500 text-sm font-bold uppercase">Tipo de Medida</label>
-                    <p class="text-xl font-bold text-gray-800">{{ presentacion.tipo_medida.nombre }}</p>
+                    <p class="text-xl font-bold text-gray-800">{{ presentacion.tipo_medida.unidad_base }}</p>
                 </div>
                 <div>
-                    <label class="block text-gray-500 text-sm font-bold uppercase">Equivalencia</label>
+                    <label class="block text-gray-500 text-sm font-bold uppercase">Cantidad</label>
                     <p class="text-lg text-gray-700">{{ presentacion.cantidad_equivalente }}</p>
+                </div>
+                <div>
+                    <label class="block text-gray-500 text-sm font-bold uppercase">Uso</label>
+                    <p class="text-lg text-gray-700">
+                        {% if presentacion.uso == 'comercial' %}
+                        <span class="rounded-full px-3 py-1 text-xs font-bold bg-blue-100 text-blue-800 border border-blue-200">Comercial (Ventas)</span>
+                        {% else %}
+                        <span class="rounded-full px-3 py-1 text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200">Producción (Compras)</span>
+                        {% endif %}
+                    </p>
+                </div>
+                 <div>
+                    <label class="block text-gray-500 text-sm font-bold uppercase">Agregado por:</label>
+                    <p class="text-lg text-gray-700">{{ presentacion.usuario.nombre }}</p>
                 </div>
                 <div>
                     <label class="block text-gray-500 text-sm font-bold uppercase">Estado</label>

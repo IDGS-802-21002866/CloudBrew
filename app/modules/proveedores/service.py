@@ -1,5 +1,6 @@
 from app.modules.proveedores import repository
 from app.modules.proveedores.model import Proveedor
+from flask_login import current_user
 
 
 class ProveedorService:
@@ -41,6 +42,7 @@ class ProveedorService:
             email=datos.get("email"),
             direccion=datos.get("direccion"),
             activo=True,
+            usuario_id=current_user.id if current_user.is_authenticated else None,
         )
 
         return repository.create_proveedor(proveedor)
@@ -66,6 +68,7 @@ class ProveedorService:
         proveedor.telefono = datos.get("telefono")
         proveedor.email = datos.get("email")
         proveedor.direccion = datos.get("direccion")
+        proveedor.usuario_id = current_user.id if current_user.is_authenticated else proveedor.usuario_id
 
         return repository.update_proveedor(proveedor)
 
@@ -77,4 +80,5 @@ class ProveedorService:
         if not proveedor.activo:
             raise ValueError(f"El proveedor ya está inactivo")
 
+        proveedor.usuario_id = current_user.id if current_user.is_authenticated else proveedor.usuario_id
         return repository.delete_proveedor(id)
