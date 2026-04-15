@@ -28,7 +28,8 @@ def listar():
         pagination=pagination,
         search_term=search_term,
     )
-@login_required
+
+
 @bp.route("/terminados")
 def listar_terminados():
     page = request.args.get("page", 1, type=int)

@@ -11,14 +11,14 @@ receta_service = RecetaService()
 
 @bp.route("/")
 def listar():
-    pag=request.args.get("page", 1, type=int)
+    pag = request.args.get("page", 1, type=int)
     producciones = produccion_service.listar_produccion(page=pag, per_page=5)
     return render_template("produccion/listar.html", pagination=producciones)
 
-@login_required
+
 @bp.route("/terminadas")
 def listar_terminadas():
-    pag=request.args.get("page", 1, type=int)
+    pag = request.args.get("page", 1, type=int)
     producciones = produccion_service.listar_produccion_completada(page=pag, per_page=5)
     return render_template("produccion/listar_terminadas.html", pagination=producciones)
 

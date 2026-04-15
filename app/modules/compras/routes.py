@@ -22,13 +22,18 @@ presentaciones_service = PresentacionService()
 @bp.route("/")
 def listar():
     page = request.args.get("page", 1, type=int)
-    pagination = compras_service.get_compras_paginadas(page, per_page=10, search_term=None, terminadas=False)
+    pagination = compras_service.get_compras_paginadas(
+        page, per_page=10, search_term=None, terminadas=False
+    )
     return render_template("compras/listar.html", pagination=pagination)
-@login_required
+
+
 @bp.route("/terminados")
 def listar_terminadas():
     page = request.args.get("page", 1, type=int)
-    pagination = compras_service.get_compras_paginadas(page, per_page=10, search_term=None, terminadas=True)
+    pagination = compras_service.get_compras_paginadas(
+        page, per_page=10, search_term=None, terminadas=True
+    )
     return render_template("compras/listar.html", pagination=pagination)
 
 
