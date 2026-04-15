@@ -4,24 +4,10 @@
 
 {% block content %}
 <div class="container mx-auto px-4 py-8">
-
-  <div class="flex justify-between items-center mb-6">
-    <h1 class="text-3xl font-bold text-gray-800">Pedidos de Compra Pendientes</h1>
-    <a href="{{ url_for('compras.crear') }}" class="bg-[#4A9062] hover:opacity-90 text-white font-bold py-2 px-4 rounded flex items-center shadow-md transition">
-      <i class="fa-solid fa-plus mr-2"></i> Nueva Compra
-    </a>
-  </div>
-
-  <div class="mb-6 flex items-center space-x-2">
-    <div class="relative w-full md:w-1/3">
-      <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-        <i class="fa-solid fa-magnifying-glass text-gray-400"></i>
-      </span>
-      <input type="text" id="inputBusquedaCompras"
-             name="q" value="{{ search_term if search_term }}"
-             class="w-full pl-10 pr-4 py-2 border-2 border-gray-400 rounded-lg focus:outline-none focus:border-[#6C9AD0] focus:ring-0 transition-colors"
-             placeholder="Buscar compra por proveedor..."
-             onkeypress="if(event.key === 'Enter') realizarBusqueda()">
+  <div class="mb-6 flex items-center justify-between">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-800">Compras</h1>
+      <p class="text-sm text-gray-600 mt-1">Panel de solicitudes pendientes y compras confirmadas.</p>
     </div>
     {% if search_term %}
       <a href="{{ url_for('compras.listar') }}" class="text-sm text-[#B85B5B] font-bold hover:underline">
@@ -30,54 +16,91 @@
     {% endif %}
   </div>
 
-  <div class="bg-white shadow-md rounded-lg overflow-hidden border border-gray-200">
-    <table class="min-w-full table-auto" id="tablaCompras">
-      <thead class="bg-brew-bg">
-        <tr>
-          <th class="px-6 py-3 text-left text-xs font-medium text-brew-beige uppercase tracking-wider">Folio</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-brew-beige uppercase tracking-wider">Proveedor</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-brew-beige uppercase tracking-wider">Fecha de Compra</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-brew-beige uppercase tracking-wider">Fecha de Registro</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-brew-beige uppercase tracking-wider">Usuario</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-brew-beige uppercase tracking-wider">Estado</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-brew-beige uppercase tracking-wider">Acciones</th>
-        </tr>
-      </thead>
-      <tbody class="bg-white divide-y divide-gray-200">
-        {% if pagination.items %}
-          {% for compra in pagination.items %}
-          <tr class="hover:bg-gray-50 transition-colors">
-            <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">#{{ compra.id }}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ compra.proveedor.nombre if compra.proveedor else 'N/A' }}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ compra.fecha_compra.strftime('%d/%m/%Y') if compra.fecha_compra else 'N/A' }}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ compra.fecha_registro.strftime('%d/%m/%Y %H:%M') if compra.fecha_registro else 'N/A' }}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ compra.usuario.nombre if compra.usuario else 'N/A' }}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-              {% if compra.cancelada %}
-                <span class="rounded-full px-3 py-1 text-xs font-bold bg-red-100 text-red-700 border border-red-400">Cancelada</span>
-              {% elif compra.fecha_compra %}
-                <span class="rounded-full px-3 py-1 text-xs font-bold bg-[#4A9062] bg-opacity-20 text-[#2D6A3E] border border-[#4A9062]">Pagado</span>
-              {% else %}
-                <span class="rounded-full px-3 py-1 text-xs font-bold bg-[#E8A946] bg-opacity-20 text-[#B8860B] border border-[#E8A946]">Pendiente</span>
-              {% endif %}
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-              <a href="{{ url_for('compras.detalle', id=compra.id) }}"
-                 class="text-white font-bold py-1.5 px-4 rounded-lg inline-flex items-center shadow-sm hover:opacity-90 transition bg-[#6C9AD0]">
-                <i class="fa-solid fa-eye mr-2"></i> Ver Detalle
-              </a>
-            </td>
-          </tr>
-          {% endfor %}
-        {% else %}
-          <tr>
-            <td colspan="7" class="px-6 py-10 text-center text-gray-500">
-              No se encontraron compras que coincidan con la búsqueda.
-            </td>
-          </tr>
-        {% endif %}
-      </tbody>
-    </table>
+  <div class="grid grid-cols-2 gap-6">
+    <section class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+      <div class="mb-4 flex items-center justify-between">
+        <div>
+          <h2 class="text-xl font-semibold text-gray-800">Solicitudes Pendientes</h2>
+          <p class="text-sm text-gray-500">Revisa las solicitudes de compra generadas desde almacén y retail.</p>
+        </div>
+        <span class="text-xs uppercase tracking-wide font-semibold text-[#6C9AD0]">Pendiente</span>
+      </div>
+
+      {% if solicitudes_pendientes %}
+      <div class="space-y-4">
+        {% for solicitud in solicitudes_pendientes %}
+        <article class="rounded-2xl border border-gray-200 bg-gray-50 p-5">
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <p class="text-xs uppercase tracking-wide text-gray-500">Materia Prima</p>
+              <h3 class="text-lg font-semibold text-gray-800">{{ solicitud.materia_prima.nombre }}</h3>
+            </div>
+            <span class="inline-flex items-center rounded-full bg-[#6C9AD0] bg-opacity-15 px-3 py-1 text-xs font-semibold text-[#1f4f7a] border border-[#6C9AD0]">{{ solicitud.origen|capitalize }}</span>
+          </div>
+          <div class="mt-4 text-sm text-gray-700 space-y-2">
+            <p><strong>Cantidad sugerida:</strong> {{ solicitud.cantidad }}</p>
+            <p><strong>Pedido referencia:</strong> {{ solicitud.referencia.folio if solicitud.referencia else 'N/A' }}</p>
+            <p><strong>Creado:</strong> {{ solicitud.fecha_creacion.strftime('%d/%m/%Y') }}</p>
+          </div>
+          <div class="mt-5">
+            <a href="{{ url_for('compras.atender_solicitud', solicitud_id=solicitud.id) }}"
+               class="inline-flex w-full items-center justify-center rounded-lg bg-[#4A9062] px-4 py-2 text-sm font-semibold text-white hover:bg-[#418155] transition">
+              <i class="fa-solid fa-handshake-angle mr-2"></i> Atender
+            </a>
+          </div>
+        </article>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="rounded-2xl border border-gray-200 bg-white p-6 text-center text-gray-500">
+        No hay solicitudes pendientes.
+      </div>
+      {% endif %}
+    </section>
+
+    <section class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+      <div class="mb-4 flex items-center justify-between">
+        <div>
+          <h2 class="text-xl font-semibold text-gray-800">Compras Confirmadas</h2>
+          <p class="text-sm text-gray-500">Historial de compras que ya han sido confirmadas.</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full min-w-full text-left text-sm text-gray-700">
+          <thead class="bg-gray-100 text-xs uppercase tracking-wide text-gray-500">
+            <tr>
+              <th class="px-5 py-3">Folio</th>
+              <th class="px-5 py-3">Proveedor</th>
+              <th class="px-5 py-3">Fecha Compra</th>
+              <th class="px-5 py-3">Registro</th>
+              <th class="px-5 py-3">Usuario</th>
+              <th class="px-5 py-3">Estado</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200 bg-white">
+            {% if compras_confirmadas %}
+              {% for compra in compras_confirmadas %}
+              <tr class="hover:bg-gray-50">
+                <td class="px-5 py-4 font-semibold text-gray-900">#{{ compra.id }}</td>
+                <td class="px-5 py-4 text-gray-600">{{ compra.proveedor.nombre if compra.proveedor else 'N/A' }}</td>
+                <td class="px-5 py-4 text-gray-600">{{ compra.fecha_compra.strftime('%d/%m/%Y') }}</td>
+                <td class="px-5 py-4 text-gray-600">{{ compra.fecha_registro.strftime('%d/%m/%Y %H:%M') if compra.fecha_registro else 'N/A' }}</td>
+                <td class="px-5 py-4 text-gray-600">{{ compra.usuario.nombre if compra.usuario else 'N/A' }}</td>
+                <td class="px-5 py-4">
+                  <span class="inline-flex rounded-full bg-[#4A9062] bg-opacity-15 px-3 py-1 text-xs font-semibold text-[#2D6A3E] border border-[#4A9062]">Confirmada</span>
+                </td>
+              </tr>
+              {% endfor %}
+            {% else %}
+              <tr>
+                <td colspan="6" class="px-5 py-8 text-center text-gray-500">No hay compras confirmadas aún.</td>
+              </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </section>
   </div>
 
   <div class="flex justify-center items-center mt-6 space-x-4">
@@ -108,12 +131,4 @@
     {% endif %}
   </div>
 </div>
-
-<script>
-    function realizarBusqueda() {
-        const query = document.getElementById('inputBusquedaCompras').value;
-        // Se asume que la ruta se llama 'compras.listar'
-        window.location.href = "{{ url_for('compras.listar') }}?q=" + encodeURIComponent(query);
-    }
-</script>
 {% endblock %}

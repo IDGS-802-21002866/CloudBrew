@@ -99,7 +99,7 @@
                         </thead>
                         <tbody class="divide-y divide-gray-200">
                             {% for detalle in detalles %}
-                            <tr class="hover:bg-brew-bg hover:bg-opacity-5 transition">
+                            <tr class="hover:bg-brew-bg hover:bg-opacity-5 transition" data-producto-id="{{ detalle.producto_venta_id }}">
                                 <td class="px-6 py-4 font-bold text-gray-800">{{ detalle.producto_venta_nombre }}</td>
                                 <td class="px-6 py-4 text-center font-black text-[#6C9AD0]">{{ detalle.cantidad_lotes }}
                                 </td>
@@ -162,6 +162,35 @@
     const productoSelect = document.getElementById('producto-select');
     const cantidadLotes = document.querySelector('input[name="cantidad_lotes"]');
     const totalUnidades = document.getElementById('total-unidades');
+    const formPedido = document.getElementById('form-pedido');
+    const detalleAgregado = {{ 'true' if detalle_agregado else 'false' }};
+
+    function limpiarFormulario() {
+        productoSelect.value = '';
+        cantidadLotes.value = '';
+        totalUnidades.value = '';
+    }
+
+    function estaEnLista(productoId) {
+        if (!productoId) {
+            return false;
+        }
+        return Array.from(document.querySelectorAll('tbody tr[data-producto-id]')).some(
+            (tr) => tr.dataset.productoId === productoId
+        );
+    }
+
+    formPedido.addEventListener('submit', function (event) {
+        const action = event.submitter ? event.submitter.value : null;
+        if (action === 'agregar_detalle') {
+            const productoId = productoSelect.value;
+            if (estaEnLista(productoId)) {
+                alert('El producto ya está en la lista.');
+                event.preventDefault();
+                return;
+            }
+        }
+    });
 
     function calcular() {
         const option = productoSelect.options[productoSelect.selectedIndex];
@@ -174,6 +203,11 @@
     cantidadLotes.addEventListener('input', calcular);
 
     // Persistencia al recargar (al agregar producto)
-    window.onload = () => { if (clienteSearch.value) actualizarInfoCliente(); };
+    window.onload = () => {
+        if (clienteSearch.value) actualizarInfoCliente();
+        if (detalleAgregado) {
+            limpiarFormulario();
+        }
+    };
 </script>
 {% endblock %}

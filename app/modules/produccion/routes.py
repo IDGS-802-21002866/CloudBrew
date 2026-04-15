@@ -3,24 +3,23 @@ from flask import render_template, request, redirect, url_for, flash
 from app.modules.produccion.forms import ProduccionForm
 from app.modules.produccion.service import ProduccionService
 from app.modules.recetas.service import RecetaService
+from app.modules.compras.service import ComprasService
 from . import bp
 
 produccion_service = ProduccionService()
 receta_service = RecetaService()
+compras_service = ComprasService()
 
 
 @bp.route("/")
 def listar():
-    pag = request.args.get("page", 1, type=int)
-    producciones = produccion_service.listar_produccion(page=pag, per_page=5)
-    return render_template("produccion/listar.html", pagination=producciones)
-
-
-@bp.route("/terminadas")
-def listar_terminadas():
-    pag = request.args.get("page", 1, type=int)
-    producciones = produccion_service.listar_produccion_completada(page=pag, per_page=5)
-    return render_template("produccion/listar_terminadas.html", pagination=producciones)
+    producciones = produccion_service.listar_produccion()
+    solicitudes = compras_service.listar_solicitudes_confirmadas_retail()
+    return render_template(
+        "produccion/listar.html",
+        producciones=producciones,
+        solicitudes=solicitudes,
+    )
 
 
 @bp.route("/<int:id>", methods=["GET"])

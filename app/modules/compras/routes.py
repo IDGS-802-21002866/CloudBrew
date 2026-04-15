@@ -19,26 +19,19 @@ materias_primas_service = MateriaPrimaService()
 presentaciones_service = PresentacionService()
 
 
-@bp.route("/")
+@bp.route("/", methods=["GET"])
 def listar():
-    page = request.args.get("page", 1, type=int)
-    pagination = compras_service.get_compras_paginadas(
-        page, per_page=10, search_term=None, terminadas=False
+    solicitudes_pendientes = compras_service.listar_solicitudes_pendientes()
+    compras_confirmadas = compras_service.listar_compras_confirmadas()
+    return render_template(
+        "compras/listar.html",
+        solicitudes_pendientes=solicitudes_pendientes,
+        compras_confirmadas=compras_confirmadas,
     )
-    return render_template("compras/listar.html", pagination=pagination)
 
 
-@bp.route("/terminados")
-def listar_terminadas():
-    page = request.args.get("page", 1, type=int)
-    pagination = compras_service.get_compras_paginadas(
-        page, per_page=10, search_term=None, terminadas=True
-    )
-    return render_template("compras/listar.html", pagination=pagination)
-
-
-@bp.route("/crear", methods=["GET", "POST"])
-def crear():
+@bp.route("/solicitudes/<int:solicitud_id>/atender", methods=["GET", "POST"])
+def atender_solicitud(solicitud_id):
     orden_form = OrdenDeCompraForm()
     detalles_form = OrdenDeCompraDetallesForm()
 
@@ -57,73 +50,47 @@ def crear():
         (p.id, p.nombre) for p in presentaciones
     ]
 
-    if "compra_carrito" not in session:
-        session["compra_carrito"] = []
+    solicitud = compras_service.obtener_solicitud(solicitud_id)
 
-    def _render():
-        detalles_carrito = compras_service.obtener_carrito_con_detalles(
-            session.get("compra_carrito", [])
-        )
-        return render_template(
-            "compras/crear.html",
-            form=orden_form,
-            detalles_form=detalles_form,
-            materias_primas=materias_primas,
-            presentaciones=presentaciones,
-            detalles_carrito=detalles_carrito,
-        )
+    if request.method == "GET":
+        detalles_form.materia_prima_id.data = solicitud.materia_prima_id
+        detalles_form.cantidad.data = int(solicitud.cantidad or 0)
 
     if request.method == "POST":
-        accion = request.form.get("accion")
-
-        if accion == "agregar_detalle":
-            if not detalles_form.validate_on_submit():
-                return _render()
+        if orden_form.validate_on_submit() and detalles_form.validate_on_submit():
             try:
-                carrito = session["compra_carrito"]
-                carrito = compras_service.agregar_al_carrito(
-                    carrito,
-                    int(detalles_form.materia_prima_id.data),
-                    int(detalles_form.presentacion_id.data),
-                    detalles_form.cantidad.data,
-                )
-                session["compra_carrito"] = carrito
-                session.modified = True
-                flash("Producto agregado al carrito.", "success")
-            except ValidacionNegocioException as e:
-                flash(str(e), "danger")
-            return redirect(url_for("compras.crear"))
-
-        elif accion == "quitar_detalle":
-            try:
-                idx = request.form.get("idx", type=int)
-                carrito = session["compra_carrito"]
-                carrito = compras_service.quitar_del_carrito(carrito, idx)
-                session["compra_carrito"] = carrito
-                session.modified = True
-            except ValidacionNegocioException as e:
-                flash(str(e), "danger")
-            return redirect(url_for("compras.crear"))
-
-        elif accion == "finalizar_compra":
-            if not orden_form.validate_on_submit():
-                return _render()
-            try:
-                carrito = session.get("compra_carrito", [])
+                carrito = [
+                    {
+                        "materia_prima_id": detalles_form.materia_prima_id.data,
+                        "presentacion_id": detalles_form.presentacion_id.data,
+                        "cantidad": detalles_form.cantidad.data,
+                    }
+                ]
                 compras_service.crear_compra(
                     proveedor_id=orden_form.proveedor_id.data,
                     usuario_id=current_user.id,
                     detalles=carrito,
                 )
-                session["compra_carrito"] = []
-                session.modified = True
-                flash("Compra creada exitosamente.", "success")
+                compras_service.marcar_solicitud_estado(solicitud_id, "En Compra")
+                flash("Compra creada desde solicitud exitosamente.", "success")
                 return redirect(url_for("compras.listar"))
             except (ValidacionNegocioException, ValueError) as e:
                 flash(str(e), "danger")
-            return redirect(url_for("compras.crear"))
 
-    return _render()
+    return render_template(
+        "compras/atender_solicitud.html",
+        solicitud=solicitud,
+        form=orden_form,
+        detalles_form=detalles_form,
+        proveedores=proveedores,
+        materias_primas=materias_primas,
+        presentaciones=presentaciones,
+    )
+
+
+@bp.route("/crear")
+def crear():
+    return redirect(url_for("compras.listar"))
 
 
 @bp.route("/<int:id>/detalle")
