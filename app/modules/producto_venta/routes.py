@@ -26,8 +26,27 @@ def _poblar_choices(form):
 
 @bp.route("/")
 def listar():
-    productos = servicio.listar_productos_venta()
-    return render_template("producto_venta/listar.html", productos=productos)
+    page = request.args.get("page", 1, type=int)
+    search_term = request.args.get("q", "")
+
+    pagination = servicio.listar_paginados(
+        page=page, per_page=10, search_term=search_term
+    )
+
+    return render_template(
+        "producto_venta/listar.html", pagination=pagination, search_term=search_term
+    )
+
+
+@bp.route("/<int:id>")
+def detalle(id):
+    try:
+        producto = servicio.obtener_producto_venta(id)
+    except ValueError as e:
+        flash(str(e), "danger")
+        return redirect(url_for("producto_venta.listar"))
+
+    return render_template("producto_venta/detalle.html", producto=producto)
 
 
 @bp.route("/crear", methods=["GET", "POST"])

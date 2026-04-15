@@ -14,6 +14,12 @@ class ProductoVentaService:
     def listar_productos_venta(self):
         return repository.get_all_producto_venta()
 
+    def listar_paginados(self, page=1, per_page=10, search_term=None):
+        """Obtiene productos paginados con búsqueda opcional."""
+        return repository.get_productos_venta_paginados(
+            page=page, per_page=per_page, search_term=search_term
+        )
+
     def listar_por_tipo(self, tipo):
         return repository.get_producto_venta_by_tipo(tipo)
 

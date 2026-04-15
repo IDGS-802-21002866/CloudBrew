@@ -1,71 +1,135 @@
 {% extends 'base.html' %}
-{% from '_macros.html' import campo_nuevo %}
+{% from '_macros.html' import mostrar_flashes %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto">
+<div class="max-w-6xl mx-auto">
+  {{ mostrar_flashes() }}
+
   <div class="flex items-center justify-between mb-6">
-    <h1 class="text-2xl font-bold text-gray-800">Productos de Venta</h1>
-    <a href="{{ url_for('producto_venta.crear') }}" class="bg-brew-bg text-white px-4 py-2 rounded-lg font-semibold hover:bg-brew-dark transition">
+    <h1 class="text-3xl font-bold text-gray-800">Productos de Venta</h1>
+    <a href="{{ url_for('producto_venta.crear') }}" class="bg-[#4A9062] text-white px-4 py-2 rounded-lg font-semibold hover:opacity-90 transition shadow-md">
       <i class="fas fa-plus mr-2"></i>Nuevo Producto
     </a>
   </div>
 
-  {% if productos %}
+  <!-- Search Bar -->
+  <div class="mb-6 flex gap-2">
+    <div class="flex-1 relative">
+      <input type="text" id="inputBusquedaProductos" placeholder="Buscar por nombre o receta..." class="w-full px-4 py-2 pl-10 border-2 border-gray-400 rounded-lg focus:outline-none focus:border-[#6C9AD0] transition-colors">
+      <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+    </div>
+  </div>
+
+  {% if pagination.items %}
   <div class="bg-white rounded-xl shadow overflow-x-auto">
     <table class="min-w-full text-sm">
-      <thead class="bg-brew-dark text-brew-beige">
+      <thead class="bg-gray-100">
         <tr>
-          <th class="px-4 py-3 text-left">Nombre</th>
-          <th class="px-4 py-3 text-left">Receta</th>
-          <th class="px-4 py-3 text-left">Presentación</th>
-          <th class="px-4 py-3 text-left">Tipo</th>
-          <th class="px-4 py-3 text-right">Uds.</th>
-          <th class="px-4 py-3 text-right">Precio</th>
-          <th class="px-4 py-3 text-center">Estado</th>
-          <th class="px-4 py-3 text-center">Acciones</th>
+          <th class="px-4 py-3 text-left font-semibold text-gray-700">Nombre</th>
+          <th class="px-4 py-3 text-left font-semibold text-gray-700">Receta</th>
+          <th class="px-4 py-3 text-left font-semibold text-gray-700">Presentación</th>
+          <th class="px-4 py-3 text-left font-semibold text-gray-700">Tipo</th>
+          <th class="px-4 py-3 text-right font-semibold text-gray-700">Uds.</th>
+          <th class="px-4 py-3 text-right font-semibold text-gray-700">Precio</th>
+          <th class="px-4 py-3 text-center font-semibold text-gray-700">Estado</th>
+          <th class="px-4 py-3 text-center font-semibold text-gray-700">Acciones</th>
         </tr>
       </thead>
       <tbody class="divide-y divide-gray-100">
-        {% for p in productos %}
-        <tr class="hover:bg-gray-50">
-          <td class="px-4 py-3 font-medium">{{ p.nombre }}</td>
-          <td class="px-4 py-3">{{ p.receta.nombre }}</td>
-          <td class="px-4 py-3">{{ p.presentacion.nombre }}</td>
-          <td class="px-4 py-3 capitalize">{{ p.tipo }}</td>
-          <td class="px-4 py-3 text-right">{{ p.cantidad_unidades }}</td>
-          <td class="px-4 py-3 text-right">${{ "%.2f"|format(p.precio_venta) }}</td>
+        {% for p in pagination.items %}
+        <tr class="hover:bg-gray-50 transition">
+          <td class="px-4 py-3 font-medium text-gray-900">
+            <a href="{{ url_for('producto_venta.detalle', id=p.id) }}" class="text-[#6C9AD0] hover:underline">{{ p.nombre }}</a>
+          </td>
+          <td class="px-4 py-3 text-gray-700">{{ p.receta.nombre }}</td>
+          <td class="px-4 py-3 text-gray-700">{{ p.presentacion.nombre }}</td>
+          <td class="px-4 py-3 text-gray-700 capitalize">
+            <span class="px-3 py-1 text-xs font-bold rounded-full border 
+              {% if p.tipo == 'promocional' %}
+                bg-blue-50 text-blue-700 border-blue-200
+              {% elif p.tipo == 'pack' %}
+                bg-purple-50 text-purple-700 border-purple-200
+              {% else %}
+                bg-gray-50 text-gray-700 border-gray-200
+              {% endif %}">
+              {{ p.tipo }}
+            </span>
+          </td>
+          <td class="px-4 py-3 text-right text-gray-700">{{ p.cantidad_unidades }}</td>
+          <td class="px-4 py-3 text-right text-gray-900 font-semibold">${{ "%.2f"|format(p.precio_venta) }}</td>
           <td class="px-4 py-3 text-center">
             {% if p.activo %}
-              <span class="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">Activo</span>
+              <span class="px-3 py-1 text-xs font-bold rounded-full bg-green-100 text-green-800 border border-green-200">Activo</span>
             {% else %}
-              <span class="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-semibold">Inactivo</span>
+              <span class="px-3 py-1 text-xs font-bold rounded-full bg-red-100 text-red-800 border border-red-200">Inactivo</span>
             {% endif %}
           </td>
           <td class="px-4 py-3 text-center">
-            <div class="flex gap-2 justify-center">
-              <a href="{{ url_for('producto_venta.editar', id=p.id) }}" class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-xs">Editar</a>
-              {% if p.activo %}
-              <form method="POST" action="{{ url_for('producto_venta.desactivar', id=p.id) }}">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <button type="submit" class="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-xs">Desactivar</button>
-              </form>
-              {% else %}
-              <form method="POST" action="{{ url_for('producto_venta.activar', id=p.id) }}">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <button type="submit" class="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-xs">Activar</button>
-              </form>
-              {% endif %}
-            </div>
+            <a href="{{ url_for('producto_venta.detalle', id=p.id) }}" class="inline-block text-white font-bold py-1.5 px-4 rounded-lg shadow-sm hover:opacity-90 transition" style="background-color: #6C9AD0;">
+              Ver Detalle
+            </a>
           </td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
+
+  <!-- Pagination -->
+  <div class="mt-6 flex items-center justify-between">
+    <div class="text-sm text-gray-600">
+      {% set inicio = ((pagination.page - 1) * pagination.per_page) + 1 %}
+      {% set fin = pagination.page * pagination.per_page %}
+      Mostrando {{ inicio }} a {{ fin if fin < pagination.total else pagination.total }} de {{ pagination.total }} productos
+    </div>
+    <div class="flex gap-2">
+      {% if pagination.has_prev %}
+        <a href="{{ url_for('producto_venta.listar', page=pagination.prev_num, q=search_term) }}" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">Anterior</a>
+      {% else %}
+        <button disabled class="px-4 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-400 cursor-not-allowed">Anterior</button>
+      {% endif %}
+      
+      {% for page_num in pagination.iter_pages() %}
+        {% if page_num %}
+          {% if page_num == pagination.page %}
+            <button class="px-4 py-2 bg-[#6C9AD0] text-white rounded-lg font-semibold">{{ page_num }}</button>
+          {% else %}
+            <a href="{{ url_for('producto_venta.listar', page=page_num, q=search_term) }}" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">{{ page_num }}</a>
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+      
+      {% if pagination.has_next %}
+        <a href="{{ url_for('producto_venta.listar', page=pagination.next_num, q=search_term) }}" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">Siguiente</a>
+      {% else %}
+        <button disabled class="px-4 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-400 cursor-not-allowed">Siguiente</button>
+      {% endif %}
+    </div>
+  </div>
   {% else %}
-  <div class="bg-white rounded-xl shadow p-8 text-center text-gray-500">
-    No hay productos de venta registrados.
+  <div class="bg-white rounded-xl shadow p-12 text-center">
+    <i class="fas fa-inbox text-gray-300 text-4xl mb-4"></i>
+    <p class="text-gray-500 text-lg">
+      {% if search_term %}
+        No se encontraron productos con "{{ search_term }}"
+      {% else %}
+        No hay productos de venta registrados
+      {% endif %}
+    </p>
   </div>
   {% endif %}
 </div>
+
+<script>
+function realizarBusqueda() {
+  const searchTerm = document.getElementById('inputBusquedaProductos').value;
+  window.location.href = "{{ url_for('producto_venta.listar') }}?q=" + encodeURIComponent(searchTerm);
+}
+
+document.getElementById('inputBusquedaProductos').addEventListener('keypress', function(event) {
+  if (event.key === 'Enter') {
+    realizarBusqueda();
+  }
+});
+</script>
 {% endblock %}
