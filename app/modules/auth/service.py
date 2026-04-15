@@ -29,6 +29,12 @@ class AuthService:
         if not check_password_hash(usuario.password, contrasenia):
             raise ValueError("Credenciales incorrectas")
 
+        # Validar que el usuario NO sea cliente
+        if usuario.rol.name == "cliente":
+            raise ValueError(
+                "Esta cuenta no tiene acceso al sistema administrativo. Por favor, usa el portal de tienda."
+            )
+
         login_user(usuario)
 
         return usuario

@@ -63,6 +63,12 @@ class TiendaAuthService:
         if not check_password_hash(usuario.password, contrasenia):
             raise ValueError("Credenciales incorrectas.")
 
+        # Validar que el usuario SÍ sea cliente
+        if usuario.rol.name != "cliente":
+            raise ValueError(
+                "Esta cuenta no tiene acceso al portal de tienda. Por favor, usa el sistema administrativo."
+            )
+
         codigo = f"{random.randint(0, 999999):06d}"
         session["codigo_2fa"] = codigo
         session["codigo_2fa_expiry"] = (

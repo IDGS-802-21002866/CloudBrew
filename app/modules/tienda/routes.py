@@ -1,5 +1,5 @@
 from flask import flash, redirect, render_template, request, session, url_for
-from flask_login import current_user
+from flask_login import current_user, logout_user, login_required
 
 from app import captcha
 from app.modules.tienda import bp
@@ -21,6 +21,40 @@ auth_service = TiendaAuthService()
 producto_service = TiendaProductoService()
 carrito_service = TiendaCarritoService()
 checkout_service = TiendaCheckoutService()
+
+
+# ── Validación de rol para tienda ───────────────────────────────────────────
+@bp.before_request
+def validar_rol_tienda():
+    """Verifica que solo clientes logueados puedan realizar acciones
+    pero permite ver el catálogo sin loguearse"""
+
+    endpoint = request.endpoint
+
+    # Rutas completamente públicas (sin requerir login)
+    rutas_publicas = [
+        "tienda.inicio",
+        "tienda.listar_productos",
+        "tienda.detalle_producto",
+        "tienda.detalle_receta",
+        "tienda.login",
+        "tienda.registrarse",
+        "tienda.recuperar_contrasena",
+        "tienda.restablecer_contrasena",
+        "tienda.verificar_codigo",
+        "tienda.logout",
+        "tienda.ver_carrito",
+    ]
+
+    if endpoint in rutas_publicas:
+        return
+
+    # Si está logueado pero NO es cliente, logout automático
+    if current_user.is_authenticated:
+        if current_user.rol.name != "cliente":
+            logout_user()
+            flash("Tu sesión no tiene acceso al portal de tienda.", "danger")
+            return redirect(url_for("tienda.login"))
 
 
 # ── Contexto global para templates ──────────────────────────────────────────
@@ -183,6 +217,7 @@ def ver_carrito():
 
 
 @bp.route("/carrito/agregar", methods=["POST"])
+@login_required
 def agregar_al_carrito():
     producto_venta_id = request.form.get("producto_venta_id", type=int)
     cantidad = request.form.get("cantidad", 1, type=int)
@@ -201,6 +236,7 @@ def agregar_al_carrito():
 
 
 @bp.route("/carrito/actualizar", methods=["POST"])
+@login_required
 def actualizar_carrito():
     producto_venta_id = request.form.get("producto_venta_id", type=int)
     cantidad = request.form.get("cantidad", type=int)
@@ -212,6 +248,7 @@ def actualizar_carrito():
 
 
 @bp.route("/carrito/eliminar/<int:producto_venta_id>", methods=["POST"])
+@login_required
 def eliminar_del_carrito(producto_venta_id):
     carrito_service.eliminar_producto(producto_venta_id)
     flash("Producto eliminado del carrito.", "success")
