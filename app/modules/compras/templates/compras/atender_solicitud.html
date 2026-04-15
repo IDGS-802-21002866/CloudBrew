@@ -1,103 +1,122 @@
 {% extends 'base.html' %}
 {% from '_macros.html' import campo_nuevo %}
 
-{% block title %}Atender Solicitud de Compra{% endblock %}
+{% block title %}Atender Solicitud{% endblock %}
 
 {% block content %}
 <div class="container mx-auto px-4 py-8">
-  <div class="mb-6">
-    <a href="{{ url_for('compras.listar') }}" class="text-[#4A9062] font-semibold hover:text-[#3f7b52] transition inline-flex items-center">
-      <i class="fa-solid fa-chevron-left mr-2"></i> Regresar a Compras
-    </a>
-  </div>
+    <div class="mb-6">
+        <a href="{{ url_for('compras.listar') }}" class="text-[#4A9062] font-bold hover:opacity-80 transition inline-flex items-center text-xl">
+            <i class="fa-solid fa-chevron-left mr-3"></i> Atender Solicitud de Compra
+        </a>
+    </div>
 
-  <div class="grid gap-6 lg:grid-cols-[1.1fr_1fr]">
-    <section class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-      <div class="mb-4">
-        <h1 class="text-2xl font-semibold text-gray-800">Atender Solicitud</h1>
-        <p class="text-sm text-gray-500">Genera una orden de compra a partir de la solicitud pendiente.</p>
-      </div>
-
-      <div class="rounded-2xl border border-gray-200 bg-gray-50 p-5 mb-6">
-        <div class="space-y-3 text-sm text-gray-700">
-          <p><span class="font-semibold">Materia Prima:</span> {{ solicitud.materia_prima.nombre }}</p>
-          <p><span class="font-semibold">Cantidad solicitada:</span> {{ solicitud.cantidad }}</p>
-          <p><span class="font-semibold">Origen:</span> {{ solicitud.origen|capitalize }}</p>
-          <p><span class="font-semibold">Estado:</span> {{ solicitud.estado }}</p>
-          <p><span class="font-semibold">Fecha de solicitud:</span> {{ solicitud.fecha_creacion.strftime('%d/%m/%Y') }}</p>
-        </div>
-      </div>
-
-      <form method="POST" class="space-y-6">
-        {{ form.hidden_tag() }}
-        {{ detalles_form.hidden_tag() }}
-
-        <div class="rounded-xl border border-gray-200 bg-gray-50 p-5">
-          <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4">Proveedor</h2>
-          {{ campo_nuevo(form.proveedor_id) }}
-        </div>
-
-        <div class="rounded-xl border border-gray-200 bg-gray-50 p-5">
-          <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4">Detalle de compra</h2>
-          <div class="grid gap-4 lg:grid-cols-3">
-            <div>
-              <label class="block text-sm font-semibold text-gray-700 mb-1">Materia Prima</label>
-              <select name="materia_prima_id" class="w-full rounded-lg border-2 border-gray-400 px-4 py-2 focus:border-[#6C9AD0] focus:outline-none">
-                <option value="">--- Seleccionar ---</option>
-                {% for mp in materias_primas %}
-                  <option value="{{ mp.id }}" {% if detalles_form.materia_prima_id.data == mp.id %}selected{% endif %}>{{ mp.nombre }}</option>
-                {% endfor %}
-              </select>
-              {% for error in detalles_form.materia_prima_id.errors %}
-                <p class="text-red-500 text-xs mt-1">{{ error }}</p>
-              {% endfor %}
+    <div class="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+        <section class="rounded-xl border border-gray-200 bg-white p-8 shadow-md">
+            <div class="rounded-2xl bg-gray-50 p-6 mb-8 border border-gray-200">
+                <h2 class="text-sm font-black text-gray-400 uppercase mb-4 tracking-widest">Resumen de Solicitud</h2>
+                <div class="grid grid-cols-2 gap-4 text-sm text-gray-700">
+                    <p><strong>Materia Prima:</strong> {{ solicitud.materia_prima.nombre }}</p>
+                    <p><strong>Origen:</strong> <span class="px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full text-xs font-bold">{{ solicitud.origen|capitalize }}</span></p>
+                    <p><strong>Cantidad en Solicitud:</strong> {{ solicitud.cantidad }} {{ solicitud.materia_prima.tipo_medida.unidad_base }}</p>
+                    <p><strong>Fecha:</strong> {{ solicitud.fecha_creacion.strftime('%d/%m/%Y') }}</p>
+                </div>
             </div>
-            <div>
-              <label class="block text-sm font-semibold text-gray-700 mb-1">Presentación</label>
-              <select name="presentacion_id" class="w-full rounded-lg border-2 border-gray-400 px-4 py-2 focus:border-[#6C9AD0] focus:outline-none">
-                <option value="">--- Seleccionar ---</option>
-                {% for presentacion in presentaciones %}
-                  <option value="{{ presentacion.id }}" {% if detalles_form.presentacion_id.data == presentacion.id %}selected{% endif %}>{{ presentacion.nombre }}</option>
-                {% endfor %}
-              </select>
-              {% for error in detalles_form.presentacion_id.errors %}
-                <p class="text-red-500 text-xs mt-1">{{ error }}</p>
-              {% endfor %}
-            </div>
-            <div>
-              {{ campo_nuevo(detalles_form.cantidad) }}
-            </div>
-          </div>
-        </div>
 
-        <div class="flex justify-end">
-          <button type="submit" class="inline-flex items-center justify-center rounded-lg bg-[#4A9062] px-5 py-3 text-sm font-semibold text-white hover:bg-[#418155] transition">
-            <i class="fa-solid fa-check mr-2"></i> Crear compra desde solicitud
-          </button>
-        </div>
-      </form>
-    </section>
+            <form method="POST" class="space-y-8">
+                {{ form.hidden_tag() }}
+                <input type="hidden" name="materia_prima_id" value="{{ solicitud.materia_prima_id }}">
 
-    <aside class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-      <div class="mb-4">
-        <h2 class="text-lg font-semibold text-gray-800">Guía de Atención</h2>
-        <p class="text-sm text-gray-500">Verifica estos datos antes de crear la compra.</p>
-      </div>
-      <ul class="space-y-3 text-sm text-gray-700">
-        <li class="flex items-start gap-3">
-          <span class="mt-1 inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#6C9AD0] text-white text-xs font-bold">1</span>
-          Selecciona un proveedor válido para esta solicitud.
-        </li>
-        <li class="flex items-start gap-3">
-          <span class="mt-1 inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#6C9AD0] text-white text-xs font-bold">2</span>
-          Revisa la cantidad solicitada y ajusta si necesitas redondear al empaque.
-        </li>
-        <li class="flex items-start gap-3">
-          <span class="mt-1 inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#6C9AD0] text-white text-xs font-bold">3</span>
-          Confirmar la compra generará la orden y cambiará el estado de la solicitud.
-        </li>
-      </ul>
-    </aside>
-  </div>
+                <div>
+                    <h3 class="text-sm font-black text-gray-700 uppercase mb-4">1. Seleccionar Proveedor</h3>
+                    {{ campo_nuevo(form.proveedor_id) }}
+                </div>
+
+                <div class="pt-6 border-t border-gray-100">
+                    <h3 class="text-sm font-black text-gray-700 uppercase mb-4">2. Configurar Compra</h3>
+                    <div class="grid gap-4 md:grid-cols-2">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Presentación de Compra</label>
+                            <select name="presentacion_id" id="presentacion-select" class="w-full rounded-lg border-2 border-gray-400 px-4 py-2 focus:border-[#6C9AD0] outline-none" required>
+                                <option value="" data-equiv="0">--- Seleccionar ---</option>
+                                {% for p in presentaciones %}
+                                    <option value="{{ p.id }}" data-equiv="{{ p.cantidad_equivalente }}">{{ p.nombre }} (equivale a {{ p.cantidad_equivalente }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Cantidad de Empaques</label>
+                            <input type="number" name="cantidad" id="cantidad-input" step="0.01" class="w-full rounded-lg border-2 border-gray-400 px-4 py-2 focus:border-[#6C9AD0] outline-none" value="{{ detalles_form.cantidad.data }}" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-[#F4FBFF] border-2 border-[#6C9AD0] rounded-2xl p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="text-blue-800 font-bold uppercase text-xs tracking-wider">Análisis de Surtido</span>
+                        <i class="fa-solid fa-calculator text-blue-400"></i>
+                    </div>
+                    <div class="space-y-2 text-sm text-gray-600">
+                        <div class="flex justify-between">
+                            <span>Materia Total Necesaria:</span>
+                            <span class="font-bold text-gray-800" id="materia-necesaria">{{ total_materia_necesaria }}</span>
+                        </div>
+                        <div class="flex justify-between text-[#4A9062] font-bold border-t border-blue-100 pt-2">
+                            <span>Sugerencia de compra:</span>
+                            <span id="sugerencia-texto">Seleccione presentación...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end pt-4">
+                    <button type="submit" class="bg-[#4A9062] text-white font-black py-3 px-10 rounded-xl shadow-lg hover:bg-green-700 transition uppercase tracking-tighter">
+                        Generar Orden de Compra
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <aside class="space-y-6">
+            <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+                <h3 class="font-bold text-gray-800 mb-4">Guía Rápida</h3>
+                <ul class="text-sm text-gray-600 space-y-4">
+                    <li class="flex gap-3">
+                        <span class="flex-none w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold text-xs">1</span>
+                        <span>El sistema filtró automáticamente las presentaciones que <strong>sí coinciden</strong> con el tipo de medida.</span>
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="flex-none w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold text-xs">2</span>
+                        <span>Ajusta la cantidad de empaques según la sugerencia para no quedar corto en producción.</span>
+                    </li>
+                </ul>
+            </div>
+        </aside>
+    </div>
 </div>
+
+<script>
+    const select = document.getElementById('presentacion-select');
+    const inputCantidad = document.getElementById('cantidad-input');
+    const necesaria = parseFloat(document.getElementById('materia-necesaria').textContent) || 0;
+    const sugerenciaTxt = document.getElementById('sugerencia-texto');
+
+    function calcularSugerencia() {
+        const option = select.options[select.selectedIndex];
+        const equiv = parseFloat(option.dataset.equiv) || 0;
+
+        if (equiv > 0 && necesaria > 0) {
+            const calculo = Math.ceil(necesaria / equiv);
+            sugerenciaTxt.textContent = `Pedir ${calculo} unidad(es)`;
+            // Opcional: auto-llenar el input con la sugerencia
+            if (!inputCantidad.value || inputCantidad.value == 0) {
+                inputCantidad.value = calculo;
+            }
+        } else {
+            sugerenciaTxt.textContent = "Seleccione presentación...";
+        }
+    }
+
+    select.addEventListener('change', calcularSugerencia);
+    window.onload = calcularSugerencia;
+</script>
 {% endblock %}

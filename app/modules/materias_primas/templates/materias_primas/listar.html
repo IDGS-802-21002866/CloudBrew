@@ -37,7 +37,8 @@
       </tr>
     </thead>
       <tbody class="bg-white divide-y divide-gray-200">
-        {% for materia in materias %}
+        {% if pagination.items %}
+        {% for materia in pagination.items %}
         <tr class="hover:bg-gray-50 transition-colors">
           <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900 col-nombre">{{ materia.nombre }}</td>
           <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ materia.tipo_medida.unidad_base }}</td>
@@ -51,15 +52,47 @@
           </td>
           <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
             <a href="{{ url_for('materias_primas.detalle', id=materia.id) }}" 
-               class="text-white font-bold py-1.5 px-4 rounded-lg flex items-center shadow-sm hover:opacity-90 transition" 
-               style="background-color: #6C9AD0; width: fit-content;">
+               class="inline-flex items-center text-white font-bold py-1.5 px-4 rounded-lg shadow-sm hover:opacity-90 transition bg-[#6C9AD0]">
               <i class="fa-solid fa-eye mr-2"></i> Ver Detalle
             </a>
           </td>
         </tr>
         {% endfor %}
+        {% else %}
+        <tr>
+          <td colspan="5" class="px-6 py-10 text-center text-gray-500">No se encontraron materias primas registradas.</td>
+        </tr>
+        {% endif %}
       </tbody>
     </table>
+  </div>
+
+  <div class="flex justify-center items-center mt-6 space-x-4">
+    {% if pagination.has_prev %}
+    <a href="{{ url_for('materias_primas.listar', page=pagination.prev_num) }}"
+       class="px-4 py-2 bg-[#4A9062] text-white font-bold rounded-lg hover:opacity-90 transition shadow-sm">
+      <i class="fa-solid fa-chevron-left mr-2"></i> Anterior
+    </a>
+    {% else %}
+    <span class="px-4 py-2 bg-gray-200 text-gray-400 font-bold rounded-lg cursor-not-allowed">
+      <i class="fa-solid fa-chevron-left mr-2"></i> Anterior
+    </span>
+    {% endif %}
+
+    <span class="text-gray-600 font-medium">
+      Página <span class="font-bold text-gray-900">{{ pagination.page }}</span> de <span class="font-bold text-gray-900">{{ pagination.pages }}</span>
+    </span>
+
+    {% if pagination.has_next %}
+    <a href="{{ url_for('materias_primas.listar', page=pagination.next_num) }}"
+       class="px-4 py-2 bg-[#4A9062] text-white font-bold rounded-lg hover:opacity-90 transition shadow-sm">
+      Siguiente <i class="fa-solid fa-chevron-right ml-2"></i>
+    </a>
+    {% else %}
+    <span class="px-4 py-2 bg-gray-200 text-gray-400 font-bold rounded-lg cursor-not-allowed">
+      Siguiente <i class="fa-solid fa-chevron-right ml-2"></i>
+    </span>
+    {% endif %}
   </div>
 </div>
 

@@ -1,4 +1,5 @@
 import secrets
+import threading
 from datetime import datetime, timedelta, timezone
 
 from flask import current_app, render_template, url_for
@@ -17,6 +18,14 @@ from app.modules.usuarios.repository import (
 from app.modules.usuarios.service import UsuarioService
 
 usuarios_service = UsuarioService()
+
+
+def _enviar_correo(app, msg):
+    try:
+        with app.app_context():
+            mail.send(msg)
+    except Exception:
+        pass
 
 
 class AuthService:
@@ -59,7 +68,8 @@ class AuthService:
                 "auth/correo_recuperacion.html", enlace=enlace, nombre=usuario.nombre
             ),
         )
-        mail.send(msg)
+        app = current_app._get_current_object()
+        threading.Thread(target=lambda: _enviar_correo(app, msg)).start()
 
     def restablecer_contrasena(self, token, nueva_contrasenia):
         usuario = get_usuario_by_reset_token(token)

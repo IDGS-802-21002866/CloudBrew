@@ -34,3 +34,23 @@ class DevelopmentConfig(Config):
     MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
     MAIL_DEFAULT_SENDER = os.environ.get("MAIL_DEFAULT_SENDER")
     BASE_URL = os.environ.get("BASE_URL", "http://localhost:5000")
+
+
+class ProductionConfig(Config):
+    """Configuración para producción en Railway"""
+
+    DEBUG = False
+    SESSION_COOKIE_SECURE = True  # Solo HTTPS
+    # Priorizar MYSQL_URL de Railway, fallback a DATABASE_URL
+    SQLALCHEMY_DATABASE_URI = os.environ.get("MYSQL_URL") or os.environ.get(
+        "DATABASE_URL"
+    )
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    MAIL_SERVER = os.environ.get("MAIL_SERVER", "smtp.gmail.com")
+    MAIL_PORT = int(os.environ.get("MAIL_PORT", 465))
+    MAIL_USE_TLS = False
+    MAIL_USE_SSL = True
+    MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
+    MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
+    MAIL_DEFAULT_SENDER = os.environ.get("MAIL_DEFAULT_SENDER")
+    BASE_URL = os.environ.get("BASE_URL")  # Debe estar seteado en Railway

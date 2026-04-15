@@ -14,10 +14,12 @@ class OrdenDeCompraForm(FlaskForm):
 class OrdenDeCompraDetallesForm(FlaskForm):
     materia_prima_id = SelectField(
         "Materia Prima",
+        coerce=int,
         validators=[DataRequired(message="Debes elegir una materia prima.")],
     )
     presentacion_id = SelectField(
         "Presentación",
+        coerce=int,
         validators=[DataRequired(message="Debes elegir una presentación.")],
     )
     cantidad = IntegerField(

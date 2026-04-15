@@ -117,9 +117,7 @@ def create_app():
         elif subdominio == "crm":
             # Portal CRM
             if request.path == "/" or request.path == "":
-                if current_user.is_authenticated:
-                    return redirect(url_for("main.index"))
-                else:
+                if not current_user.is_authenticated:
                     return redirect(url_for("auth.login"))
 
             # Validar que si el usuario está logueado, NO sea cliente
