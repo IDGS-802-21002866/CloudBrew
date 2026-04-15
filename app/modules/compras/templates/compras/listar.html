@@ -102,33 +102,5 @@
       </div>
     </section>
   </div>
-
-  <div class="flex justify-center items-center mt-6 space-x-4">
-    {% if pagination.has_prev %}
-    <a href="{{ url_for('compras.listar', page=pagination.prev_num, q=search_term) }}"
-       class="px-4 py-2 bg-[#4A9062] text-white font-bold rounded-lg hover:opacity-90 transition shadow-sm">
-      <i class="fa-solid fa-chevron-left mr-2"></i> Anterior
-    </a>
-    {% else %}
-    <span class="px-4 py-2 bg-gray-200 text-gray-400 font-bold rounded-lg cursor-not-allowed">
-      <i class="fa-solid fa-chevron-left mr-2"></i> Anterior
-    </span>
-    {% endif %}
-
-    <span class="text-gray-600 font-medium">
-      Página <span class="font-bold text-gray-900">{{ pagination.page }}</span> de <span class="font-bold text-gray-900">{{ pagination.pages }}</span>
-    </span>
-
-    {% if pagination.has_next %}
-    <a href="{{ url_for('compras.listar', page=pagination.next_num, q=search_term) }}"
-       class="px-4 py-2 bg-[#4A9062] text-white font-bold rounded-lg hover:opacity-90 transition shadow-sm">
-      Siguiente <i class="fa-solid fa-chevron-right ml-2"></i>
-    </a>
-    {% else %}
-    <span class="px-4 py-2 bg-gray-200 text-gray-400 font-bold rounded-lg cursor-not-allowed">
-      Siguiente <i class="fa-solid fa-chevron-right ml-2"></i>
-    </span>
-    {% endif %}
-  </div>
 </div>
 {% endblock %}
