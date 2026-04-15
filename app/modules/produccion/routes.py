@@ -16,12 +16,16 @@ compras_service = ComprasService()
 
 @bp.route("/")
 def listar():
-    producciones = produccion_service.listar_produccion()
+    page = request.args.get("page", 1, type=int)
+    search_term = request.args.get("q", "").strip()
+    paginacion = produccion_service.listar_produccion(page=page, per_page=10)
     solicitudes = compras_service.listar_solicitudes_surtidas_retail()
     return render_template(
         "produccion/listar.html",
-        producciones=producciones,
+        producciones=paginacion.items,
+        pagination=paginacion,
         solicitudes=solicitudes,
+        search_term=search_term,
     )
 
 
@@ -34,17 +38,24 @@ def atender_solicitud(solicitud_id):
         return redirect(url_for("produccion.listar"))
 
     if solicitud.estado != "Surtida":
-        flash("Solo las solicitudes surtidas pueden atenderse en producción.", "warning")
+        flash(
+            "Solo las solicitudes surtidas pueden atenderse en producción.", "warning"
+        )
         return redirect(url_for("produccion.listar"))
 
     if request.method == "POST":
         if not solicitud.referencia or not solicitud.referencia.detalles:
-            flash("No se encontró el pedido retail asociado para crear la producción.", "danger")
+            flash(
+                "No se encontró el pedido retail asociado para crear la producción.",
+                "danger",
+            )
             return redirect(url_for("produccion.listar"))
 
         detalle_pedido = solicitud.referencia.detalles[0]
         if not detalle_pedido.receta_id or not detalle_pedido.cantidad_lotes:
-            flash("La referencia del pedido no tiene datos de receta válidos.", "danger")
+            flash(
+                "La referencia del pedido no tiene datos de receta válidos.", "danger"
+            )
             return redirect(url_for("produccion.listar"))
 
         try:

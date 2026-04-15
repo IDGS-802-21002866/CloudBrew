@@ -31,6 +31,20 @@
           </p>
         </div>
 
+        <!-- Pedido asociado -->
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-2">
+            <i class="fa-solid fa-file-invoice mr-1 text-amber-500"></i> Pedido Asociado
+          </label>
+          {% if produccion.pedidos and produccion.pedidos|length > 0 %}
+            <p class="text-lg font-semibold text-amber-700">
+              {{ produccion.pedidos[0].pedido.folio if produccion.pedidos[0].pedido else '-' }}
+            </p>
+          {% else %}
+            <p class="text-lg text-gray-400">Sin pedido asociado</p>
+          {% endif %}
+        </div>
+
         <!-- Estado -->
         <div>
           <label class="block text-sm font-medium text-gray-600 mb-2">Estado</label>

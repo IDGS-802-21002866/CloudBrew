@@ -16,6 +16,7 @@ def get_pedido_by_id(pedido_id):
 
 from sqlalchemy import or_
 
+
 def get_paginated_pedidos(page, per_page, search_term=None):
     query = Pedido.query.join(Cliente)
     if search_term:
@@ -29,7 +30,10 @@ def get_paginated_pedidos(page, per_page, search_term=None):
     return query.order_by(Pedido.fecha_registro.desc()).paginate(
         page=page, per_page=per_page
     )
+
+
 from sqlalchemy import or_
+
 
 def get_paginated_pedidos_terminados(page, per_page, search_term=None):
     query = Pedido.query.join(Cliente)
@@ -72,6 +76,7 @@ def create_pedido(cliente_id, detalles, total=None, usuario_id=None):
         detalle_pedido = PedidoDetalle(
             pedido_id=nuevo_pedido.id,
             producto_venta_id=detalle["producto_venta_id"],
+            cantidad=detalle.get("cantidad"),
             cantidad_lotes=detalle["cantidad_lotes"],
             total_unidades=detalle["total_unidades"],
             precio_unitario=detalle.get("precio_unitario"),

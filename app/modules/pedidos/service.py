@@ -1,3 +1,5 @@
+from math import ceil
+
 from app import db
 from app.modules.pedidos import repository as pedido_repo
 from app.modules.pedidos.model import Pedido, PedidoDetalle
@@ -11,7 +13,7 @@ from flask_login import current_user
 class PedidoService:
     def listar_paginados(self, page=1, per_page=10, search_term=None):
         return pedido_repo.get_paginated_pedidos(page, per_page, search_term)
-    
+
     def listar_paginado_terminados(self, page=1, per_page=10, search_term=None):
         return pedido_repo.get_paginated_pedidos_terminados(page, per_page, search_term)
 
@@ -42,9 +44,9 @@ class PedidoService:
         solicitudes_agrupadas = {}
         for detalle in detalles_data:
             producto_venta_id = detalle.get("producto_venta_id")
-            cantidad_lotes = int(detalle.get("cantidad_lotes") or 0)
+            cantidad = int(detalle.get("cantidad") or 0)
 
-            if not producto_venta_id or not cantidad_lotes:
+            if not producto_venta_id or not cantidad:
                 raise ValueError("Datos de detalle incompletos.")
 
             producto_venta = producto_venta_service.obtener_producto_venta(
@@ -52,7 +54,8 @@ class PedidoService:
             )
             receta = producto_venta.receta
 
-            total_unidades = float(cantidad_lotes) * receta.cantidad_producida
+            total_unidades = cantidad * producto_venta.cantidad_unidades
+            cantidad_lotes = ceil(total_unidades / receta.cantidad_producida)
             precio_unitario = float(producto_venta.precio_venta)
             total_pedido += precio_unitario * total_unidades
 
@@ -60,6 +63,7 @@ class PedidoService:
                 {
                     "producto_venta_id": producto_venta_id,
                     "receta_id": receta.id,
+                    "cantidad": cantidad,
                     "cantidad_lotes": cantidad_lotes,
                     "total_unidades": total_unidades,
                     "precio_unitario": precio_unitario,
@@ -104,7 +108,9 @@ class PedidoService:
                     },
                     commit=False,
                 )
-                pedido_repo.create_pedido_produccion(pedido.id, produccion.id_produccion)
+                pedido_repo.create_pedido_produccion(
+                    pedido.id, produccion.id_produccion
+                )
 
             db.session.commit()
             return pedido

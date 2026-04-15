@@ -1,12 +1,15 @@
 from flask import render_template, request, redirect, url_for, flash, session, jsonify
 from flask_login import current_user
+from math import ceil
 from . import bp
 from .forms import PedidoForm, PedidoDetalleForm
 from .service import PedidoService
 from app.modules.clientes.service import ClienteService
 from app.modules.producto_venta.service import ProductoVentaService
 from app.modules.recetas.service import RecetaService
-from app.modules.inventario_materias_primas.service import InventarioMateriasPrimasService
+from app.modules.inventario_materias_primas.service import (
+    InventarioMateriasPrimasService,
+)
 
 # Inicialización de servicios
 pedido_service = PedidoService()
@@ -77,7 +80,7 @@ def crear():
                     detalle_form.producto_venta_id.data
                 )
                 receta = producto.receta
-                cantidad_nueva = detalle_form.cantidad_lotes.data
+                cantidad_nueva = detalle_form.cantidad.data
 
                 detalle_existente = next(
                     (
@@ -91,13 +94,17 @@ def crear():
                 if detalle_existente:
                     flash("Este producto ya está en la lista.", "warning")
                 else:
+                    total_unidades = cantidad_nueva * producto.cantidad_unidades
+                    cantidad_lotes = ceil(total_unidades / receta.cantidad_producida)
                     session["pedido_detalles"].append(
                         {
                             "producto_venta_id": producto.id,
                             "producto_venta_nombre": producto.nombre,
-                            "cantidad_lotes": cantidad_nueva,
-                            "total_unidades": cantidad_nueva
-                            * receta.cantidad_producida,
+                            "receta_nombre": receta.nombre if receta else "-",
+                            "cantidad": cantidad_nueva,
+                            "cantidad_lotes": cantidad_lotes,
+                            "total_unidades": total_unidades,
+                            "precio_unitario": float(producto.precio_venta),
                         }
                     )
                     flash(f"{producto.nombre} agregado.", "success")
@@ -131,8 +138,10 @@ def crear():
                             nuevo_d = PedidoDetalle(
                                 pedido_id=pedido.id,
                                 producto_venta_id=d["producto_venta_id"],
+                                cantidad=d.get("cantidad"),
                                 cantidad_lotes=d["cantidad_lotes"],
                                 total_unidades=d["total_unidades"],
+                                precio_unitario=d.get("precio_unitario"),
                             )
                             db.session.add(nuevo_d)
                         db.session.commit()
@@ -178,8 +187,13 @@ def editar(id):
             {
                 "producto_venta_id": d.producto_venta_id,
                 "producto_venta_nombre": d.producto_venta.nombre,
+                "receta_nombre": (
+                    d.producto_venta.receta.nombre if d.producto_venta.receta else "-"
+                ),
+                "cantidad": d.cantidad or d.cantidad_lotes,
                 "cantidad_lotes": d.cantidad_lotes,
                 "total_unidades": d.total_unidades,
+                "precio_unitario": d.precio_unitario,
             }
         )
     session["editando_pedido_id"] = id

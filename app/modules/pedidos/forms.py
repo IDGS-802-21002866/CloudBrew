@@ -15,7 +15,7 @@ class PedidoDetalleForm(FlaskForm):
         coerce=int,
         validators=[DataRequired(message="Debe seleccionar un producto.")],
     )
-    cantidad_lotes = IntegerField(
-        "Cantidad de Lotes",
-        validators=[DataRequired(message="La cantidad de lotes es obligatoria.")],
+    cantidad = IntegerField(
+        "Cantidad",
+        validators=[DataRequired(message="La cantidad es obligatoria.")],
     )
