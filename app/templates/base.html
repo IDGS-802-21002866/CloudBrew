@@ -2,167 +2,161 @@
 {% from '_macros.html' import mostrar_flashes %}
 
 {% block body %}
-<div class="flex flex-col min-h-screen">
-  <!-- Navbar -->
-  <nav class="bg-brew-bg text-brew-beige shadow-lg px-6 py-4 flex items-center justify-between relative">
-    <div class="flex items-center gap-3">
-      <button id="btn-menu" type="button" class="text-xl hover:text-white transition" aria-label="Abrir menu">
-        <i class="fas fa-bars"></i>
-      </button>
-    </div>
-    <div class="absolute left-1/2 -translate-x-1/2">
+<div class="flex flex-col h-screen overflow-hidden">
+
+  <nav class="bg-brew-bg text-brew-beige shadow-lg px-6 py-4 flex flex-none items-center justify-between z-10">
+    <div></div>
+    <div>
       <img src="{{ url_for('static', filename='img/logo-solo.png') }}" alt="CloudBrew" class="h-7 w-auto">
     </div>
-    
-    <!-- User Menu -->
     <div class="flex items-center gap-4">
       <a href="{{ url_for('auth.logout') }}" class="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-brew-dark transition">
         <i class="fas fa-user-circle text-2xl"></i>
-        <span class="text-sm font-medium  sm:inline">{{ current_user.nombre }}</span>
+        <span class="text-sm font-medium">{{ current_user.nombre }}</span>
       </a>
     </div>
   </nav>
 
-  <div id="overlay-menu" class="fixed inset-0 bg-black/40 z-30 hidden"></div>
+  <div class="flex flex-1 overflow-hidden">
 
-  <!-- Content Wrapper -->
-  <div class="flex flex-1">
-    <!-- Sidebar -->
-    <aside id="menu-lateral" class="fixed top-0 left-0 h-screen w-64 bg-brew-dark text-brew-beige shadow-lg overflow-y-auto z-40 transform -translate-x-full transition-transform duration-300">
+    <aside class="w-64 bg-brew-dark text-brew-beige shadow-lg flex-none overflow-y-auto border-r border-brew-bg/20">
       <div class="p-4 space-y-2">
-        <div class="flex items-center justify-between mb-4">
-          <p class="text-sm uppercase tracking-wider opacity-70">Menu</p>
-          <button id="btn-cerrar-menu" type="button" class="text-lg hover:text-white transition" aria-label="Cerrar menu">
-            <i class="fas fa-times"></i>
-          </button>
-        </div>
+        <p class="text-sm uppercase tracking-wider opacity-70 mb-4 px-4">Menu</p>
+
         <nav class="space-y-1">
           <a href="{{ url_for('main.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-brew-bg transition">
             <i class="fas fa-home w-5 flex-shrink-0"></i>
-            <span class="truncate">Inicio</span>
+            <span>Inicio</span>
           </a>
           
           <a href="{{ url_for('main.dashboard') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-brew-bg transition">
             <i class="fas fa-chart-bar w-5 flex-shrink-0"></i>
-            <span class="truncate">Dashboard</span>
+            <span>Dashboard</span>
           </a>
           
-          <div class="pt-2 border-t border-brew-bg">
+          <div class="pt-4 mt-2 border-t border-brew-bg">
             <p class="text-xs uppercase tracking-wider text-brew-beige opacity-50 px-4 py-2">Módulos</p>
             
             <a href="{{ url_for('usuarios.listar') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-brew-bg transition">
               <i class="fas fa-users w-5 flex-shrink-0"></i>
-              <span class="truncate">Usuarios</span>
+              <span>Usuarios</span>
             </a>
             
             <a href="{{ url_for('proveedores.listar') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-brew-bg transition">
               <i class="fas fa-truck w-5 flex-shrink-0"></i>
-              <span class="truncate">Proveedores</span>
+              <span>Proveedores</span>
             </a>
             
             <a href="{{ url_for('materias_primas.listar') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-brew-bg transition">
               <i class="fas fa-leaf w-5 flex-shrink-0"></i>
-              <span class="truncate">Materias Primas</span>
+              <span>Materias Primas</span>
             </a>
             
             <a href="{{ url_for('unidades_medida.listar') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-brew-bg transition">
               <i class="fas fa-balance-scale w-5 flex-shrink-0"></i>
-              <span class="truncate">Unidades de Medida</span>
+              <span>Unidades de Medida</span>
             </a>
             
             <a href="{{ url_for('presentaciones.listar') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-brew-bg transition">
               <i class="fas fa-box w-5 flex-shrink-0"></i>
-              <span class="truncate">Presentaciones</span>
+              <span>Presentaciones</span>
             </a>
 
             <a href="{{ url_for('recetas.listar') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-brew-bg transition">
               <i class="fas fa-book w-5 flex-shrink-0"></i>
-              <span class="truncate">Recetas</span>
+              <span>Recetas</span>
             </a>
             
             <a href="{{ url_for('compras.listar') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-brew-bg transition">
               <i class="fas fa-shopping-cart w-5 flex-shrink-0"></i>
-              <span class="truncate">Compras</span>
+              <span>Compras</span>
             </a>
 
             <a href="{{ url_for('inventario_materias_primas.listar') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-brew-bg transition">
               <i class="fas fa-warehouse w-5 flex-shrink-0"></i>
-              <span class="truncate">Inventario MP</span>
+              <span>Inventario MP</span>
             </a>
 
             <a href="{{ url_for('mermas_materia_prima.listar') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-brew-bg transition">
               <i class="fas fa-trash-alt w-5 flex-shrink-0"></i>
-              <span class="truncate">Mermas MP</span>
+              <span>Mermas MP</span>
             </a>
 
             <a href="{{ url_for('inventario_producto_terminado.listar') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-brew-bg transition">
               <i class="fas fa-boxes w-5 flex-shrink-0"></i>
-              <span class="truncate">Inventario PT</span>
+              <span>Inventario PT</span>
             </a> 
             
             <a href="{{ url_for('clientes.listar') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-brew-bg transition">
               <i class="fas fa-handshake w-5 flex-shrink-0"></i>
-              <span class="truncate">Clientes</span>
+              <span>Clientes</span>
             </a>
             
             <a href="{{ url_for('pedidos.listar') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-brew-bg transition">
               <i class="fas fa-clipboard-list w-5 flex-shrink-0"></i>
-              <span class="truncate">Pedidos</span>
+              <span>Pedidos</span>
             </a>
 
             <a href="{{ url_for('ventas.listar') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-brew-bg transition">
               <i class="fas fa-receipt w-5 flex-shrink-0"></i>
-              <span class="truncate">Ventas</span>
+              <span>Ventas</span>
             </a>
 
             <a href="{{ url_for('costos.dashboard') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-brew-bg transition">
               <i class="fas fa-coins w-5 flex-shrink-0"></i>
-              <span class="truncate">Costos</span>
+              <span>Costos</span>
             </a>
 
             <a href="{{ url_for('proc_prod.listar') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-brew-bg transition">
               <i class="fas fa-cog w-5 flex-shrink-0"></i>
-              <span class="truncate">Proceso de Producción</span>
+              <span>Proceso de Producción</span>
             </a>
 
             <a href="{{ url_for('produccion.listar') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-brew-bg transition">
               <i class="fas fa-industry w-5 flex-shrink-0"></i>
-              <span class="truncate">Producción</span>
+              <span>Producción</span>
             </a>
 
             <a href="{{ url_for('lotes.listar') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-brew-bg transition">
               <i class="fas fa-boxes-stacked w-5 flex-shrink-0"></i>
-              <span class="truncate">Lotes</span>
+              <span>Lotes</span>
             </a>
 
             <a href="{{ url_for('bitacora.listar') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-brew-bg transition">
               <i class="fas fa-list-ul w-5 flex-shrink-0"></i>
-              <span class="truncate">Bitacora de Accesos</span>
+              <span>Bitacora de Accesos</span>
             </a>
+
             <a href="{{ url_for('bitacora.listar') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-brew-bg transition">
               <i class="fas fa-database w-5 flex-shrink-0"></i>
-              <span class="truncate">Respaldos y Restauración</span>
+              <span>Respaldos y Restauración</span>
             </a>
 
             <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-brew-bg transition text-gray-400" title="Accesible desde Producción">
               <i class="fas fa-tasks w-5 flex-shrink-0"></i>
-              <span class="truncate">Procesos Producción</span>
+              <span>Procesos Producción</span>
             </a>
           </div>
         </nav>
       </div>
     </aside>
 
-    <!-- Main Content -->
-    <main class="flex-1 bg-gray-50 overflow-y-auto">
-      <div class="p-6 max-w-full">
+    <main class="flex-1 bg-gray-50 flex flex-col overflow-y-auto">
+      
+      <div class="flex-1 p-6">
         {{ mostrar_flashes() }}
         {% block content %}
         {% endblock %}
       </div>
+
+      <footer class="bg-white border-t px-6 py-4 text-sm text-gray-500 text-center flex-none">
+        © 2026 CloudBrew — Todos los derechos reservados
+      </footer>
+
     </main>
+
   </div>
 </div>
-<script src="{{ url_for('static', filename='js/menu_lateral.js') }}"></script>
+
 <script src="{{ url_for('static', filename='js/busqueda_tabla.js') }}"></script>
 {% endblock %}
