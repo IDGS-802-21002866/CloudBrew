@@ -12,22 +12,9 @@ servicio = ProcesoProductivoService()
 def listar():
     try:
         page = request.args.get("page", 1, type=int)
-        querry = request.args.get("querry", "", type=str)
-        pag = servicio.listar_procesos(page=page, per_page=5, querry=querry)
-        procesos = pag.items
-        pagination = {
-            "page": pag.page,
-            "pages": list(range(1, pag.pages + 1)),
-            "has_prev": pag.has_prev,
-            "has_next": pag.has_next,
-            "prev_num": pag.prev_num,
-            "next_num": pag.next_num,
-            "total": pag.total,
-            "start": (pag.page - 1) * pag.per_page + 1 if pag.total > 0 else 0,
-            "end": min(pag.page * pag.per_page, pag.total),
-        }
+        pag = servicio.listar_procesos(page=page, per_page=5, querry=None)
         return render_template(
-            "procesos_productivos/listar.html", procesos=procesos, pagination=pagination
+            "procesos_productivos/listar.html", procesos=pag.items, pagination=pag
         )
 
     except ValueError as e:

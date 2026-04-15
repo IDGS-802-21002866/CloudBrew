@@ -17,17 +17,12 @@
       <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
         <i class="fa-solid fa-magnifying-glass text-gray-400"></i>
       </span>
-      <input type="text" id="inputBusquedaCompras"
-             name="q" value="{{ search_term if search_term }}"
-             class="w-full pl-10 pr-4 py-2 border-2 border-gray-400 rounded-lg focus:outline-none focus:border-[#6C9AD0] focus:ring-0 transition-colors"
-             placeholder="Buscar compra por proveedor..."
-             onkeypress="if(event.key === 'Enter') realizarBusqueda()">
+      <input type="text" id="inputBusqueda"
+             data-busqueda-tabla="tablaCompras"
+             data-busqueda-col="col-proveedor"
+             class="w-full pl-10 pr-4 py-2 border-2 border-gray-400 rounded-lg focus:outline-none focus:border-[#6C9AD0] transition-colors"
+             placeholder="Filtrar por proveedor...">
     </div>
-    {% if search_term %}
-      <a href="{{ url_for('compras.listar') }}" class="text-sm text-[#B85B5B] font-bold hover:underline">
-        Limpiar búsqueda
-      </a>
-    {% endif %}
   </div>
 
   <div class="bg-white shadow-md rounded-lg overflow-hidden border border-gray-200">
@@ -40,7 +35,7 @@
           <th class="px-6 py-3 text-left text-xs font-medium text-brew-beige uppercase tracking-wider">Fecha de Registro</th>
           <th class="px-6 py-3 text-left text-xs font-medium text-brew-beige uppercase tracking-wider">Usuario</th>
           <th class="px-6 py-3 text-left text-xs font-medium text-brew-beige uppercase tracking-wider">Estado</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-brew-beige uppercase tracking-wider">Acciones</th>
+          <th class="px-6 py-3 text-center text-xs font-medium text-brew-beige uppercase tracking-wider">Acciones</th>
         </tr>
       </thead>
       <tbody class="bg-white divide-y divide-gray-200">
@@ -48,20 +43,28 @@
           {% for compra in pagination.items %}
           <tr class="hover:bg-gray-50 transition-colors">
             <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">#{{ compra.id }}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ compra.proveedor.nombre if compra.proveedor else 'N/A' }}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ compra.fecha_compra.strftime('%d/%m/%Y') if compra.fecha_compra else 'N/A' }}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ compra.fecha_registro.strftime('%d/%m/%Y %H:%M') if compra.fecha_registro else 'N/A' }}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ compra.usuario.nombre if compra.usuario else 'N/A' }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium col-proveedor">
+              {{ compra.proveedor.nombre if compra.proveedor else 'N/A' }}
+            </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              {{ compra.fecha_compra.strftime('%d/%m/%Y') if compra.fecha_compra else 'N/A' }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              {{ compra.fecha_registro.strftime('%d/%m/%Y %H:%M') if compra.fecha_registro else 'N/A' }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              {{ compra.usuario.nombre if compra.usuario else 'N/A' }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm">
               {% if compra.cancelada %}
-                <span class="rounded-full px-3 py-1 text-xs font-bold bg-red-100 text-red-700 border border-red-400">Cancelada</span>
+                <span class="px-3 py-1 text-xs font-bold rounded-full bg-red-100 text-red-700 border border-red-200">Cancelada</span>
               {% elif compra.fecha_compra %}
-                <span class="rounded-full px-3 py-1 text-xs font-bold bg-[#4A9062] bg-opacity-20 text-[#2D6A3E] border border-[#4A9062]">Pagado</span>
+                <span class="px-3 py-1 text-xs font-bold rounded-full bg-green-100 text-green-700 border border-green-200">Pagado</span>
               {% else %}
-                <span class="rounded-full px-3 py-1 text-xs font-bold bg-[#E8A946] bg-opacity-20 text-[#B8860B] border border-[#E8A946]">Pendiente</span>
+                <span class="px-3 py-1 text-xs font-bold rounded-full bg-yellow-100 text-yellow-700 border border-yellow-200">Pendiente</span>
               {% endif %}
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+            <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
               <a href="{{ url_for('compras.detalle', id=compra.id) }}"
                  class="text-white font-bold py-1.5 px-4 rounded-lg inline-flex items-center shadow-sm hover:opacity-90 transition bg-[#6C9AD0]">
                 <i class="fa-solid fa-eye mr-2"></i> Ver Detalle
@@ -72,7 +75,7 @@
         {% else %}
           <tr>
             <td colspan="7" class="px-6 py-10 text-center text-gray-500">
-              No se encontraron compras que coincidan con la búsqueda.
+              No se encontraron registros de compras.
             </td>
           </tr>
         {% endif %}
@@ -82,7 +85,7 @@
 
   <div class="flex justify-center items-center mt-6 space-x-4">
     {% if pagination.has_prev %}
-    <a href="{{ url_for('compras.listar', page=pagination.prev_num, q=search_term) }}"
+    <a href="{{ url_for('compras.listar', page=pagination.prev_num) }}"
        class="px-4 py-2 bg-[#4A9062] text-white font-bold rounded-lg hover:opacity-90 transition shadow-sm">
       <i class="fa-solid fa-chevron-left mr-2"></i> Anterior
     </a>
@@ -97,7 +100,7 @@
     </span>
 
     {% if pagination.has_next %}
-    <a href="{{ url_for('compras.listar', page=pagination.next_num, q=search_term) }}"
+    <a href="{{ url_for('compras.listar', page=pagination.next_num) }}"
        class="px-4 py-2 bg-[#4A9062] text-white font-bold rounded-lg hover:opacity-90 transition shadow-sm">
       Siguiente <i class="fa-solid fa-chevron-right ml-2"></i>
     </a>
@@ -109,11 +112,5 @@
   </div>
 </div>
 
-<script>
-    function realizarBusqueda() {
-        const query = document.getElementById('inputBusquedaCompras').value;
-        // Se asume que la ruta se llama 'compras.listar'
-        window.location.href = "{{ url_for('compras.listar') }}?q=" + encodeURIComponent(query);
-    }
-</script>
+<script src="{{ url_for('static', filename='js/busqueda_tabla.js') }}"></script>
 {% endblock %}

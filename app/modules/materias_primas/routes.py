@@ -12,8 +12,9 @@ servicio_unidades = UnidadMedidaService()
 @login_required
 @bp.route("/")
 def listar():
-    materias = servicio.listar_materias(True)
-    return render_template("materias_primas/listar.html", materias=materias)
+    page=request.args.get("page", 1, type=int)
+    pagination = servicio.listar_materias_paginadas(page=page, per_page=5)
+    return render_template("materias_primas/listar.html", pagination=pagination)
 
 
 @login_required

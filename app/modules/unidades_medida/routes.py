@@ -10,8 +10,9 @@ servicio = UnidadMedidaService()
 @login_required
 @bp.route("/")
 def listar():
-    unidades = servicio.listar_unidades_medida()
-    return render_template("unidades_medida/listar.html", unidades=unidades)
+    page=request.args.get("page", 1, type=int)
+    pagination = servicio.listar_unidades_medida(page, per_page=10)
+    return render_template("unidades_medida/listar.html", pagination=pagination)
 
 
 @login_required

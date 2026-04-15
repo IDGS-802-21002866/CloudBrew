@@ -8,6 +8,12 @@ class VentaService:
 
     def listar_ventas(self):
         return self.repository.get_all_ventas()
+    
+    def listar_ventas_paginadas(self, page, per_page):
+        return self.repository.get_paginated_ventas(
+            page=page,
+            per_page=per_page
+        )
 
     def obtener_venta(self, id_venta):
         venta = self.repository.get_venta_by_id(id_venta)

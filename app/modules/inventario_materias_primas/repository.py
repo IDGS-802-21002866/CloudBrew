@@ -41,6 +41,48 @@ def get_all_materias_primas_con_stock():
         .all()
     )
 
+from sqlalchemy import func, case
+
+def get_paginated_materias_primas_con_stock(page, per_page):
+    stock_expr = func.coalesce(
+        func.sum(
+            case(
+                (
+                    MovimientosMateriaPrima.tipo == "entrada",
+                    MovimientosMateriaPrima.cantidad,
+                ),
+                else_=-MovimientosMateriaPrima.cantidad,
+            )
+        ),
+        0,
+    )
+
+    query = (
+        db.session.query(
+            MateriaPrima.id,
+            MateriaPrima.nombre,
+            MateriaPrima.tipo_medida_id,
+            MateriaPrima.stock_minimo,
+            stock_expr.label("stock_actual"),
+        )
+        .outerjoin(
+            MovimientosMateriaPrima,
+            MovimientosMateriaPrima.materia_prima_id == MateriaPrima.id,
+        )
+        .group_by(
+            MateriaPrima.id,
+            MateriaPrima.nombre,
+            MateriaPrima.tipo_medida_id,
+            MateriaPrima.stock_minimo,
+        )
+        .order_by(MateriaPrima.nombre.asc())
+    )
+
+    return query.paginate(
+        page=page,
+        per_page=per_page,
+        error_out=False
+    )
 
 def get_all_movimientos_by_materia_prima_id(materia_prima_id):
     return (

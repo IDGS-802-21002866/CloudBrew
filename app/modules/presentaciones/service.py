@@ -9,6 +9,13 @@ class PresentacionService:
         if incluir_inactivas:
             return materias
         return [m for m in materias if m.activo]
+    
+    def listar_presentaciones_paginadas(self, page, per_page, search_term=None):
+        return repository.get_paginated_presentaciones(
+            page=page,
+            per_page=per_page,
+            search_term=search_term
+        )
 
     def obtener_por_id(self, id):
         presentacion = repository.get_presentacion_by_id(id)

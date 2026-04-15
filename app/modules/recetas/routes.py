@@ -28,9 +28,13 @@ UnidadMedidaService = UnidadMedidaService()
 @login_required
 @bp.route("/")
 def listar():
-    """Lista todas las recetas"""
-    recetas = receta_service.listar_recetas(incluir_inactivas=True)
-    return render_template("recetas/listar.html", recetas=recetas)
+    page = request.args.get("page", 1, type=int)
+    recetas = receta_service.listar_recetas(
+        page=page,
+        per_page=10,
+        incluir_inactivas=True
+    )
+    return render_template("recetas/listar.html", pagination=recetas)
 
 
 @login_required

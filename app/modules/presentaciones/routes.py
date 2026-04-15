@@ -13,8 +13,9 @@ medidaServicio=UnidadMedidaService()
 @login_required
 @bp.route("/")
 def listar():
-    presentaciones = servicio.listar_presentaciones(True)
-    return render_template("presentaciones/listar.html", presentaciones=presentaciones)
+    page=request.args.get("page", 1, type=int)
+    paginacion = servicio.listar_presentaciones_paginadas(page, 10)
+    return render_template("presentaciones/listar.html", pagination=paginacion)
 
 
 @login_required

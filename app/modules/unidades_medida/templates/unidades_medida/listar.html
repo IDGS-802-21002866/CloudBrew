@@ -7,8 +7,8 @@
 
   <div class="flex justify-between items-center mb-6">
     <h1 class="text-3xl font-bold text-gray-800">Unidades de Medida</h1>
-    <a href="{{ url_for('unidades_medida.crear') }}" class="bg-[#4A9062] hover:opacity-90 text-white font-bold py-2 px-4 rounded shadow-md transition">
-      <i class="fa-solid fa-plus mr-2"></i>Crear Nueva Unidad
+    <a href="{{ url_for('unidades_medida.crear') }}" class="bg-[#4A9062] hover:opacity-90 text-white font-bold py-2 px-4 rounded shadow-md transition flex items-center">
+      <i class="fa-solid fa-plus mr-2"></i> Crear Nueva Unidad
     </a>
   </div>
 
@@ -21,7 +21,7 @@
              data-busqueda-tabla="tablaUnidades"
              data-busqueda-col="col-nombre"
              class="w-full pl-10 pr-4 py-2 border-2 border-gray-400 rounded-lg focus:outline-none focus:border-[#6C9AD0] transition-colors"
-             placeholder="Buscar unidad por nombre...">
+             placeholder="Filtrar unidad por nombre...">
     </div>
   </div>
 
@@ -36,28 +36,62 @@
         </tr>
       </thead>
       <tbody class="bg-white divide-y divide-gray-200">
-        {% for unidad in unidades %}
-        <tr class="hover:bg-gray-50 transition-colors">
-          <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900 col-nombre">
-            {{ unidad.nombre }}
-            {% if unidad.es_base_sistema %}
-            <span class="ml-2 inline-block text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded font-semibold">BASE</span>
-            {% endif %}
-          </td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ unidad.abreviatura }}</td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ unidad.tipo_medida.nombre }}</td>
-          <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-            <a href="{{ url_for('unidades_medida.detalle', id=unidad.id) }}" 
-               class="inline-block text-white font-bold py-1.5 px-4 rounded-lg shadow-sm hover:opacity-90 transition" 
-               style="background-color: #6C9AD0;">
-               Ver Detalle
-            </a>
-          </td>
-        </tr>
-        {% endfor %}
+        {% if pagination.items %}
+          {% for unidad in pagination.items %}
+          <tr class="hover:bg-gray-50 transition-colors">
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900 col-nombre">
+              {{ unidad.nombre }}
+              {% if unidad.es_base_sistema %}
+              <span class="ml-2 inline-block text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded font-semibold border border-blue-200">BASE</span>
+              {% endif %}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ unidad.abreviatura }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ unidad.tipo_medida.nombre }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+              <a href="{{ url_for('unidades_medida.detalle', id=unidad.id) }}" 
+                 class="inline-flex items-center text-white font-bold py-1.5 px-4 rounded-lg shadow-sm hover:opacity-90 transition bg-[#6C9AD0]">
+                 <i class="fa-solid fa-eye mr-2"></i> Ver Detalle
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="4" class="px-6 py-10 text-center text-gray-500">
+              No hay unidades de medida registradas.
+            </td>
+          </tr>
+        {% endif %}
       </tbody>
     </table>
   </div>
-</div>
 
+  <div class="flex justify-center items-center mt-6 space-x-4">
+    {% if pagination.has_prev %}
+    <a href="{{ url_for('unidades_medida.listar', page=pagination.prev_num) }}"
+       class="px-4 py-2 bg-[#4A9062] text-white font-bold rounded-lg hover:opacity-90 transition shadow-sm">
+      <i class="fa-solid fa-chevron-left mr-2"></i> Anterior
+    </a>
+    {% else %}
+    <span class="px-4 py-2 bg-gray-200 text-gray-400 font-bold rounded-lg cursor-not-allowed">
+      <i class="fa-solid fa-chevron-left mr-2"></i> Anterior
+    </span>
+    {% endif %}
+
+    <span class="text-gray-600 font-medium">
+      Página <span class="font-bold text-gray-900">{{ pagination.page }}</span> de <span class="font-bold text-gray-900">{{ pagination.pages }}</span>
+    </span>
+
+    {% if pagination.has_next %}
+    <a href="{{ url_for('unidades_medida.listar', page=pagination.next_num) }}"
+       class="px-4 py-2 bg-[#4A9062] text-white font-bold rounded-lg hover:opacity-90 transition shadow-sm">
+      Siguiente <i class="fa-solid fa-chevron-right ml-2"></i>
+    </a>
+    {% else %}
+    <span class="px-4 py-2 bg-gray-200 text-gray-400 font-bold rounded-lg cursor-not-allowed">
+      Siguiente <i class="fa-solid fa-chevron-right ml-2"></i>
+    </span>
+    {% endif %}
+  </div>
+</div>
 {% endblock %}

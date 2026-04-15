@@ -163,7 +163,7 @@ def get_produccion_completadas(page, per_page):
             per_page=per_page
         )
     except Exception as e:
-        raise ValueError("Ocurrió un error al obtener los registros de producción." + str(e)) from e
+        raise ValueError("Ocurrió un error al obtener los registros de producción.") from e
 
 
 def get_produccion_by_id(id):

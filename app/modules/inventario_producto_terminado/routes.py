@@ -1,4 +1,4 @@
-from flask import flash, redirect, render_template, url_for
+from flask import flash, redirect, render_template, request, url_for
 
 from . import bp
 from app.shared.decorators import login_required
@@ -12,9 +12,10 @@ servicio = InventarioProductoTerminadoService()
 @login_required
 @bp.route("/")
 def listar():
-    inventario = servicio.listar_recetas_con_stock()
+    page=request.args.get("page", 1, type=int)
+    inventario = servicio.listar_recetas_con_stock_pag(page, per_page=10)
     return render_template(
-        "inventario_producto_terminado/listar.html", inventario=inventario
+        "inventario_producto_terminado/listar.html", pagination=inventario
     )
 
 

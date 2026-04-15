@@ -9,6 +9,20 @@ def get_all_recetas_activas():
 def get_all_recetas_with_inactive():
     return Recetas.query.all()
 
+def get_paginated_recetas(page, per_page, search_term=None, incluir_inactivas=False):
+    query = Recetas.query
+    if not incluir_inactivas:
+        query = query.filter(Recetas.activo.is_(True))
+    if search_term:
+        query = query.filter(
+            Recetas.nombre.ilike(f"%{search_term}%")
+        )
+
+    return query.order_by(Recetas.id.desc()).paginate(
+        page=page,
+        per_page=per_page,
+        error_out=False
+    )
 
 def get_receta_by_id(id):
     return Recetas.query.get(id)
