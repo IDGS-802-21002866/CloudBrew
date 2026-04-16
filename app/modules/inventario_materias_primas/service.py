@@ -30,13 +30,7 @@ class InventarioMateriasPrimasService:
 
             abr = item_dict.get("unidad_abreviatura")
             if not abr:
-                tipo = item_dict.get("tipo_medida_id")
-                if tipo == 1:
-                    abr = "g"
-                elif tipo == 2:
-                    abr = "ml"
-                else:
-                    abr = "pzas"
+                abr = item_dict.get("unidad_base", "")
 
             stock_min_base = float(item_dict.get("max_receta") or 0) * 2
             stock_act_base = float(item_dict.get("stock_actual_base") or 0)
@@ -87,13 +81,7 @@ class InventarioMateriasPrimasService:
 
             abr = item_dict.get("unidad_abreviatura")
             if not abr:
-                tipo = item_dict.get("tipo_medida_id")
-                if tipo == 1:
-                    abr = "g"
-                elif tipo == 2:
-                    abr = "ml"
-                else:
-                    abr = "pzas"
+                abr = item_dict.get("unidad_base", "")
 
             stock_min_base = float(item_dict.get("max_receta") or 0) * 2
             stock_act_base = float(item_dict.get("stock_actual_base") or 0)

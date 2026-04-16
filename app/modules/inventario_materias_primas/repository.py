@@ -36,6 +36,7 @@ def get_all_materias_primas_con_stock(page=1, per_page=10, search_term=None):
             MateriaPrima.tipo_medida_id,
             UnidadMedida.abreviatura.label("unidad_abreviatura"),
             UnidadMedida.valor_conversion,
+            TipoMedida.unidad_base.label("unidad_base"),
             func.coalesce(max_receta_subquery.c.max_requerido, 0).label("max_receta"),
             stock_expr.label("stock_actual_base"),
         )
