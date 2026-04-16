@@ -587,7 +587,6 @@ class TiendaCheckoutService:
                     id_producto_venta=detalle["producto_venta_id"],
                     cantidad=detalle["cantidad"],
                     precio_unitario=detalle["precio_unitario"],
-                    subtotal=detalle["subtotal"],
                 )
 
                 producto = ProductoVenta.query.get(detalle["producto_venta_id"])
