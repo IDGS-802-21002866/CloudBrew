@@ -52,8 +52,8 @@ class RecetaDetalleForm(FlaskForm):
             DataRequired(message="La cantidad es obligatoria."),
             NumberRange(
                 min=0.01,
-                max=100,
-                message="La cantidad debe ser mayor a 0 y menor a 100.",
+                max=20000,
+                message="La cantidad debe ser mayor a 0 y menor a 20000.",
             ),
         ],
         default=0.1,
