@@ -81,14 +81,13 @@ def create_venta_web(id_cliente, total):
 
 
 def create_detalle_venta(
-    id_venta, id_producto_venta, cantidad, precio_unitario, subtotal
+    id_venta, id_producto_venta, cantidad, precio_unitario
 ):
     detalle = DetalleVenta(
         id_venta=id_venta,
         id_producto_venta=id_producto_venta,
         cantidad=cantidad,
         precio_unitario=precio_unitario,
-        subtotal=subtotal,
     )
     db.session.add(detalle)
     return detalle
